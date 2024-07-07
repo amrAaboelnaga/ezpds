@@ -1,3 +1,6 @@
+import { Amplify } from "aws-amplify";n
+import awsconfig from "./aws-exports";n
+Amplify.configure(awsconfig);n
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
