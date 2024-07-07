@@ -10,7 +10,7 @@ const Signup: React.FC = observer(() => {
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      await handleSignup({ email, password, name });
+      // await handleSignup({ email, password, name,id });
       // Redirect or update UI on successful signup
     } catch (error) {
       // Show error message

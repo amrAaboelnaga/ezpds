@@ -24,7 +24,6 @@ export const handleSignup = async (userData: UserData) => {
 
 export const handleLogout = async () => {
   try {
-    await Auth.signOut();
     authStore.logout();
   } catch (error) {
     console.error("Logout failed:", error);
