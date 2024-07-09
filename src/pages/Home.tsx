@@ -108,7 +108,7 @@ const styles = {
     padding: '6px 15px',
     cursor: 'pointer',
     borderRadius: '15px',
-    fontSize: '1rem',
+    fontSize: '16px',
     marginLeft: '10px',
   },
 };
