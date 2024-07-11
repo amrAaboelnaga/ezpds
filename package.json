@@ -12,6 +12,7 @@
     "@types/react-dom": "^18.3.0",
     "aws-amplify": "^6.3.8",
     "axios": "^1.7.2",
+    "html2canvas": "^1.4.1",
     "mobx": "^6.13.0",
     "mobx-react-lite": "^4.0.7",
     "react": "^18.3.1",

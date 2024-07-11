@@ -44,11 +44,13 @@ const Footer: React.FC = (() => {
 });
 const styles = {
     footer: {
+        zIndex: '2',
         backgroundColor: '#333',
         color: '#fff',
         padding: '5px 0',
         marginTop: 'auto',
         width: '100%',
+
     },
     footerContent: {
         display: 'flex',

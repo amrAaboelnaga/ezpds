@@ -1,9 +1,9 @@
 import { authStore } from './authStore';
-import { demoStore } from './demoStore';
+import { whiteBoardStore } from './whiteBoardStore';
 
 class RootStore {
   authStore = authStore;
-  demoStore = demoStore
+  whiteBoardStore = whiteBoardStore
 }
 
 export const rootStore = new RootStore();
