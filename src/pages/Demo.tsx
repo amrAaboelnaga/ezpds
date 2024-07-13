@@ -1,7 +1,10 @@
 import React from 'react';
+import CreateOrEditCont from '../components/whiteboard-components/CreateOrEditCont';
 
 const Demo: React.FC = () => {
-  return <div>Demo</div>;
+  return (
+    <CreateOrEditCont />
+  )
 };
 
 export default Demo;
