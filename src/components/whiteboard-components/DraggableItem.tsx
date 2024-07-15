@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useResizeState, useHandleMouseDownReposition, useHandleMouseDownResize, useHandleMouseMove, useHandleMouseUp } from '../../handlers/whiteBoardHandlers';
 import { ResizeBox } from './ResizeBox';
-import { JsonSpecs } from '../../handlers/whiteBoardHandlers';
 import { DraggableTitle } from './DraggableChilds/DraggableTitle';
 import { DraggableSubTitle } from './DraggableChilds/DraggableSubTitle';
 import { DraggableSmallText } from './DraggableChilds/DraggableSmallText';

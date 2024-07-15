@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { JsonSpecs, useDeleteItem } from '../../../handlers/whiteBoardHandlers';
+import { useDeleteItem } from '../../../handlers/whiteBoardHandlers';
 import { rootStore } from "../../../stores/rootStore";
 
 const { whiteBoardStore } = rootStore;

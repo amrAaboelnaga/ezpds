@@ -8,6 +8,8 @@ import LandingPage from '../pages/LandingPage';
 import FAQ from '../pages/FAQ';
 import About from '../pages/About';
 import Demo from '../pages/Demo';
+import Market from '../pages/Market';
+import SingleProductPage from '../pages/SingleProductPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -21,6 +23,8 @@ const AppRoutes: React.FC = () => {
           <Route path="/about" element={<About />} />
           <Route path="/demo" element={<Demo />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/market" element={<Market />} />
+          <Route path="/market/:id" element={<SingleProductPage />} />
           {/* Add more routes as needed */}
         </Route >
       </Routes>

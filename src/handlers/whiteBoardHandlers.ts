@@ -1,22 +1,8 @@
 import { rootStore } from "../stores/rootStore";
 import { useState } from "react";
+import { JsonSpecs } from "../stores/whiteBoardStore";
 const { whiteBoardStore } = rootStore;
 
-export interface JsonSpecs {
-    [key: string]: {
-        type: string;
-        content: string;
-        location: { x: number; y: number };
-        width: number;
-        height: number;
-        isEditing: boolean;
-        imgData: string;
-        rows?: number;
-        columns?: number;
-        tableData?: string[][];
-        listData?: string[];
-    };
-}
 
 export function useHandleDrop() {
     return (event: React.DragEvent<HTMLDivElement>) => {

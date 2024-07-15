@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { JsonSpecs, useDeleteItem, useHandleAddImage, useHandleImageUpload } from '../../../handlers/whiteBoardHandlers';
+import { useDeleteItem, useHandleAddImage, useHandleImageUpload } from '../../../handlers/whiteBoardHandlers';
 
 interface DraggableImageProps {
   id: string;

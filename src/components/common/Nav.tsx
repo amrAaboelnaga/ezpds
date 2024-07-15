@@ -27,6 +27,9 @@ const Nav: React.FC = observer(() => {
                 <li style={styles.navbarMenuItem}>
                     <Link to="/demo" style={{ ...styles.navbarMenuItemLink, ...(location.pathname === '/demo' ? styles.activeLink : {}) }}>Try Demo</Link>
                 </li>
+                <li style={styles.navbarMenuItem}>
+                    <Link to="/market" style={{ ...styles.navbarMenuItemLink, ...(location.pathname === '/market' ? styles.activeLink : {}) }}>Market</Link>
+                </li>
             </ul>
             <div style={styles.navbarEnd}>
                 {authStore.user ? (

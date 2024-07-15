@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { JsonSpecs, useDeleteItem } from '../../../handlers/whiteBoardHandlers';
+import { useDeleteItem } from '../../../handlers/whiteBoardHandlers';
 import { rootStore } from "../../../stores/rootStore";
 
 const { whiteBoardStore } = rootStore;
@@ -152,7 +152,7 @@ const styles = {
   draggableTable: {
     width: '100%',
     borderCollapse: 'collapse',
-    height:'100%'
+    height: '100%'
   } as React.CSSProperties,
   tableInput: {
     width: '100%',
@@ -161,7 +161,7 @@ const styles = {
     outline: 'none',
     padding: '5px',
     fontSize: '14px',
-    textAlign:'center'
+    textAlign: 'center'
   } as React.CSSProperties,
   tableCell: {
     border: '1px solid #ccc',

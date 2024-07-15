@@ -5,6 +5,7 @@ import { useHandleDrop, useHandleDragOver, useToggleEditing } from '../../handle
 import { LeftToolBar } from './LeftToolBar';
 import { DraggableItem } from './DraggableItem';
 import ExportAndImport from './ExportAndImport';
+import ProductInfoBox from './productInfoBox';
 //import ExportAndImport from './ExportAndImport/ExportAndImport';
 
 const CreateOrEditCont: React.FC = observer(() => {
@@ -32,6 +33,7 @@ const CreateOrEditCont: React.FC = observer(() => {
         </div>
       </div>
       {<ExportAndImport page={page} />}
+      <ProductInfoBox />
     </div>
   );
 });
