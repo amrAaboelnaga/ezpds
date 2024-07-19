@@ -1,31 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { rootStore } from '../../stores/rootStore';
-import { categories } from '../../handlers/marketHandlers';
+import { categories, useMarketHandlers } from '../../handlers/marketHandlers';
 
+interface MarketSearchBarProps {
+  includeImage: boolean;
+  setIncludeImage: React.Dispatch<React.SetStateAction<boolean>>;
+  searchTerm: string;
+  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  category: string;
+  setCategory: React.Dispatch<React.SetStateAction<string>>;
+  minPrice: string;
+  setMinPrice: React.Dispatch<React.SetStateAction<string>>;
+  maxPrice: string;
+  setMaxPrice: React.Dispatch<React.SetStateAction<string>>;
+  latest: boolean;
+  setLatest: React.Dispatch<React.SetStateAction<boolean>>;
+  maxProductsPerPage: number;
+}
 
-
-
-const MarketSearchBar: React.FC = () => {
+export const MarketSearchBar: React.FC<MarketSearchBarProps> = observer(({
+  includeImage,
+  setIncludeImage,
+  searchTerm,
+  setSearchTerm,
+  category,
+  setCategory,
+  minPrice,
+  setMinPrice,
+  maxPrice,
+  setMaxPrice,
+  latest,
+  setLatest,
+  maxProductsPerPage
+}) => {
+  const { fetchFirstProductsPage } = useMarketHandlers();
   const { marketStore } = rootStore;
-  const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [latest, setLatest] = useState(false);
 
-  useEffect(() => {
-    if (marketStore.products.length === 0) {
-      marketStore.fetchProducts(searchTerm, category, minPrice, maxPrice, latest);
-    }
-  }, [])
-
-  const handleSearch = () => {
-    marketStore.fetchProducts(searchTerm, category, minPrice, maxPrice, latest);
+  const handleSearch = async () => {
+    marketStore.clearProducts(); // Clear existing products in the store
+    await fetchFirstProductsPage(searchTerm, category, minPrice, maxPrice, latest, maxProductsPerPage); // Fetch products for the first page
   };
 
   return (
-
     <div style={styles.filterContainer}>
       <input
         type="text"
@@ -39,6 +56,7 @@ const MarketSearchBar: React.FC = () => {
         onChange={(e) => setCategory(e.target.value)}
         style={styles.select}
       >
+        <option value="">All Categories</option>
         {categories.map((cat) => (
           <option key={cat.value} value={cat.value}>
             {cat.label}
@@ -58,22 +76,26 @@ const MarketSearchBar: React.FC = () => {
         value={maxPrice}
         onChange={(e) => setMaxPrice(e.target.value)}
         style={styles.input}
-      />     
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={latest}
+          onChange={(e) => setLatest(e.target.checked)}
+        />
+        Latest
+      </label>
       <button onClick={handleSearch} style={styles.button}>
         Search
       </button>
+      <button onClick={() => setIncludeImage(!includeImage)} style={styles.button}>
+        {includeImage ? 'Info Only' : 'Include Image'}
+      </button>
     </div>
-
   );
-};
+});
 
 const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-  } as React.CSSProperties,
   filterContainer: {
     display: 'flex',
     gap: '10px',
@@ -111,16 +133,8 @@ const styles = {
     cursor: 'pointer',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     transition: 'background-color 0.3s',
-  } as React.CSSProperties,
-  card: {
-    backgroundColor: '#f0f0f0',
-    padding: '10px',
-    borderRadius: '5px',
-    width: '300px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    marginBottom: '10px',
+    width: '140px'
   } as React.CSSProperties,
 };
 
-
-export default observer(MarketSearchBar);
+export default MarketSearchBar;

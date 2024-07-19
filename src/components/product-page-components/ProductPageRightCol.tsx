@@ -2,12 +2,12 @@ import React from 'react';
 
 interface ProductPageRightColProps {
   productInfoOnly: any; // Adjust type as per your actual data structure
-  useThisTemplate: () => void;
+  copyThisTemplate: () => void;
 }
 
 const ProductPageRightCol: React.FC<ProductPageRightColProps> = ({
   productInfoOnly,
-  useThisTemplate,
+  copyThisTemplate,
 }) => {
   return (
     <div style={styles.rightColumn}>
@@ -24,7 +24,7 @@ const ProductPageRightCol: React.FC<ProductPageRightColProps> = ({
         </button>
         <button
           style={styles.button}
-          onClick={useThisTemplate}
+          onClick={copyThisTemplate}
         >
           Use this template
         </button>

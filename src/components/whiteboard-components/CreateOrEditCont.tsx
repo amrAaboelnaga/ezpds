@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { observer } from "mobx-react-lite";
 import { rootStore } from "../../stores/rootStore";
-import { useHandleDrop, useHandleDragOver, useToggleEditing } from '../../handlers/whiteBoardHandlers';
+import { useWhiteBoardHandlers } from '../../handlers/whiteBoardHandlers';
 import { LeftToolBar } from './LeftToolBar';
 import { DraggableItem } from './DraggableItem';
 import ExportAndImport from './ExportAndImport';
@@ -10,9 +10,8 @@ import ProductInfoBox from './productInfoBox';
 
 const CreateOrEditCont: React.FC = observer(() => {
   const { whiteBoardStore } = rootStore;
-
+  const { useHandleDrop, useHandleDragOver, useToggleEditing } = useWhiteBoardHandlers();
   const page = useRef<HTMLDivElement>(null);
-
   const handleDrop = useHandleDrop();
   const handleDragOver = useHandleDragOver();
   const toggleEditing = useToggleEditing();

@@ -1,41 +1,37 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import { fetchProductsData } from '../handlers/marketHandlers';
+import { makeAutoObservable } from 'mobx';
 
 export interface Product {
   id: number;
   title: string;
   price: string;
   category: string;
-  prevPic: string
+  prevPic: string;
+}
+
+export interface ProductPages {
+  pages: Product[][];
 }
 
 class MarketStore {
-  products: Product[] = [];
+  products: ProductPages = { pages: [] };
   loadingState: string = 'idle';
+  itemsCount: number = 0;
+  currentPage: number = 1;
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  // Method to fetch products asynchronously with a delay
-  fetchProducts = async (searchTerm: string = '', category: string = '', minPrice: string = '', maxPrice: string = '', latest: boolean = false) => {
-    this.loadingState = 'loading';
-    try {
-      // Simulate async fetch with a delay using setTimeout
-      const data = await fetchProductsData(searchTerm, category, minPrice, maxPrice, latest);
+  setMarketStoreData(key: keyof this, value: any) {
+    this[key] = value;
+  }
 
-      // Update state using MobX runInAction
-      runInAction(() => {
-        this.products = data;
-        this.loadingState = 'done';
-      });
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      runInAction(() => {
-        this.loadingState = 'error';
-      });
-    }
-  };
+  clearProducts() {
+    this.products = { pages: [] };
+    this.loadingState = 'loading';
+    this.itemsCount = 0;
+    this.currentPage = 1;
+  }
 }
 
 export const marketStore = new MarketStore();

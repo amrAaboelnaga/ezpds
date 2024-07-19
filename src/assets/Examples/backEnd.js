@@ -597,38 +597,403 @@ export const products = [
 
 export const productInfosOnly = [
     {
-        id: 1,
-        title: "Car",
-        price: "50000",
-        category: "Vehicle",
-        prevPic:'./Car.png'
+      id: 1,
+      title: "Car",
+      price: "50000",
+      category: "Vehicle",
+      prevPic: './Car.png'
     },
     {
-        id: 2,
-        title: "Smartphone",
-        price: "800",
-        category: "Electronics",
-        prevPic:'./Smartphone.png'
+      id: 2,
+      title: "Smartphone",
+      price: "800",
+      category: "Electronics",
+      prevPic: './Smartphone.png'
     },
     {
-        id: 3,
-        title: "Laptop",
-        price: "1000",
-        category: "Electronics",
-        prevPic:'./Laptop.png'
+      id: 3,
+      title: "Laptop",
+      price: "1000",
+      category: "Electronics",
+      prevPic: './Laptop.png'
     },
     {
-        id: 4,
-        title: "Smartwatch",
-        price: "300",
-        category: "Electronics",
-        prevPic:'./Smartwatch.png'
+      id: 4,
+      title: "Smartwatch",
+      price: "300",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
     },
     {
-        id: 5,
-        title: "Tablet",
-        price: "500",
-        category: "Electronics",
-        prevPic:'./Tablet.png'
-    },   
-];
+      id: 5,
+      title: "Tablet",
+      price: "500",
+      category: "Electronics",
+      prevPic: './Tablet.png'
+    },
+    {
+      id: 6,
+      title: "Bicycle",
+      price: "600",
+      category: "Vehicle",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 7,
+      title: "TV",
+      price: "1200",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 8,
+      title: "Headphones",
+      price: "150",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 9,
+      title: "Camera",
+      price: "700",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 10,
+      title: "Microwave",
+      price: "100",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 11,
+      title: "Refrigerator",
+      price: "1500",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 12,
+      title: "Washing Machine",
+      price: "800",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 13,
+      title: "Dishwasher",
+      price: "600",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 14,
+      title: "Oven",
+      price: "900",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 15,
+      title: "Blender",
+      price: "200",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 16,
+      title: "Toaster",
+      price: "50",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 17,
+      title: "Coffee Maker",
+      price: "100",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 18,
+      title: "Air Conditioner",
+      price: "500",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 19,
+      title: "Heater",
+      price: "300",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 20,
+      title: "Fan",
+      price: "100",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 21,
+      title: "Vacuum Cleaner",
+      price: "250",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 22,
+      title: "Mixer",
+      price: "150",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+
+    },
+    {
+      id: 23,
+      title: "Rice Cooker",
+      price: "80",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 24,
+      title: "Slow Cooker",
+      price: "100",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 25,
+      title: "Instant Pot",
+      price: "120",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 26,
+      title: "Air Fryer",
+      price: "150",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 27,
+      title: "Juicer",
+      price: "200",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 28,
+      title: "Grill",
+      price: "250",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 29,
+      title: "Freezer",
+      price: "600",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 30,
+      title: "Iron",
+      price: "50",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 31,
+      title: "Hair Dryer",
+      price: "70",
+      category: "Personal Care",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 32,
+      title: "Electric Shaver",
+      price: "100",
+      category: "Personal Care",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 33,
+      title: "Straightener",
+      price: "80",
+      category: "Personal Care",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 34,
+      title: "Epilator",
+      price: "90",
+      category: "Personal Care",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 35,
+      title: "Massager",
+      price: "150",
+      category: "Personal Care",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 36,
+      title: "Fitness Tracker",
+      price: "200",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 37,
+      title: "Smart Scale",
+      price: "100",
+      category: "Personal Care",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 38,
+      title: "Smart Light",
+      price: "60",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 39,
+      title: "Smart Plug",
+      price: "40",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 40,
+      title: "Robot Vacuum",
+      price: "400",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 41,
+      title: "Smart Doorbell",
+      price: "200",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 42,
+      title: "Smart Lock",
+      price: "250",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 43,
+      title: "Security Camera",
+      price: "300",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 44,
+      title: "Smart Thermostat",
+      price: "250",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 45,
+      title: "Electric Kettle",
+      price: "50",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 46,
+      title: "Food Processor",
+      price: "150",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 47,
+      title: "Sandwich Maker",
+      price: "60",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 48,
+      title: "Waffle Maker",
+      price: "70",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 49,
+      title: "Ice Cream Maker",
+      price: "120",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 50,
+      title: "Electric Grill",
+      price: "200",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 51,
+      title: "Deep Fryer",
+      price: "100",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 52,
+      title: "Pizza Oven",
+      price: "300",
+      category: "Appliances",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 53,
+      title: "Portable Speaker",
+      price: "150",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 54,
+      title: "Gaming Console",
+      price: "500",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    },
+    {
+      id: 55,
+      title: "Drone",
+      price: "800",
+      category: "Electronics",
+      prevPic: './Smartwatch.png'
+    }
+  ];
+  

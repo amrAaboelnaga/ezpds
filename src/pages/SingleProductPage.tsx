@@ -3,9 +3,11 @@ import { productInfosOnly, products } from '../assets/Examples/backEnd';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProductPageRightCol from '../components/product-page-components/ProductPageRightCol';
 import { rootStore } from '../stores/rootStore';
+import { useMarketHandlers } from '../handlers/marketHandlers';
 
 const SingleProductPage: React.FC = () => {
   const { whiteBoardStore } = rootStore; // Assuming rootStore is correctly defined elsewhere
+  const { fetchProductDetails, copyThisTemplate } = useMarketHandlers();
   const { id } = useParams<{ id: string }>();
   const [productInfoOnly, setProductInfoOnly] = useState<any>(null);
   const [productJsonSpec, setProductJsonSpec] = useState<any>(null);
@@ -15,7 +17,7 @@ const SingleProductPage: React.FC = () => {
   useEffect(() => {
     if (id) {
       const productId = parseInt(id, 10);
-      fetchProductDetails(productId);
+      fetchProductDetails(productId, setProductInfoOnly, setProductJsonSpec);
     }
   }, [id]);
 
@@ -34,32 +36,7 @@ const SingleProductPage: React.FC = () => {
     }
   }, [productInfoOnly]);
 
-  // Function to fetch product details
-  const fetchProductDetails = (productId: number) => {
-    // Find productInfoOnly based on productId
-    const productInfo = productInfosOnly.find(product => product.id === productId);
-    if (productInfo) {
-      setProductInfoOnly(productInfo);
 
-      // Find corresponding productJsonSpec from products
-      const productSpec = products.find(product => product.productInfo.id === productId);
-      if (productSpec) {
-        setProductJsonSpec(productSpec.jsonSpecs);
-      } else {
-        console.error(`Product with id ${productId} not found in products array.`);
-      }
-    } else {
-      console.error(`Product with id ${productId} not found in productInfosOnly array.`);
-    }
-  };
-
-  const useThisTemplate = () => {
-    if (productInfoOnly && productJsonSpec) {
-      whiteBoardStore.setProductInfo(productInfoOnly);
-      whiteBoardStore.setJsonSpecs(productJsonSpec);
-      navigate('/demo');
-    }
-  };
 
   return (
     <div style={styles.container}>
@@ -70,7 +47,7 @@ const SingleProductPage: React.FC = () => {
           </div>
           <ProductPageRightCol
             productInfoOnly={productInfoOnly}
-            useThisTemplate={useThisTemplate}
+            copyThisTemplate={() => copyThisTemplate(productInfoOnly, productJsonSpec, whiteBoardStore, navigate)}
           />
         </div>
       )}

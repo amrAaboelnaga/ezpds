@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Link, useNavigate } from 'react-router-dom'; // Import Link for navigation
+import { useNavigate } from 'react-router-dom';
 
-const SingleProductCard: React.FC<{ product: { id: number, title: string, price: string, category: string, prevPic: string } }> = ({ product }) => {
+interface Product {
+  id: number;
+  title: string;
+  price: string;
+  category: string;
+  prevPic: string;
+}
+
+interface SingleProductCardProps {
+  product: Product;
+  includeImage: boolean
+}
+
+export const SingleProductCard: React.FC<SingleProductCardProps> = observer(({ product, includeImage }) => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
     const importImage = async () => {
       try {
-        const image = await import(`../../assets/Examples/${product.title}.png`);
+        const image = await import(`../../assets/Examples/Smartwatch.png`);
         setImageSrc(image.default);
       } catch (error) {
         console.error('Error loading image:', error);
@@ -17,19 +30,17 @@ const SingleProductCard: React.FC<{ product: { id: number, title: string, price:
     };
 
     importImage();
-  }, [product.prevPic]);
+  }, [product.title]);
 
   return (
-
     <div onClick={() => navigate(`/market/${product.id}`)} style={styles.card}>
-      {imageSrc && <img style={styles.previewImage} src={imageSrc} alt={product.title} />}
+      {imageSrc && includeImage && <img style={styles.previewImage} src={imageSrc} alt={product.title} />}
       <h3>{product.title}</h3>
       <p>Price: ${product.price}</p>
       <p>Category: {product.category}</p>
     </div>
-
   );
-};
+});
 
 const styles = {
   card: {
@@ -43,8 +54,7 @@ const styles = {
   } as React.CSSProperties,
   previewImage: {
     width: '100%',
-    borderRadius: '5px'
+    borderRadius: '5px',
   } as React.CSSProperties,
 };
 
-export default observer(SingleProductCard);

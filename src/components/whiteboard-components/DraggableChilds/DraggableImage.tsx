@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { useDeleteItem, useHandleAddImage, useHandleImageUpload } from '../../../handlers/whiteBoardHandlers';
+import { observer } from 'mobx-react-lite';
+import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 
 interface DraggableImageProps {
   id: string;
@@ -8,7 +9,8 @@ interface DraggableImageProps {
   toggleEditing: (id: string) => void;
 }
 
-export function DraggableImage({ id, imgData, isEditing, toggleEditing }: DraggableImageProps) {
+export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, imgData, isEditing, toggleEditing }) => {
+  const { useDeleteItem, useHandleAddImage, useHandleImageUpload } = useWhiteBoardHandlers();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleImageUpload = useHandleImageUpload();
   const handleAddImage = useHandleAddImage(inputRef);
@@ -37,7 +39,7 @@ export function DraggableImage({ id, imgData, isEditing, toggleEditing }: Dragga
       />
     </div>
   );
-}
+});
 
 const styles = {
   editTableCount: {
@@ -59,3 +61,4 @@ const styles = {
     color: '#0000ff', // Adjust color as needed
   } as React.CSSProperties,
 };
+

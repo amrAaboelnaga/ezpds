@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { useDeleteItem, useHandleBlur, useHandleKeyDown, useHandleTextEdit } from '../../../handlers/whiteBoardHandlers';
+import { observer } from 'mobx-react-lite';
+import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 
 
 interface DraggableSmallTextProps {
@@ -9,7 +10,8 @@ interface DraggableSmallTextProps {
   toggleEditing: (id: string) => void;
 }
 
-export function DraggableSmallText({ id, content, isEditing, toggleEditing }: DraggableSmallTextProps) {
+export const DraggableSmallText: React.FC<DraggableSmallTextProps> = observer(({ id, content, isEditing, toggleEditing }) => {
+  const { useDeleteItem, useHandleBlur, useHandleKeyDown, useHandleTextEdit } = useWhiteBoardHandlers();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleTextEdit = useHandleTextEdit();
   const handleBlur = useHandleBlur();
@@ -18,12 +20,12 @@ export function DraggableSmallText({ id, content, isEditing, toggleEditing }: Dr
 
   return (
     <div style={styles.draggableChildCont}>
-      {isEditing ? (
+      {isEditing && (
         <div style={styles.editTableCount}>
           <button onClick={() => toggleEditing(id)}>Done</button>
           <button onClick={() => handleDeleteItem(id)}>Delete</button>
         </div>
-      ) : null}
+      )}
       {isEditing ? (
         <input
           type='text'
@@ -39,7 +41,7 @@ export function DraggableSmallText({ id, content, isEditing, toggleEditing }: Dr
       )}
     </div>
   );
-}
+});
 
 const styles = {
   draggableChildCont: {
@@ -66,3 +68,4 @@ const styles = {
     textAlign: 'center',
   } as React.CSSProperties,
 };
+
