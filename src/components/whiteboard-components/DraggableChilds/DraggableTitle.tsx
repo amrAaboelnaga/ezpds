@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { useDeleteItem, useHandleBlur, useHandleKeyDown, useHandleTextEdit } from '../../../handlers/whiteBoardHandlers';
+import { observer } from 'mobx-react-lite';
+import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 
 interface DraggableTitleProps {
   id: string;
@@ -8,8 +9,8 @@ interface DraggableTitleProps {
   toggleEditing: (id: string) => void;
 }
 
-
-export function DraggableTitle({ id, content, isEditing, toggleEditing }: DraggableTitleProps) {
+export const DraggableTitle: React.FC<DraggableTitleProps> = observer(({ id, content, isEditing, toggleEditing }) => {
+  const { useHandleTextEdit, useHandleBlur, useHandleKeyDown, useDeleteItem } = useWhiteBoardHandlers();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleTextEdit = useHandleTextEdit();
   const handleBlur = useHandleBlur();
@@ -24,7 +25,7 @@ export function DraggableTitle({ id, content, isEditing, toggleEditing }: Dragga
           <button onClick={() => handleDeleteItem(id)}>Delete</button>
         </div>
       ) : null}
-      {isEditing === true ? (
+      {isEditing ? (
         <input
           type='text'
           value={content}
@@ -39,9 +40,7 @@ export function DraggableTitle({ id, content, isEditing, toggleEditing }: Dragga
       )}
     </div>
   );
-}
-
-
+});
 
 const styles = {
   draggableChildCont: {
@@ -69,3 +68,4 @@ const styles = {
     backgroundColor: 'rgba(255, 255, 255, 0)',
   } as React.CSSProperties,
 };
+

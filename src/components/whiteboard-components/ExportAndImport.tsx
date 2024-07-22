@@ -8,19 +8,28 @@ interface ExportAndImportProps {
 }
 
 const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
-    const { whiteBoardStore } = rootStore
+    const { whiteBoardStore } = rootStore;
 
     // Function to handle reset
     const handleReset = () => {
         whiteBoardStore.setJsonSpecs({});
+        whiteBoardStore.setProductInfo({ id: 0, title: '', price: '', category: '' });
     };
 
     // Function to handle export
     const handleExport = () => {
-        const dataStr = JSON.stringify(whiteBoardStore.jsonSpecs, null, 2);
+        if (!whiteBoardStore.productInfo.title || !whiteBoardStore.productInfo.price) {
+            alert('Make shure you add title and price')
+            return
+        }
+        const exportData = {
+            productInfo: whiteBoardStore.productInfo,
+            jsonSpecs: whiteBoardStore.jsonSpecs
+        };
+        const dataStr = JSON.stringify(exportData, null, 2);
         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
-        const exportFileDefaultName = 'data.json';
+        const exportFileDefaultName = `${whiteBoardStore.productInfo.title || 'data'}.json`;
 
         const linkElement = document.createElement('a');
         linkElement.setAttribute('href', dataUri);
@@ -37,8 +46,9 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
                 const content = e.target?.result;
                 try {
                     if (typeof content === 'string') {
-                        const importedJsonSpecs = JSON.parse(content);
-                        whiteBoardStore.setJsonSpecs(importedJsonSpecs);
+                        const importedData = JSON.parse(content);
+                        whiteBoardStore.setJsonSpecs(importedData.jsonSpecs);
+                        whiteBoardStore.setProductInfo(importedData.productInfo);
                     }
                 } catch (error) {
                     console.error('Error parsing imported JSON:', error);
@@ -52,11 +62,11 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
     const handlePageToImage = () => {
         if (page.current) {
             html2canvas(page.current, {
-                scale: 5, // Increase scale for higher resolution
+                scale: 1, // Increase scale for higher resolution
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.href = canvas.toDataURL('image/png');
-                link.download = 'Image.png';
+                link.download = `${whiteBoardStore.productInfo.title}.png`;
                 link.click();
             }).catch(error => {
                 console.error('Failed to capture page as image:', error);

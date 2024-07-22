@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { useDeleteItem, useHandleBlur, useHandleKeyDown, useHandleTextEdit } from '../../../handlers/whiteBoardHandlers';
-
+import { observer } from 'mobx-react-lite';
+import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 
 
 interface DraggableSubTitleProps {
@@ -10,7 +10,8 @@ interface DraggableSubTitleProps {
   toggleEditing: (id: string) => void;
 }
 
-export function DraggableSubTitle({ id, content, isEditing, toggleEditing }: DraggableSubTitleProps) {
+export const DraggableSubTitle: React.FC<DraggableSubTitleProps> = observer(({ id, content, isEditing, toggleEditing }) => {
+  const { useDeleteItem, useHandleBlur, useHandleKeyDown, useHandleTextEdit } = useWhiteBoardHandlers();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleTextEdit = useHandleTextEdit();
   const handleBlur = useHandleBlur();
@@ -19,12 +20,12 @@ export function DraggableSubTitle({ id, content, isEditing, toggleEditing }: Dra
 
   return (
     <div style={styles.draggableChildCont}>
-      {isEditing ? (
+      {isEditing && (
         <div style={styles.editTableCount}>
           <button onClick={() => toggleEditing(id)}>Done</button>
           <button onClick={() => handleDeleteItem(id)}>Delete</button>
         </div>
-      ) : null}
+      )}
       {isEditing ? (
         <input
           type='text'
@@ -40,7 +41,7 @@ export function DraggableSubTitle({ id, content, isEditing, toggleEditing }: Dra
       )}
     </div>
   );
-}
+});
 
 const styles = {
   draggableChildCont: {

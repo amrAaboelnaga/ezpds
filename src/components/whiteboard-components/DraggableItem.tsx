@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useResizeState, useHandleMouseDownReposition, useHandleMouseDownResize, useHandleMouseMove, useHandleMouseUp } from '../../handlers/whiteBoardHandlers';
+import { useWhiteBoardHandlers } from '../../handlers/whiteBoardHandlers';
 import { ResizeBox } from './ResizeBox';
-import { JsonSpecs } from '../../handlers/whiteBoardHandlers';
 import { DraggableTitle } from './DraggableChilds/DraggableTitle';
 import { DraggableSubTitle } from './DraggableChilds/DraggableSubTitle';
 import { DraggableSmallText } from './DraggableChilds/DraggableSmallText';
@@ -31,6 +30,7 @@ interface DraggableItemProps {
 
 export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemSpecs, toggleEditing }) => {
   const { whiteBoardStore } = rootStore;
+  const { useResizeState, useHandleMouseDownReposition, useHandleMouseDownResize, useHandleMouseMove, useHandleMouseUp } = useWhiteBoardHandlers();
   const [jsonSpecs, setJsonSpecs] = useState(whiteBoardStore.jsonSpecs)
   const { resizeState, setResizeState } = useResizeState({
     resizing: false,

@@ -10,10 +10,12 @@ const Home: React.FC = observer(() => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authStore.user) {
-      navigate('/landingpage')
-    } else {
-      navigate('/dashboard')
+    if (window.location.pathname === '/') {
+      if (!authStore.user) {
+        navigate('/landingpage')
+      } else {
+        navigate('/dashboard')
+      }
     }
   }, []);
 
