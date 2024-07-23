@@ -1,12 +1,15 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { observer } from "mobx-react-lite";
 import { rootStore } from "../../stores/rootStore";
 import logo from '../../assets/images/logo.png'
+import { useAuthHandlers } from '../../handlers/authHandler';
 
 const Nav: React.FC = observer(() => {
     const { authStore } = rootStore;
     const location = useLocation();
+    const { handleLogout } = useAuthHandlers();
+    const navigate = useNavigate()
 
     return (
         <nav style={styles.navbar}>
@@ -34,7 +37,7 @@ const Nav: React.FC = observer(() => {
             <div style={styles.navbarEnd}>
                 {authStore.user ? (
                     <div>
-                        <button style={styles.logOutButton} onClick={authStore.logout}>Logout</button>
+                        <button style={styles.logOutButton} onClick={() => handleLogout((navigate))}>Logout</button>
                     </div>
                 ) : (
                     <div>

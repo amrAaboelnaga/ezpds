@@ -38,19 +38,15 @@ const CreateOrEditCont: React.FC = observer(() => {
 });
 
 const styles = {
-  createOrEditCont: {
-    height: '100%',
-    width: '100%',
+  createOrEditCont: {   
     display: 'grid',
-    gridTemplateColumns: '15% 85%',
-    overflow: 'scroll',
-    overflowX: 'hidden'
+    gridTemplateColumns: '15% 85%', 
   } as React.CSSProperties,
   workSpaceCont: {
     backgroundColor: 'rgb(214, 214, 214)',
     position: 'relative',
     height: '100%',
-    marginBottom: '100px'
+    marginBottom: '50px'
   } as React.CSSProperties,
   workSpaceFile: {
     width: '210mm',
