@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { rootStore } from '../../stores/rootStore';
 import { useMarketHandlers } from '../../handlers/marketHandlers';
 import { SingleProductCard } from './SingleProductCard';
-import { FakeSingleProductCard } from './FakeSingleProductCar';
+import { FakeSingleProductCard } from './FakeSingleProductCard';
 
 interface ProductsContProps {
   includeImage: boolean

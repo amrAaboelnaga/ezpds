@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { handleLogin } from '../handlers/authHandler';
+import { useAuthHandlers } from '../handlers/authHandler';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = observer(() => {
+  const { handleLogin } = useAuthHandlers()
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>();
+  const navigate = useNavigate()
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      await handleLogin({ email, password });
+      const result = await handleLogin({ username: email, password })
+      if (result === true) {
+        navigate('/dashboard')
+      } else {
+        setError('Incorrect username or password')
+      }
       // Redirect or update UI on successful login
     } catch (error) {
       setError('Invalid email or password');

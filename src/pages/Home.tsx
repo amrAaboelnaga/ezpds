@@ -1,28 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { observer } from "mobx-react-lite";
 import { rootStore } from "../stores/rootStore";
 import Nav from '../components/common/Nav';
 import Footer from '../components/common/Footer';
+import { useAuthHandlers } from '../handlers/authHandler';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 const Home: React.FC = observer(() => {
+  const [checkedUser, setCheckedUser] = useState(false)
   const { authStore } = rootStore;
   const navigate = useNavigate();
+  const { handleCheckLogin } = useAuthHandlers();
 
-  useEffect(() => {
-    if (window.location.pathname === '/') {
-      if (!authStore.user) {
-        navigate('/landingpage')
-      } else {
-        navigate('/dashboard')
-      }
-    }
+  useEffect(() => {   
+      handleCheckLogin(navigate, setCheckedUser);    
   }, []);
 
   return (
     <div style={styles.homeCont} >
       <Nav />
-      <Outlet />
+      {checkedUser ?
+        <Outlet />
+        :
+        "Loading.."}
       <Footer />
     </div>
   );
