@@ -1,31 +1,14 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import { JsonSpecs, ProductInfo } from '../types/whiteBoard';
 
-export interface JsonSpecs {
-  [key: string]: {
-    type: string;
-    content: string;
-    location: { x: number; y: number };
-    width: number;
-    height: number;
-    isEditing: boolean;
-    imgData: string;
-    rows?: number;
-    columns?: number;
-    tableData?: string[][];
-    listData?: string[];
-  };
-}
 
-export interface ProductInfo {
-  id: number;
-  title: string;
-  price: string;
-  category: string;
-}
 
 class WhiteBoardStore {
   jsonSpecs: JsonSpecs = {};
   productInfo: ProductInfo = { id: 0, title: '', price: '', category: '' };
+  textContent: any = null;
+  textOnChange: any = null;
+  containerEditor: any = null;;
 
   constructor() {
     makeAutoObservable(this);
@@ -42,6 +25,20 @@ class WhiteBoardStore {
       this.productInfo = info;
     });
   }
+
+  setTextEditor(textContent: any, textOnChange: any) {
+    runInAction(() => {
+      this.textContent = textContent;
+      this.textOnChange = textOnChange;
+    });
+  }
+
+  setContainerEditor(object: any) {
+    runInAction(() => {
+      this.containerEditor = object;
+    });
+  }
+
 }
 
 export const whiteBoardStore = new WhiteBoardStore();

@@ -1,111 +1,147 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
+import { CellDimensions, defaultText, Text } from '../../../types/whiteBoard';
+import { EditableText } from '../EditableText';
+import { ColorSelectorForConts } from '../ColorSelectorForConts';
 
-interface DraggableTableProps {
-    id: string;
-    rows: number;
-    columns: number;
-    tableData: string[][];
-    isEditing: boolean;
-    toggleEditing: (id: string) => void;
-}
+interface DraggableTableProps { id: string; rows: number; columns: number; tableData: Text[][]; isEditing: boolean; toggleEditing: (id: string) => void; backgroundColor: string; rowGap: number; columnGap: number; zIndex: number; focusedIndex: any; setFocusedIndex: any; cellDimensionsStore: any; }
 
-export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, rows, columns, tableData, isEditing, toggleEditing }) => {
-    const { useDeleteItem, useUpdateTableSpecs } = useWhiteBoardHandlers();
-    const [editedTableData, setEditedTableData] = useState<string[][]>(tableData);
+export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, rows, columns, tableData, isEditing, toggleEditing, backgroundColor, rowGap, columnGap, zIndex, focusedIndex, setFocusedIndex, cellDimensionsStore }) => {
+    const { useHandleContainerEditorBar, handleTableMouseMove, useDeleteItem, useUpdateTableSpecs, useHandleTopTextBar, useHandleCellChange, useHandleTextEditorChange, useZIndexHandler, useUpdateGap, useUpdateTableCellDimensions, useUpdateRowOrColumn } = useWhiteBoardHandlers();
+    const handleTopTextBar = useHandleTopTextBar();
+    const handleContainerEditor = useHandleContainerEditorBar();
     const handleDeleteItem = useDeleteItem();
     const updateTableSpecs = useUpdateTableSpecs();
+    const updateTableCellDimensions = useUpdateTableCellDimensions()
+    const handleZindex = useZIndexHandler();
+    const updateRowOrColumn = useUpdateRowOrColumn(tableData, id, rows, columns, updateTableSpecs, defaultText);
+    const updateGap = useUpdateGap(tableData, id, rows, columns, rowGap, columnGap, updateTableSpecs);
+    const handleCellChange = useHandleCellChange(tableData, id, updateTableSpecs);
+    const handleTextEditorChange = useHandleTextEditorChange(tableData, id, focusedIndex, updateTableSpecs);
+    const tableRef = useRef<HTMLTableElement>(null);
+    const [isResizing, setIsResizing] = useState<{ rowIndex: number; colIndex: number } | null>(null);
+    const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
 
-    const updateTable = (updatedTableData: string[][]) => {
-        updateTableSpecs(updatedTableData, id); // Update table specs in whiteBoardStore
+
+
+    useEffect(() => {
+        try {
+            const dimensions: CellDimensions = { ...cellDimensionsStore };
+            for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+                if (!dimensions[`row-${rowIndex}`]) {
+                    dimensions[`row-${rowIndex}`] = { height: `80px` }; // Default height for rows
+                }
+            }
+            if (tableData.length > 0) {
+                for (let colIndex = 0; colIndex < tableData[0].length; colIndex++) {
+                    if (!dimensions[`col-${colIndex}`]) {
+                        dimensions[`col-${colIndex}`] = { width: `100px` }; // Default width for columns
+                    }
+                }
+            }
+            updateTableCellDimensions(id, dimensions);
+        } catch (e) {
+            console.error("Error updating table cell dimensions:", e);
+        }
+    }, []);
+
+
+    const handleMouseDown = (e: any, rowIndex: number, colIndex: number) => {
+        setIsResizing({ rowIndex, colIndex });
+        setStartPos({ x: e.clientX, y: e.clientY });
     };
 
-    const addColumn = () => {
-        const updatedTableData = editedTableData.map(row => [...row, 'Add Data']); // Add empty cell to each row
-        setEditedTableData(updatedTableData);
-        updateTable(updatedTableData);
+    const onMouseMove = (e: MouseEvent) => {
+        handleTableMouseMove(e, isResizing, startPos, cellDimensionsStore, tableData, updateTableCellDimensions, id, setStartPos);
     };
 
-    const removeColumn = () => {
-        if (editedTableData.length === 0 || columns === 1) return;
-        const updatedTableData = editedTableData.map(row => row.slice(0, -1)); // Remove last cell from each row
-        setEditedTableData(updatedTableData);
-        updateTable(updatedTableData);
+    const handleMouseUp = () => {
+        setIsResizing(null);
+        setStartPos(null);
     };
 
-    const addRow = () => {
-        const newRow = new Array(columns).fill('Add Data'); // Create a new array with empty strings for each column
-        const updatedTableData = [...editedTableData, newRow]; // Add the new row to the table data
-        setEditedTableData(updatedTableData);
-        updateTable(updatedTableData);
+    useEffect(() => {
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizing, startPos]);
+
+    const increaseZIndex = () => {
+        const newZIndex = zIndex + 1
+        handleZindex(id, newZIndex)
     };
 
-    const removeRow = () => {
-        if (editedTableData.length === 0 || rows === 1) return;
-        const updatedTableData = editedTableData.slice(0, -1); // Remove the last row
-        setEditedTableData(updatedTableData);
-        updateTable(updatedTableData);
+    const reduceZIndex = () => {
+        const newZIndex = zIndex - 1
+        handleZindex(id, newZIndex)
     };
 
-    const handleCellChange = (rowIndex: number, colIndex: number, newValue: string) => {
-        const updatedTableData = [...editedTableData];
-        updatedTableData[rowIndex][colIndex] = newValue;
-        setEditedTableData(updatedTableData);
+
+    const handleBackgroundColorChange = (color: string) => {
+        updateTableSpecs(tableData, id, undefined, undefined, undefined, undefined, undefined, color, cellDimensionsStore);
     };
 
-    const handleBlur = () => {
-        updateTable(editedTableData); // Update table data on blur
+    const handleCellFocus = (rowIndex: number, colIndex: number) => {
+        setFocusedIndex({ row: rowIndex, col: colIndex });
     };
+
+    const handleCellBlur = () => {
+        setFocusedIndex(null);
+    };
+
+    useEffect(() => {
+        handleTopTextBar(isEditing, focusedIndex !== null ? tableData[focusedIndex.row][focusedIndex.col] : tableData[0][0], handleTextEditorChange)
+        handleContainerEditor(isEditing, { done: () => toggleEditing(id), colIncrease: () => updateRowOrColumn('column', 'add'), colDecrease: () => updateRowOrColumn('column', 'remove'), rowIncrease: () => updateRowOrColumn('row', 'add'), rowDecrease: () => updateRowOrColumn('row', 'remove'), gapIncrease: () => updateGap('column', 'increase'), gapDecrease: () => updateGap('column', 'decrease'), rowGapIncrease: () => updateGap('row', 'increase'), rowGapDecrease: () => updateGap('row', 'decrease'), increaseZIndex, reduceZIndex, deleteItem: () => handleDeleteItem(id), handleBackgroundColorChange, backgroundColor, id });
+    }, [isEditing, focusedIndex, tableData, rowGap, columnGap])
 
     return (
-        <div style={styles.draggableChildCont}>
-            {isEditing && (
-                <div style={styles.editTableCount}>
-                    <button onClick={() => toggleEditing(id)}>Done</button>
-                    <button onClick={addColumn}>Col +</button>
-                    <button onClick={removeColumn}>Col -</button>
-                    <button onClick={addRow}>Row +</button>
-                    <button onClick={removeRow}>Row -</button>
-                    <button onClick={() => handleDeleteItem(id)}>Delete</button>
-                </div>
-            )}
-            {isEditing ? (
-                <table style={styles.draggableTable}>
-                    <tbody>
-                        {editedTableData.map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                                {row.map((cell, colIndex) => (
-                                    <td key={colIndex}>
-                                        <input
-                                            type="text"
-                                            value={cell}
-                                            onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
-                                            onBlur={handleBlur}
-                                            style={styles.tableInput}
+        <div style={{ ...styles.draggableChildCont, backgroundColor: backgroundColor, padding: isEditing ? "0px" : "1px" }}>
+            <table ref={tableRef} style={{ ...styles.resizableTable, borderSpacing: `${columnGap}px ${rowGap}px`, borderColor: backgroundColor }}>
+                <tbody style={{ ...styles.draggableTableBody }}>
+                    {tableData.map((row, rowIndex) => (
+                        <tr key={rowIndex} style={{ height: cellDimensionsStore[`row-${rowIndex}`]?.height }}>
+                            {row.map((cell, colIndex) => (
+                                <td key={colIndex} style={{
+                                    ...styles.tableCell,
+                                    minWidth: '50px',
+                                    width: cellDimensionsStore[`col-${colIndex}`]?.width || 'auto',
+                                    height: cellDimensionsStore[`row-${rowIndex}`]?.height,
+                                    position: 'relative',
+                                    border: '1px solid #ccc',
+                                    backgroundColor: cell.backgroundColor
+
+                                }}>
+                                    <EditableText
+                                        textData={cell}
+                                        isEditing={isEditing}
+                                        onChange={(newValue) => handleCellChange(rowIndex, colIndex, newValue)}
+                                        onFocus={() => handleCellFocus(rowIndex, colIndex)}
+                                        onBlur={handleCellBlur}
+                                    />
+                                    {isEditing && colIndex < row.length - 1 && (
+                                        <div
+                                            style={{ ...styles.resizerCol, right: -10 - columnGap / 2 }}
+                                            onMouseDown={(e) => handleMouseDown(e, rowIndex, colIndex)}
                                         />
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <table style={styles.draggableTable}>
-                    <tbody>
-                        {tableData.map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                                {row.map((cell, colIndex) => (
-                                    <td key={colIndex} style={{ width: `${100 / row.length}%`, ...styles.tableCell }}>
-                                        <p style={styles.tableCellText}>{cell}</p>
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-        </div>
+                                    )}
+                                    {isEditing && rowIndex < tableData.length - 1 && (
+                                        <div
+                                            style={{ ...styles.resizerRow, bottom: -10 - rowGap / 2 }}
+                                            onMouseDown={(e) => handleMouseDown(e, rowIndex, colIndex)}
+                                        />
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div >
     );
 });
 
@@ -115,8 +151,7 @@ const styles = {
         height: '100%',
         width: '100%',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: 'left',
     } as React.CSSProperties,
     editTableCount: {
         position: 'absolute',
@@ -125,29 +160,54 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '5px',
+        zIndex: '900',
+        overflow: 'visible'
     } as React.CSSProperties,
     draggableTable: {
         width: '100%',
         borderCollapse: 'collapse',
-        height: '100%'
+        height: 'auto',
+        minHeight: '100%',
+        padding: '0px',
+        backgroundColor: 'transparent'
     } as React.CSSProperties,
-    tableInput: {
-        width: '100%',
-        height: '100%',
-        border: 'none',
-        outline: 'none',
-        padding: '5px',
-        fontSize: '14px',
-        textAlign: 'center'
+    draggableTableBody: {
+        height: 'fit-content',
+        width: 'fit-content',
+        padding: '0px',
+        backgroundColor: 'transparent'
+        //display:'block'
     } as React.CSSProperties,
     tableCell: {
-        border: '1px solid #ccc',
         textAlign: 'center',
+        position: 'relative',
+        width: '100%',
+        padding: '0px'
     } as React.CSSProperties,
-    tableCellText: {
-        width: 'fit-content',
-        margin: 'auto',
-        fontSize: '14px',
+    colorBoxWrapper: {
+        position: 'absolute',
+        right: '-220px',
+    } as React.CSSProperties,
+    resizableTable: {
+        borderCollapse: "separate",
+        width: '100%'
+    } as React.CSSProperties,
+    resizerCol: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: '20px',
+        cursor: 'col-resize',
+        backgroundColor: 'transparent',
+        zIndex: 1000
+    } as React.CSSProperties,
+    resizerRow: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: '20px',
+        cursor: 'row-resize',
+        backgroundColor: 'transparent',
+        zIndex: '1000'
     } as React.CSSProperties,
 };
-
