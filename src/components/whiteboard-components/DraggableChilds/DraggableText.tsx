@@ -4,21 +4,19 @@ import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 import { whiteBoardStore } from '../../../stores/whiteBoardStore';
 import { TextEditorBar } from '../TextEditorBar';
 import { EditableText } from '../EditableText';
-import { Text } from '../../../types/whiteBoard';
+import { DraggableTextInterface, Text } from '../../../types/whiteBoard';
 
 interface DraggableTextProps {
   id: string;
+  standardSpecs: DraggableTextInterface
   content: Text;
-  isEditing: boolean;
   toggleEditing: (id: string) => void;
-  zIndex: number
 }
 
-export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, content, isEditing, toggleEditing, zIndex }) => {
+export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, standardSpecs, content, toggleEditing }) => {
+  const { isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
   const { useHandleContainerEditorBar, useHandleTextEdit, useZIndexHandler, useHandleBlur, useHandleKeyDown, useDeleteItem, useHandleTopTextBar } = useWhiteBoardHandlers();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const textEditorBarRef = useRef<HTMLDivElement>(null);
-  const handleZindex = useZIndexHandler();
   const handleTextEdit = useHandleTextEdit();
   const handleBlur = useHandleBlur();
   const handleKeyDown = useHandleKeyDown(handleBlur);
@@ -35,16 +33,6 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, conte
     }
   };
 
-  const increaseZIndex = () => {
-    const newZIndex = zIndex + 1
-    handleZindex(id, newZIndex)
-  };
-
-  const reduceZIndex = () => {
-    const newZIndex = zIndex - 1
-    handleZindex(id, newZIndex)
-  };
-
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = content.fontSize;
@@ -55,12 +43,14 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, conte
 
   useEffect(() => {
     handleTopTextBar(isEditing, content, handleChange)
-    handleContainerEditor(isEditing, { done: () => toggleEditing(id), colIncrease: undefined, colDecrease: undefined, rowIncrease: undefined, rowDecrease: undefined, gapIncrease: undefined, gapDecrease: undefined, rowGapIncrease: undefined, rowGapDecrease: undefined, increaseZIndex, reduceZIndex, deleteItem: () => handleDeleteItem(id), toggleColorBox: undefined, handleBackgroundColorChange: undefined, backgroundColor: undefined, id });
-  }, [isEditing, content])
+    handleContainerEditor(isEditing, { done: () => toggleEditing(id), deleteItem: () => handleDeleteItem(id), id });
+  }, [isEditing, standardSpecs])
 
   return (
     <div style={{
-      ...styles.draggableChildCont, backgroundColor: content.backgroundColor, padding: isEditing ? '0px' : '1px'
+      ...styles.draggableChildCont, backgroundColor: content.backgroundColor, padding: isEditing ? '0px' : '1px',
+      border: `${border}px solid ${borderColor}`,
+      borderRadius: borderRadius,
     }}>
       <EditableText
         textData={content}

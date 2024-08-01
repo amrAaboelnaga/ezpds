@@ -12,6 +12,9 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
 
     // Function to handle reset
     const handleReset = () => {
+        whiteBoardStore.setTextEditor(null, null)
+        whiteBoardStore.setContainerEditor(null)
+        whiteBoardStore.setTextEditor(null, null)
         whiteBoardStore.setJsonSpecs({});
         whiteBoardStore.setProductInfo({ id: 0, title: '', price: '', category: '' });
     };

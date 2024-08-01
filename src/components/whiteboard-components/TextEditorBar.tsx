@@ -2,30 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 import { observer } from 'mobx-react-lite';
 import { Text } from '../../types/whiteBoard';
+import { ColorSelectorForConts } from './ColorSelectorForConts';
 
 interface TextEditorBarProps {
   content: Text;
   onChange: (updatedContent: Partial<Text>) => void;
 }
 
-const parseRgbaString = (rgbaString: string) => {
-  const match = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
-  if (match) {
-    const [_, r, g, b, a] = match;
-    return { r: parseInt(r), g: parseInt(g), b: parseInt(b), a: parseFloat(a) };
-  }
-  return { r: 0, g: 0, b: 0, a: 1 };
-};
-
 export const TextEditorBar: React.FC<TextEditorBarProps> = observer(({ content, onChange }) => {
   const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const [showBackgroundColorPicker, setShowBackgroundColorPicker] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(parseRgbaString(content.color));
 
-  const handleColorChange = (color: { r: number; g: number; b: number; a: number }, type: string) => {
-    const { r, g, b, a } = color;
-    onChange({ [type]: `rgba(${r},${g},${b},${a})` });
-  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
@@ -60,33 +47,28 @@ export const TextEditorBar: React.FC<TextEditorBarProps> = observer(({ content, 
     onChange({ letterSpacing: `${Math.max(currentSpacing - 2, 0)}px` });
   };
 
-  useEffect(() => {
-    try {
-      handleColorChange(selectedColor, 'color');
-    } catch (error) {
-      console.error("Error updating color:", error);
-    }
-  }, [selectedColor]);
+
+  const handleTextColorChange = (color: any) => {
+    onChange({ color: color });
+  };
+
+  const handleBackgroundColorChange = (color: any) => {
+    onChange({ backgroundColor: color });
+  };
 
   return (
     <div id="TextEditorBar" style={styles.EditTextBarCont}>
       <div style={{ ...styles.box, backgroundColor: content.color }} onClick={() => setShowTextColorPicker(!showTextColorPicker)}></div>
       {showTextColorPicker && (
         <div style={styles.picker}>
-          <RgbaColorPicker
-            color={selectedColor}
-            onChange={setSelectedColor}
-          />
+          <ColorSelectorForConts color={content.color} onChange={(color) => handleTextColorChange(color)} setShow={setShowTextColorPicker} />
         </div>
       )}
 
       <div style={{ ...styles.box, backgroundColor: content.backgroundColor }} onClick={() => setShowBackgroundColorPicker(!showBackgroundColorPicker)}></div>
       {showBackgroundColorPicker && (
         <div style={styles.picker}>
-          <RgbaColorPicker
-            color={parseRgbaString(content.backgroundColor)}
-            onChange={(color) => handleColorChange(color, 'backgroundColor')}
-          />
+          <ColorSelectorForConts color={content.backgroundColor} onChange={(color) => handleBackgroundColorChange(color)} setShow={setShowBackgroundColorPicker} />
         </div>
       )}
 
@@ -209,7 +191,8 @@ const styles = {
   } as React.CSSProperties,
   picker: {
     position: 'absolute',
-    top: '60px',
+    top: '50px',
+    left: '0px',
     zIndex: 2,
   } as React.CSSProperties,
 };

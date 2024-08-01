@@ -6,6 +6,11 @@ export interface DraggableItemInterface {
     isEditing: boolean;
     backgroundColor: string;
     zIndex: number;
+    opacity: number;
+    border: number;
+    borderColor: string;
+    borderRadius: number;
+    padding: number
 }
 
 export interface Text {
@@ -36,6 +41,11 @@ export interface DraggableListInterface extends DraggableItemInterface {
     type: 'List';
     data: Text[];
     gap: string;
+    rowHeight: RowHeight
+}
+
+export interface RowHeight {
+    [key: number]: { height?: number };
 }
 
 export interface DraggableTableInterface extends DraggableItemInterface {
@@ -53,7 +63,7 @@ export interface CellDimensions {
 }
 
 export interface DraggableImageInterface extends DraggableItemInterface {
-    src: string;
+    src: any;
 }
 
 export type JsonSpecs = {
@@ -103,7 +113,12 @@ export const createDraggableTextSpec = (id: string, x: number, y: number): Dragg
     isEditing: false,
     backgroundColor: 'transparent',
     zIndex: 1,
-    data: defaultText
+    data: defaultText,
+    opacity: 1,
+    border: 0,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0
 });
 
 export const createDraggableImageSpec = (id: string, x: number, y: number): DraggableImageInterface => ({
@@ -114,19 +129,32 @@ export const createDraggableImageSpec = (id: string, x: number, y: number): Drag
     isEditing: false,
     backgroundColor: '#ffffff00',
     zIndex: 1,
-    src: 'path-to-default-image'
+    src: null,
+    opacity: 1,
+    border: 0,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0
+
 });
 
 export const createDraggableListSpec = (id: string, x: number, y: number): DraggableListInterface => ({
     type: 'List',
     location: { x, y },
     width: '300px',
-    height: '200pxpx',
+    height: '200px',
     isEditing: false,
     backgroundColor: '#ffffff00',
     zIndex: 1,
-    data: [defaultText, defaultText, defaultText], // Default list items
-    gap: '10px'
+    data: [defaultText, defaultText, defaultText, defaultText], // Default list items
+    gap: '10px',
+    opacity: 1,
+    border: 0,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0,
+    rowHeight: {}
+
 });
 
 
@@ -135,7 +163,7 @@ export const createDraggableTableSpec = (id: string, x: number, y: number): Drag
     type: 'Table',
     location: { x, y },
     width: '500px',
-    height: '300px',
+    height: '150px',
     isEditing: false,
     backgroundColor: '#ffffff00',
     zIndex: 1,
@@ -144,5 +172,11 @@ export const createDraggableTableSpec = (id: string, x: number, y: number): Drag
     rowGap: 0,
     columnGap: 0,
     data: defaultTableData,
-    cellDimensions: {} // Initialize with an empty object or a default structure if needed
+    cellDimensions: {}, // Initialize with an empty object or a default structure if needed
+    opacity: 1,
+    border: 0,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0
+
 });

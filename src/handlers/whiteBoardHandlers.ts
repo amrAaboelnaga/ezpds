@@ -61,6 +61,78 @@ export const useWhiteBoardHandlers = () => {
         };
     }
 
+    const useEditStandards = (
+        id: string,
+        standardSpecs: {
+            border?: number,
+            borderRadius?: number,
+            opacity?: number,
+            zIndex?: number,
+            padding?: number,
+        },
+        updateStandards: ReturnType<typeof useUpdateStandards>
+    ) => {
+        const borderStep = 1; // Define the step size for border
+        const borderRadiusStep = 1; // Define the step size for border radius
+        const opacityStep = 0.1; // Define the step size for opacity
+        const zIndexStep = 1; // Define the step size for zIndex
+        const paddingStep = 1; // Define the step size for padding
+
+        return (type: 'border' | 'borderRadius' | 'opacity' | 'zIndex' | 'padding', action: 'increase' | 'decrease') => {
+            if (type === 'border') {
+                const currentBorder = standardSpecs.border || 0;
+                const newBorder = action === 'increase' ? currentBorder + borderStep : Math.max(0, currentBorder - borderStep);
+                updateStandards(id, undefined, newBorder, undefined, undefined, undefined, undefined);
+            } else if (type === 'borderRadius') {
+                const currentBorderRadius = standardSpecs.borderRadius || 0;
+                const newBorderRadius = action === 'increase' ? currentBorderRadius + borderRadiusStep : Math.max(0, currentBorderRadius - borderRadiusStep);
+                updateStandards(id, undefined, undefined, undefined, newBorderRadius, undefined, undefined);
+            } else if (type === 'opacity') {
+                const currentOpacity = standardSpecs.opacity || 1;
+                const newOpacity = action === 'increase' ? Math.min(1, currentOpacity + opacityStep) : Math.max(0, currentOpacity - opacityStep);
+                updateStandards(id, newOpacity, undefined, undefined, undefined, undefined, undefined);
+            } else if (type === 'zIndex') {
+                const currentZIndex = standardSpecs.zIndex || 0;
+                const newZIndex = action === 'increase' ? currentZIndex + zIndexStep : Math.max(0, currentZIndex - zIndexStep);
+                updateStandards(id, undefined, undefined, undefined, undefined, newZIndex, undefined);
+            } else if (type === 'padding') {
+                const currentPadding = standardSpecs.padding || 0;
+                const newPadding = action === 'increase' ? currentPadding + paddingStep : Math.max(0, currentPadding - paddingStep);
+                updateStandards(id, undefined, undefined, undefined, undefined, undefined, undefined, newPadding);
+            }
+        };
+    };
+
+    const useUpdateStandards = () => {
+        return (
+            id: string,
+            opacity?: number,
+            border?: number,
+            borderColor?: string,
+            borderRadius?: number,
+            zIndex?: number,
+            backgroundColor?: string,
+            padding?: number
+        ) => {
+            const updatedSpecs = {
+                ...whiteBoardStore.jsonSpecs,
+                [id]: {
+                    ...whiteBoardStore.jsonSpecs[id],
+                    opacity: opacity !== undefined ? opacity : whiteBoardStore.jsonSpecs[id]?.opacity,
+                    border: border !== undefined ? border : whiteBoardStore.jsonSpecs[id]?.border,
+                    borderColor: borderColor !== undefined ? borderColor : whiteBoardStore.jsonSpecs[id]?.borderColor,
+                    borderRadius: borderRadius !== undefined ? borderRadius : whiteBoardStore.jsonSpecs[id]?.borderRadius,
+                    zIndex: zIndex !== undefined ? zIndex : whiteBoardStore.jsonSpecs[id]?.zIndex,
+                    backgroundColor: backgroundColor !== undefined ? backgroundColor : whiteBoardStore.jsonSpecs[id]?.backgroundColor,
+                    padding: padding !== undefined ? padding : whiteBoardStore.jsonSpecs[id]?.padding,
+                },
+            };
+
+            whiteBoardStore.setJsonSpecs(updatedSpecs);
+        };
+    };
+
+
     const useDeleteItem = () => {
         return (id: string) => {
             whiteBoardStore.setTextEditor(null, null)
@@ -153,6 +225,8 @@ export const useWhiteBoardHandlers = () => {
         return (id: string) => {
             if (inputRef.current) {
                 inputRef.current.click();
+
+
             }
         };
     }
@@ -170,7 +244,7 @@ export const useWhiteBoardHandlers = () => {
                         ...whiteBoardStore.jsonSpecs,
                         [id]: {
                             ...whiteBoardStore.jsonSpecs[id],
-                            imgData: base64String,
+                            src: base64String,
                         },
                     };
                     whiteBoardStore.setJsonSpecs(updatedSpecs);
@@ -217,126 +291,8 @@ export const useWhiteBoardHandlers = () => {
         };
     }
 
-    const useResizeState = (initialState: {
-        resizing: boolean;
-        direction: string;
-        initialMouseX: number;
-        initialMouseY: number;
-        initialWidth: number;
-        initialHeight: number;
-    }) => {
-        const [resizeState, setResizeState] = useState(initialState);
-
-        return { resizeState, setResizeState };
-    };
-
-    const useHandleMouseDownResize = (
-        jsonSpecs: JsonSpecs,
-        id: string | null,
-        setResizeState: React.Dispatch<React.SetStateAction<{
-            resizing: boolean;
-            direction: string;
-            initialMouseX: number;
-            initialMouseY: number;
-            initialWidth: number;
-            initialHeight: number;
-        }>>
-    ) => {
-        return (
-            event: React.MouseEvent<HTMLDivElement>,
-            direction: string
-        ) => {
-            if (!jsonSpecs[id!].isEditing) return;
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            const initialWidth = parseFloat(jsonSpecs[id!].width);
-            const initialHeight = parseFloat(jsonSpecs[id!].height);
-
-            setResizeState({
-                resizing: true,
-                direction,
-                initialMouseX: event.clientX,
-                initialMouseY: event.clientY,
-                initialWidth,
-                initialHeight,
-            });
-        };
-    };
-
-    const useHandleMouseMove = (
-        jsonSpecs: JsonSpecs,
-        id: string | null,
-        resizeState: {
-            resizing: boolean;
-            direction: string;
-            initialMouseX: number;
-            initialMouseY: number;
-            initialWidth: number;
-            initialHeight: number;
-        },
-        setJsonSpecs: React.Dispatch<React.SetStateAction<JsonSpecs>>
-    ) => {
-        return (event: MouseEvent) => {
-            if (!resizeState.resizing || !id) return;
-
-            const deltaX = event.clientX - resizeState.initialMouseX;
-            const deltaY = event.clientY - resizeState.initialMouseY;
-
-            let newWidth = resizeState.initialWidth + deltaX;
-            let newHeight = resizeState.initialHeight + deltaY;
-
-            let newLeft = jsonSpecs[id].location.x;
-            let newTop = jsonSpecs[id].location.y;
-
-            if (resizeState.direction.includes('left')) {
-                newLeft = jsonSpecs[id].location.x + deltaX;
-                newWidth = resizeState.initialWidth - deltaX;
-            }
-            if (resizeState.direction.includes('top')) {
-                newTop = jsonSpecs[id].location.y + deltaY;
-                newHeight = resizeState.initialHeight - deltaY;
-            }
-
-            setJsonSpecs((prev) => ({
-                ...prev,
-                [id!]: {
-                    ...prev[id!],
-                    location: {
-                        x: newLeft,
-                        y: newTop,
-                    },
-                    width: `${newWidth}px`,
-                    height: `${newHeight}px`,
-                },
-            }));
-        };
-    };
-
-
-    const useHandleMouseUp = (setResizeState: React.Dispatch<React.SetStateAction<{
-        resizing: boolean;
-        direction: string;
-        initialMouseX: number;
-        initialMouseY: number;
-        initialWidth: number;
-        initialHeight: number;
-    }>>) => {
-        return () => {
-            setResizeState({
-                resizing: false,
-                direction: '',
-                initialMouseX: 0,
-                initialMouseY: 0,
-                initialWidth: 0,
-                initialHeight: 0,
-            });
-        };
-    }
 
     const useUpdateListSpecs = () => (updatedListData: Text[], id: string, gap: string, containerBackgroundColor: string, newZIndex: number) => {
-        console.log(containerBackgroundColor)
         const updatedSpecs = {
             ...whiteBoardStore.jsonSpecs,
             [id]: {
@@ -396,20 +352,29 @@ export const useWhiteBoardHandlers = () => {
         };
     };
 
-    const useChangeListRowHeight = (
-        listData: Text[],
-        id: string,
-        gap: string,
-        containerBackgroundColor: string,
-        zIndex: number,
-        updateListSpecs: ReturnType<typeof useUpdateListSpecs>
-    ) => {
-        return (index: number, newHeight: string) => {
-            const updatedListData = [...listData];
-            updatedListData[index] = { ...updatedListData[index], height: newHeight };
-            updateListSpecs(updatedListData, id, gap, containerBackgroundColor, zIndex);
+    const useChangeListRowHeight = () => {
+        return (id: string, index: number, newHeight: number) => {
+            // Retrieve the current rowHeight
+            const currentRowHeight = (whiteBoardStore.jsonSpecs[id] as DraggableListInterface)?.rowHeight || {};
+            // Update the rowHeight with the new value
+            const updatedRowHeight = {
+                ...currentRowHeight,
+                [index]: { height: newHeight }
+            };
+            // Create the updated specs object
+            const updatedSpecs = {
+                ...whiteBoardStore.jsonSpecs,
+                [id]: {
+                    ...whiteBoardStore.jsonSpecs[id],
+                    rowHeight: updatedRowHeight
+                }
+            };
+
+            // Set the updated specs in the store
+            whiteBoardStore.setJsonSpecs(updatedSpecs);
         };
     };
+
 
     const useUpdateListGap = (
         listData: Text[],
@@ -554,7 +519,7 @@ export const useWhiteBoardHandlers = () => {
             };
         }
 
-        if (deltaY !== 0 && rowIndex < (tableData.length - 1)) {
+        if (deltaY !== 0 && rowIndex < (tableData.length)) {
             const currentRow = `row-${rowIndex}`;
             const nextRow = `row-${rowIndex + 1}`;
 
@@ -650,6 +615,8 @@ export const useWhiteBoardHandlers = () => {
 
 
     return {
+        useEditStandards,
+        useUpdateStandards,
         useAddList,
         useRemoveList,
         useHandleListItemChange,
@@ -672,10 +639,6 @@ export const useWhiteBoardHandlers = () => {
         useHandleAddImage,
         useHandleImageUpload,
         useHandleMouseDownReposition,
-        useResizeState,
-        useHandleMouseDownResize,
-        useHandleMouseMove,
-        useHandleMouseUp,
         useUpdateListSpecs,
         useUpdateTableSpecs,
         useHandleTopTextBar,

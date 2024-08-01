@@ -1,20 +1,27 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
-import { CellDimensions, defaultText, Text } from '../../../types/whiteBoard';
+import { CellDimensions, defaultText, DraggableTableInterface, Text } from '../../../types/whiteBoard';
 import { EditableText } from '../EditableText';
-import { ColorSelectorForConts } from '../ColorSelectorForConts';
 
-interface DraggableTableProps { id: string; rows: number; columns: number; tableData: Text[][]; isEditing: boolean; toggleEditing: (id: string) => void; backgroundColor: string; rowGap: number; columnGap: number; zIndex: number; focusedIndex: any; setFocusedIndex: any; cellDimensionsStore: any; }
+interface DraggableTableProps {
+    id: string;
+    standardSpecs: DraggableTableInterface;
+    tableData: Text[][];
+    focusedIndex: any;
+    setFocusedIndex: any;
+    toggleEditing: (id: string) => void;
+    cellDimensionsStore: CellDimensions;
+}
 
-export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, rows, columns, tableData, isEditing, toggleEditing, backgroundColor, rowGap, columnGap, zIndex, focusedIndex, setFocusedIndex, cellDimensionsStore }) => {
+export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, standardSpecs, tableData, focusedIndex, setFocusedIndex, toggleEditing, cellDimensionsStore }) => {
+    const { padding, rows, rowGap, columnGap, columns, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
     const { useHandleContainerEditorBar, handleTableMouseMove, useDeleteItem, useUpdateTableSpecs, useHandleTopTextBar, useHandleCellChange, useHandleTextEditorChange, useZIndexHandler, useUpdateGap, useUpdateTableCellDimensions, useUpdateRowOrColumn } = useWhiteBoardHandlers();
     const handleTopTextBar = useHandleTopTextBar();
     const handleContainerEditor = useHandleContainerEditorBar();
     const handleDeleteItem = useDeleteItem();
     const updateTableSpecs = useUpdateTableSpecs();
     const updateTableCellDimensions = useUpdateTableCellDimensions()
-    const handleZindex = useZIndexHandler();
     const updateRowOrColumn = useUpdateRowOrColumn(tableData, id, rows, columns, updateTableSpecs, defaultText);
     const updateGap = useUpdateGap(tableData, id, rows, columns, rowGap, columnGap, updateTableSpecs);
     const handleCellChange = useHandleCellChange(tableData, id, updateTableSpecs);
@@ -24,13 +31,37 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, row
     const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
 
 
+    const getBorderRadiusStyle = (rowIndex: any, colIndex: any) => {
+        try {
+            let style: any = {};
+
+            if (rowIndex === 0 && colIndex === 0) {
+                // Top-left corner
+                style.borderTopLeftRadius = borderRadius;
+            } else if (rowIndex === 0 && colIndex === columns - 1) {
+                // Top-right corner
+                style.borderTopRightRadius = borderRadius;
+            } else if (rowIndex === rows - 1 && colIndex === 0) {
+                // Bottom-left corner
+                style.borderBottomLeftRadius = borderRadius;
+            } else if (rowIndex === rows - 1 && colIndex === columns - 1) {
+                // Bottom-right corner
+                style.borderBottomRightRadius = borderRadius;
+            }
+
+            return style;
+        } catch (e) {
+
+        }
+
+    };
 
     useEffect(() => {
         try {
             const dimensions: CellDimensions = { ...cellDimensionsStore };
             for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
                 if (!dimensions[`row-${rowIndex}`]) {
-                    dimensions[`row-${rowIndex}`] = { height: `80px` }; // Default height for rows
+                    dimensions[`row-${rowIndex}`] = { height: `20px` }; // Default height for rows
                 }
             }
             if (tableData.length > 0) {
@@ -69,22 +100,8 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, row
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isResizing, startPos]);
+    }, [isResizing]);
 
-    const increaseZIndex = () => {
-        const newZIndex = zIndex + 1
-        handleZindex(id, newZIndex)
-    };
-
-    const reduceZIndex = () => {
-        const newZIndex = zIndex - 1
-        handleZindex(id, newZIndex)
-    };
-
-
-    const handleBackgroundColorChange = (color: string) => {
-        updateTableSpecs(tableData, id, undefined, undefined, undefined, undefined, undefined, color, cellDimensionsStore);
-    };
 
     const handleCellFocus = (rowIndex: number, colIndex: number) => {
         setFocusedIndex({ row: rowIndex, col: colIndex });
@@ -96,25 +113,35 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, row
 
     useEffect(() => {
         handleTopTextBar(isEditing, focusedIndex !== null ? tableData[focusedIndex.row][focusedIndex.col] : tableData[0][0], handleTextEditorChange)
-        handleContainerEditor(isEditing, { done: () => toggleEditing(id), colIncrease: () => updateRowOrColumn('column', 'add'), colDecrease: () => updateRowOrColumn('column', 'remove'), rowIncrease: () => updateRowOrColumn('row', 'add'), rowDecrease: () => updateRowOrColumn('row', 'remove'), gapIncrease: () => updateGap('column', 'increase'), gapDecrease: () => updateGap('column', 'decrease'), rowGapIncrease: () => updateGap('row', 'increase'), rowGapDecrease: () => updateGap('row', 'decrease'), increaseZIndex, reduceZIndex, deleteItem: () => handleDeleteItem(id), handleBackgroundColorChange, backgroundColor, id });
-    }, [isEditing, focusedIndex, tableData, rowGap, columnGap])
+        handleContainerEditor(isEditing, { done: () => toggleEditing(id), colIncrease: () => updateRowOrColumn('column', 'add'), colDecrease: () => updateRowOrColumn('column', 'remove'), rowIncrease: () => updateRowOrColumn('row', 'add'), rowDecrease: () => updateRowOrColumn('row', 'remove'), gapIncrease: () => updateGap('column', 'increase'), gapDecrease: () => updateGap('column', 'decrease'), rowGapIncrease: () => updateGap('row', 'increase'), rowGapDecrease: () => updateGap('row', 'decrease'), deleteItem: () => handleDeleteItem(id), id });
+    }, [isEditing, standardSpecs, focusedIndex])
 
     return (
-        <div style={{ ...styles.draggableChildCont, backgroundColor: backgroundColor, padding: isEditing ? "0px" : "1px" }}>
-            <table ref={tableRef} style={{ ...styles.resizableTable, borderSpacing: `${columnGap}px ${rowGap}px`, borderColor: backgroundColor }}>
-                <tbody style={{ ...styles.draggableTableBody }}>
+        <div style={{
+            ...styles.draggableChildCont, padding: isEditing ? `calc(0px + ${padding}px)` : `calc(1px + ${padding}px)`,
+            borderRadius: borderRadius,
+            backgroundColor: backgroundColor,
+            border: `${border}px solid ${borderColor}`,
+        }}>
+            <table ref={tableRef} style={{
+                ...styles.resizableTable, borderSpacing: `${columnGap}px ${rowGap}px`,
+                borderRadius: borderRadius,
+            }}>
+                <tbody style={{
+                    ...styles.draggableTableBody,
+                    borderRadius: borderRadius,
+                }}>
                     {tableData.map((row, rowIndex) => (
                         <tr key={rowIndex} style={{ height: cellDimensionsStore[`row-${rowIndex}`]?.height }}>
                             {row.map((cell, colIndex) => (
                                 <td key={colIndex} style={{
-                                    ...styles.tableCell,
-                                    minWidth: '50px',
+                                    ...getBorderRadiusStyle(rowIndex, colIndex), // Border radius styles
+                                    ...styles.tableCell, // Other predefined styles
                                     width: cellDimensionsStore[`col-${colIndex}`]?.width || 'auto',
                                     height: cellDimensionsStore[`row-${rowIndex}`]?.height,
                                     position: 'relative',
                                     border: '1px solid #ccc',
-                                    backgroundColor: cell.backgroundColor
-
+                                    backgroundColor: cell.backgroundColor,
                                 }}>
                                     <EditableText
                                         textData={cell}
@@ -129,7 +156,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, row
                                             onMouseDown={(e) => handleMouseDown(e, rowIndex, colIndex)}
                                         />
                                     )}
-                                    {isEditing && rowIndex < tableData.length - 1 && (
+                                    {isEditing && rowIndex < tableData.length && (
                                         <div
                                             style={{ ...styles.resizerRow, bottom: -10 - rowGap / 2 }}
                                             onMouseDown={(e) => handleMouseDown(e, rowIndex, colIndex)}
@@ -172,7 +199,7 @@ const styles = {
         backgroundColor: 'transparent'
     } as React.CSSProperties,
     draggableTableBody: {
-        height: 'fit-content',
+        height: '100%',
         width: 'fit-content',
         padding: '0px',
         backgroundColor: 'transparent'
@@ -190,7 +217,8 @@ const styles = {
     } as React.CSSProperties,
     resizableTable: {
         borderCollapse: "separate",
-        width: '100%'
+        width: '100%',
+        height: '100%',
     } as React.CSSProperties,
     resizerCol: {
         position: 'absolute',

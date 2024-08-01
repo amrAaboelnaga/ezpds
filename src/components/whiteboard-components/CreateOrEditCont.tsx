@@ -17,11 +17,7 @@ const CreateOrEditCont: React.FC = observer(() => {
   const handleDrop = useHandleDrop();
   const handleDragOver = useHandleDragOver();
   const toggleEditing = useToggleEditing();
-  try {
-    console.log(whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].location.y)
-  } catch (e) {
-
-  }
+  
   return (
     <div style={{ ...styles.createOrEditCont, userSelect: 'none' }}>
       <LeftToolBar />
@@ -42,6 +38,7 @@ const CreateOrEditCont: React.FC = observer(() => {
               }}>
               <ContainerEditor
                 data={whiteBoardStore.containerEditor}
+                standardSpecs={whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id]}
               />
             </div>
           )}

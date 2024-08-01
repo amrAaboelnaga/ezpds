@@ -7,6 +7,7 @@ import { DraggableText } from './DraggableChilds/DraggableText';
 import { DraggableList } from './DraggableChilds/DraggableList';
 import { DraggableItemInterface, DraggableTextInterface, DraggableListInterface, DraggableImageInterface, DraggableTableInterface } from '../../types/whiteBoard';
 import { DraggableTable } from './DraggableChilds/DraggableTable';
+import { DraggableImage } from './DraggableChilds/DraggableImage';
 
 interface DraggableItemProps {
   id: string;
@@ -17,24 +18,10 @@ interface DraggableItemProps {
 export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemSpecs, toggleEditing }) => {
   const [focusedIndexTable, setFocusedIndexTable] = useState<{ row: number, col: number } | null>(null);
   const [focusedIndexList, setFocusedIndexList] = useState<number | null>(null);
-  const [topTextBarHelper, setTopTextBarHelper] = useState(null)
   const draggableRef = useRef<HTMLDivElement>(null);
-  const { whiteBoardStore } = rootStore;
-  const { useResizeState, useHandleBlur, useHandleMouseDownReposition, useHandleMouseDownResize, useHandleMouseMove, useHandleMouseUp } = useWhiteBoardHandlers();
-  const [jsonSpecs, setJsonSpecs] = useState(whiteBoardStore.jsonSpecs);
-  const { resizeState, setResizeState } = useResizeState({
-    resizing: false,
-    direction: '',
-    initialMouseX: 0,
-    initialMouseY: 0,
-    initialWidth: 0,
-    initialHeight: 0,
-  });
+  const { useHandleMouseDownReposition, } = useWhiteBoardHandlers();
 
   const handleMouseDownReposition = useHandleMouseDownReposition();
-  const handleMouseDownResize = useHandleMouseDownResize(jsonSpecs, id, setResizeState);
-  const handleMouseMove = useHandleMouseMove(jsonSpecs, id, resizeState, setJsonSpecs);
-  const handleMouseUp = useHandleMouseUp(setResizeState);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
@@ -64,43 +51,20 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
   }, [draggableRef, toggleEditing, focusedIndexList, focusedIndexTable, itemSpecs, id]);
 
 
-
-
-  // Catch block can be added here if needed
-
-
-  useEffect(() => {
-    setJsonSpecs(whiteBoardStore.jsonSpecs);
-  }, [handleMouseMove]);
-
-  useEffect(() => {
-    whiteBoardStore.setJsonSpecs(jsonSpecs);
-  }, [jsonSpecs]);
-
-  useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [resizeState]);
-
   const renderContent = () => {
     switch (itemSpecs.type) {
       case 'Text':
         const textSpecs = itemSpecs as DraggableTextInterface;
-        return <DraggableText id={id} content={textSpecs.data} isEditing={itemSpecs.isEditing} toggleEditing={toggleEditing} zIndex={textSpecs.zIndex} />;
+        return <DraggableText id={id} standardSpecs={textSpecs} content={textSpecs.data} toggleEditing={toggleEditing} />;
       case 'List':
         const listSpecs = itemSpecs as DraggableListInterface;
-        return <DraggableList id={id} listData={listSpecs.data} gap={listSpecs.gap} isEditing={itemSpecs.isEditing} toggleEditing={toggleEditing} backgroundColor={itemSpecs.backgroundColor} zIndex={itemSpecs.zIndex} focusedIndex={focusedIndexList} setFocusedIndex={setFocusedIndexList} />;
-      // case 'Image':
-      //   const imageSpecs = itemSpecs as DraggableImageInterface;
-      //   return <DraggableImage id={id} src={imageSpecs.src} isEditing={itemSpecs.isEditing} toggleEditing={toggleEditing} />;
+        return <DraggableList id={id} standardSpecs={listSpecs} listData={listSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexList} setFocusedIndex={setFocusedIndexList} draggableRef={draggableRef} />;
+      case 'Image':
+        const imageSpecs = itemSpecs as DraggableImageInterface;
+        return <DraggableImage id={id} standardSpecs={imageSpecs} toggleEditing={toggleEditing} />;
       case 'Table':
         const tableSpecs = itemSpecs as DraggableTableInterface;
-        return <DraggableTable id={id} rows={tableSpecs.rows} columns={tableSpecs.columns} rowGap={tableSpecs.rowGap} columnGap={tableSpecs.columnGap} tableData={tableSpecs.data} isEditing={itemSpecs.isEditing} toggleEditing={toggleEditing} backgroundColor={itemSpecs.backgroundColor} zIndex={itemSpecs.zIndex} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={tableSpecs.cellDimensions} />;
+        return <DraggableTable id={id} standardSpecs={tableSpecs} tableData={tableSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={tableSpecs.cellDimensions} />;
       default:
         return null;
     }
@@ -112,6 +76,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
       style={{
         ...styles.draggableItem,
         ...itemSpecs.isEditing && styles.editing,
+        opacity: itemSpecs.opacity,
         left: `${itemSpecs.location.x}px`,
         top: `${itemSpecs.location.y}px`,
         width: itemSpecs.width,
@@ -122,7 +87,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
       onMouseDown={(e) => handleMouseDownReposition(e, id)}
     >
       {renderContent()}
-      {itemSpecs.isEditing && <ResizeBox handleMouseDownResize={handleMouseDownResize} />}
+      {itemSpecs.isEditing && <ResizeBox id={id} draggableRef={draggableRef} />}
     </div>
   );
 });
