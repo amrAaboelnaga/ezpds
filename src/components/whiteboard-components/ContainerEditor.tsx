@@ -32,8 +32,8 @@ const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }
         <button style={styles.button} onClick={() => editStandards('border', 'decrease')}>B -</button>
         <button style={styles.button} onClick={() => editStandards('padding', 'increase')}>Pad +</button>
         <button style={styles.button} onClick={() => editStandards('padding', 'decrease')}>Pad -</button>
-        <button style={styles.button} onClick={() => editStandards('borderRadius', 'increase')}>BR +</button>
-        <button style={styles.button} onClick={() => editStandards('borderRadius', 'decrease')}>BR -</button>
+        {!data.isCircle && <button style={styles.button} onClick={() => editStandards('borderRadius', 'increase')}>BR +</button>}
+        {!data.isCircle && <button style={styles.button} onClick={() => editStandards('borderRadius', 'decrease')}>BR -</button>}
         <button style={styles.button} onClick={() => editStandards('opacity', 'decrease')}>OP +</button>
         <button style={styles.button} onClick={() => editStandards('opacity', 'increase')}>OP -</button>
         <button style={styles.button} onClick={() => editStandards('zIndex', 'increase')}>↑</button>

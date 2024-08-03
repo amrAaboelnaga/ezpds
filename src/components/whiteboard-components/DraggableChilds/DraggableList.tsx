@@ -21,7 +21,7 @@ interface DraggableListProps {
 
 
 export const DraggableList: React.FC<DraggableListProps> = observer(({ id, standardSpecs, listData, toggleEditing, focusedIndex, setFocusedIndex, draggableRef }) => {
-    const { useHandleContainerEditorBar, useAddList, useRemoveList, useHandleListItemChange, useChangeListRowHeight, useUpdateListGap, useHandleListTextStyleChange, useDeleteItem, useUpdateListSpecs, useHandleTopTextBar, useZIndexHandler } = useWhiteBoardHandlers();
+    const { useHandleListMouseDown, useHandleContainerEditorBar, useAddList, useRemoveList, useHandleListItemChange, useChangeListRowHeight, useUpdateListGap, useHandleListTextStyleChange, useDeleteItem, useUpdateListSpecs, useHandleTopTextBar, useZIndexHandler } = useWhiteBoardHandlers();
     const { rowHeight, padding, gap, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
     const resizeRefs = useRef<(HTMLDivElement | null)[]>([]);
     const handleDeleteItem = useDeleteItem();
@@ -35,51 +35,8 @@ export const DraggableList: React.FC<DraggableListProps> = observer(({ id, stand
     const changeListRowHeight = useChangeListRowHeight();
     const updateListGap = useUpdateListGap(listData, id, gap, backgroundColor, zIndex, updateListSpecs);
     const handleListTextStyleChange = useHandleListTextStyleChange(listData, id, gap, backgroundColor, zIndex, updateListSpecs, focusedIndex);
+    const handleListMouseDown = useHandleListMouseDown(id, resizeRefs, changeListRowHeight);
 
-
-    const handleListMouseDown = (
-        e: React.MouseEvent,
-        index: number,
-        draggableRef: React.RefObject<HTMLDivElement>,
-        threshold: number = 5
-    ) => {
-        const startY = e.clientY;
-        const startHeight = resizeRefs.current[index]?.clientHeight || 0;
-        const nextItemHeight = resizeRefs.current[index + 1]?.clientHeight || 0;
-        console.log(nextItemHeight)
-        let isSnapped = false; // Track whether the item is snapped
-
-        const parentBottom = draggableRef.current?.getBoundingClientRect().bottom || 0;
-
-        const onMouseMove = (e: MouseEvent) => {
-            const currentItemTop = resizeRefs.current[index]?.getBoundingClientRect().top || 0;
-            const cursorPosition = e.clientY;
-
-            let newHeight = startHeight + (e.clientY - startY);
-            let newNextHeight = nextItemHeight - (e.clientY - startY);
-            if (newHeight < 16) {
-                return;
-            }
-
-            if (Math.abs(cursorPosition - parentBottom) <= threshold) {
-                // Snap to the bottom of the parent
-                newHeight = parentBottom - currentItemTop;
-                isSnapped = true;
-            } else {
-                isSnapped = false;
-            }
-            changeListRowHeight(id, index, newHeight);
-            changeListRowHeight(id, index + 1, newNextHeight);
-        };
-
-        const onMouseUp = () => {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    };
 
 
     const getBorderStyle = (index: number, totalItems: number): React.CSSProperties => {
@@ -139,7 +96,7 @@ export const DraggableList: React.FC<DraggableListProps> = observer(({ id, stand
                         />
                         {isEditing && (
                             <div style={{ ...styles.resizeHandle, bottom: index !== (listData.length - 1) ? `calc(-16px - (${gap} * 0.5))` : "-16px" }}
-                                onMouseDown={(e) => handleListMouseDown(e, index, draggableRef, 5)}
+                                onMouseDown={(e) => handleListMouseDown(e, index, draggableRef, 5, resizeRefs)}
                             >
                                 <div style={styles.horzLine} />
                             </div>

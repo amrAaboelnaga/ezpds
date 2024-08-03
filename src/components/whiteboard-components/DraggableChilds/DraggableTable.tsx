@@ -16,7 +16,7 @@ interface DraggableTableProps {
 
 export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, standardSpecs, tableData, focusedIndex, setFocusedIndex, toggleEditing, cellDimensionsStore }) => {
     const { padding, rows, rowGap, columnGap, columns, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
-    const { useHandleContainerEditorBar, handleTableMouseMove, useDeleteItem, useUpdateTableSpecs, useHandleTopTextBar, useHandleCellChange, useHandleTextEditorChange, useZIndexHandler, useUpdateGap, useUpdateTableCellDimensions, useUpdateRowOrColumn } = useWhiteBoardHandlers();
+    const { useHandleContainerEditorBar, handleTableMouseMove, useDeleteItem, useUpdateTableSpecs, useHandleTopTextBar, useHandleCellChange, useHandleTableTextEditorChange, useZIndexHandler, useUpdateGap, useUpdateTableCellDimensions, useUpdateRowOrColumn } = useWhiteBoardHandlers();
     const handleTopTextBar = useHandleTopTextBar();
     const handleContainerEditor = useHandleContainerEditorBar();
     const handleDeleteItem = useDeleteItem();
@@ -25,7 +25,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, sta
     const updateRowOrColumn = useUpdateRowOrColumn(tableData, id, rows, columns, updateTableSpecs, defaultText);
     const updateGap = useUpdateGap(tableData, id, rows, columns, rowGap, columnGap, updateTableSpecs);
     const handleCellChange = useHandleCellChange(tableData, id, updateTableSpecs);
-    const handleTextEditorChange = useHandleTextEditorChange(tableData, id, focusedIndex, updateTableSpecs);
+    const handleTextEditorChange = useHandleTableTextEditorChange(tableData, id, focusedIndex, updateTableSpecs);
     const tableRef = useRef<HTMLTableElement>(null);
     const [isResizing, setIsResizing] = useState<{ rowIndex: number; colIndex: number } | null>(null);
     const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);

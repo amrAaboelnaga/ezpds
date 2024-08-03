@@ -11,7 +11,7 @@ export function LeftToolBar() {
   return (
     <div style={styles.leftToolBarCont}>
 
-      {['Text', 'Image', 'List', 'Table'].map(item => (
+      {['Text', 'Image', 'List', 'Table', 'Rectangle', 'Circle'].map(item => (
         <div
           key={item}
           className='singleLeftButton'

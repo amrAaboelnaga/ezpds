@@ -9,8 +9,9 @@ export interface DraggableItemInterface {
     opacity: number;
     border: number;
     borderColor: string;
-    borderRadius: number;
+    borderRadius: number
     padding: number
+    rotation: number
 }
 
 export interface Text {
@@ -63,7 +64,25 @@ export interface CellDimensions {
 }
 
 export interface DraggableImageInterface extends DraggableItemInterface {
+    type: 'Image';
     src: any;
+}
+
+
+export interface DraggableRectangleInterface extends DraggableItemInterface {
+    type: 'Rectangle';
+    data: Text;
+}
+
+export interface DraggableCircleInterface extends DraggableItemInterface {
+    type: 'Circle';
+    data: Text;
+}
+
+
+export interface DraggableTriangleInterface extends DraggableItemInterface {
+    type: 'Triangle';
+    data: Text;
 }
 
 export type JsonSpecs = {
@@ -118,7 +137,8 @@ export const createDraggableTextSpec = (id: string, x: number, y: number): Dragg
     border: 0,
     borderColor: '#000000',
     borderRadius: 0,
-    padding: 0
+    padding: 0,
+    rotation: 0
 });
 
 export const createDraggableImageSpec = (id: string, x: number, y: number): DraggableImageInterface => ({
@@ -134,7 +154,8 @@ export const createDraggableImageSpec = (id: string, x: number, y: number): Drag
     border: 0,
     borderColor: '#000000',
     borderRadius: 0,
-    padding: 0
+    padding: 0,
+    rotation: 0
 
 });
 
@@ -153,7 +174,8 @@ export const createDraggableListSpec = (id: string, x: number, y: number): Dragg
     borderColor: '#000000',
     borderRadius: 0,
     padding: 0,
-    rowHeight: {}
+    rowHeight: {},
+    rotation: 0
 
 });
 
@@ -177,6 +199,60 @@ export const createDraggableTableSpec = (id: string, x: number, y: number): Drag
     border: 0,
     borderColor: '#000000',
     borderRadius: 0,
-    padding: 0
+    padding: 0,
+    rotation: 0
 
+});
+
+
+export const createDraggableRectangleSpec = (id: string, x: number, y: number): DraggableRectangleInterface => ({
+    type: 'Rectangle',
+    location: { x, y },
+    width: '250px',
+    height: '250px',
+    isEditing: false,
+    backgroundColor: 'transparent',
+    zIndex: 1,
+    data: defaultText,
+    opacity: 1,
+    border: 10,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0,
+    rotation: 0
+});
+
+export const createDraggableCircleleSpec = (id: string, x: number, y: number): DraggableCircleInterface => ({
+    type: 'Circle',
+    location: { x, y },
+    width: '250px',
+    height: '250px',
+    isEditing: false,
+    backgroundColor: 'transparent',
+    zIndex: 1,
+    data: defaultText,
+    opacity: 1,
+    border: 10,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0,
+    rotation: 0
+});
+
+
+export const createDraggableTriangleSpec = (id: string, x: number, y: number): DraggableTriangleInterface => ({
+    type: 'Triangle',
+    location: { x, y },
+    width: '250px',
+    height: '250px',
+    isEditing: false,
+    backgroundColor: 'transparent',
+    zIndex: 1,
+    data: defaultText,
+    opacity: 1,
+    border: 10,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0,
+    rotation: 0
 });

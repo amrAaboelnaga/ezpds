@@ -1,7 +1,6 @@
 import { rootStore } from "../stores/rootStore";
 import { useCallback, useState } from "react";
-import { createDraggableImageSpec, createDraggableListSpec, createDraggableTableSpec, createDraggableTextSpec, DraggableImageInterface, DraggableListInterface, DraggableTableInterface, DraggableTextInterface, JsonSpecs, Text } from "../types/whiteBoard";
-import { zIndex } from "html2canvas/dist/types/css/property-descriptors/z-index";
+import { createDraggableCircleleSpec, createDraggableImageSpec, createDraggableListSpec, createDraggableRectangleSpec, createDraggableTableSpec, createDraggableTextSpec, DraggableImageInterface, DraggableListInterface, DraggableTableInterface, DraggableTextInterface, JsonSpecs, Text } from "../types/whiteBoard";
 
 export const useWhiteBoardHandlers = () => {
     const { whiteBoardStore } = rootStore;
@@ -30,6 +29,12 @@ export const useWhiteBoardHandlers = () => {
                     break;
                 case 'Table':
                     newSpec = { [id]: createDraggableTableSpec(id, x, y) };
+                    break;
+                case 'Rectangle':
+                    newSpec = { [id]: createDraggableRectangleSpec(id, x, y) };
+                    break;
+                case 'Circle':
+                    newSpec = { [id]: createDraggableCircleleSpec(id, x, y) };
                     break;
                 default:
                     newSpec = { [id]: createDraggableTextSpec(id, x, y) };
@@ -151,24 +156,18 @@ export const useWhiteBoardHandlers = () => {
     const useHandleTextEdit = () => {
         return (id: string, event?: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>, textIndex?: number, updatedText?: string) => {
             let updatedData;
-            switch (whiteBoardStore.jsonSpecs[id].type) {
-                case 'Text':
-                    if (event) {
-                        const { name, value } = event.target;
-                        updatedData = { ...(whiteBoardStore.jsonSpecs[id] as DraggableTextInterface).data, [name]: value };
-                    } else {
-                        updatedData = { ...(whiteBoardStore.jsonSpecs[id] as any).data, content: updatedText };
-                    }
-                    whiteBoardStore.jsonSpecs[id] = {
-                        ...(whiteBoardStore.jsonSpecs[id] as DraggableTextInterface),
-                        data: updatedData,
-                        zIndex: textIndex !== undefined ? textIndex : whiteBoardStore.jsonSpecs[id].zIndex,
-
-                    };
-                    break;
-                default:
-                    return; // Exit if the type is not handled
+            if (event) {
+                const { name, value } = event.target;
+                updatedData = { ...(whiteBoardStore.jsonSpecs[id] as DraggableTextInterface).data, [name]: value };
+            } else {
+                updatedData = { ...(whiteBoardStore.jsonSpecs[id] as any).data, content: updatedText };
             }
+            whiteBoardStore.jsonSpecs[id] = {
+                ...(whiteBoardStore.jsonSpecs[id] as DraggableTextInterface),
+                data: updatedData,
+                zIndex: textIndex !== undefined ? textIndex : whiteBoardStore.jsonSpecs[id].zIndex,
+
+            };
 
             const updatedSpecs = {
                 ...whiteBoardStore.jsonSpecs,
@@ -413,6 +412,59 @@ export const useWhiteBoardHandlers = () => {
         }, [listData, id, gap, containerBackgroundColor, zIndex, focusedIndex, updateListSpecs]);
     };
 
+    const useHandleListMouseDown = (
+        id: string,
+        resizeRefs: any,
+        changeListRowHeight: (id: string, index: number, height: number) => void
+    ) => {
+        return useCallback(
+            (
+                e: React.MouseEvent,
+                index: number,
+                draggableRef: React.RefObject<HTMLDivElement>,
+                threshold: number = 5,
+                resizeRefs: any
+            ) => {
+                const startY = e.clientY;
+                const startHeight = resizeRefs.current[index]?.clientHeight || 0;
+                const nextItemHeight = resizeRefs.current[index + 1]?.clientHeight || 0;
+                let isSnapped = false; // Track whether the item is snapped
+
+                const parentBottom = draggableRef.current?.getBoundingClientRect().bottom || 0;
+
+                const onMouseMove = (e: MouseEvent) => {
+                    const currentItemTop = resizeRefs.current[index]?.getBoundingClientRect().top || 0;
+                    const cursorPosition = e.clientY;
+
+                    let newHeight = startHeight + (e.clientY - startY);
+                    let newNextHeight = nextItemHeight - (e.clientY - startY);
+                    if (newHeight < 16) {
+                        return;
+                    }
+
+                    if (Math.abs(cursorPosition - parentBottom) <= threshold) {
+                        // Snap to the bottom of the parent
+                        newHeight = parentBottom - currentItemTop;
+                        isSnapped = true;
+                    } else {
+                        isSnapped = false;
+                    }
+                    changeListRowHeight(id, index, newHeight);
+                    changeListRowHeight(id, index + 1, newNextHeight);
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            },
+            [id, resizeRefs, changeListRowHeight]
+        );
+    };
+
     const useUpdateTableSpecs = () => (updatedTableData: Text[][], id: string, updatedRows?: number, updatedColumns?: number, updatedRowGap?: number, updatedColumnGap?: number, newZIndex?: number, backgroundColor?: string, upDatedCellDimensions?: any) => {
         const currentSpecs = rootStore.whiteBoardStore.jsonSpecs[id];
 
@@ -553,7 +605,7 @@ export const useWhiteBoardHandlers = () => {
     };
 
 
-    const useHandleTextEditorChange = (
+    const useHandleTableTextEditorChange = (
         tableData: Text[][],
         id: string,
         focusedIndex: { row: number; col: number } | null,
@@ -623,9 +675,10 @@ export const useWhiteBoardHandlers = () => {
         useChangeListRowHeight,
         useUpdateListGap,
         useHandleListTextStyleChange,
+        useHandleListMouseDown,
         useHandleCellChange,
         handleTableMouseMove,
-        useHandleTextEditorChange,
+        useHandleTableTextEditorChange,
         useUpdateGap,
         useHandleContainerEditorBar,
         useHandleDrop,

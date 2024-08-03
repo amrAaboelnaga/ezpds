@@ -5,7 +5,7 @@ import { ResizeBox } from './ResizeBox';
 import { rootStore } from '../../stores/rootStore';
 import { DraggableText } from './DraggableChilds/DraggableText';
 import { DraggableList } from './DraggableChilds/DraggableList';
-import { DraggableItemInterface, DraggableTextInterface, DraggableListInterface, DraggableImageInterface, DraggableTableInterface } from '../../types/whiteBoard';
+import { DraggableItemInterface, DraggableTextInterface, DraggableListInterface, DraggableImageInterface, DraggableTableInterface, DraggableCircleInterface } from '../../types/whiteBoard';
 import { DraggableTable } from './DraggableChilds/DraggableTable';
 import { DraggableImage } from './DraggableChilds/DraggableImage';
 
@@ -56,6 +56,12 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
       case 'Text':
         const textSpecs = itemSpecs as DraggableTextInterface;
         return <DraggableText id={id} standardSpecs={textSpecs} content={textSpecs.data} toggleEditing={toggleEditing} />;
+      case 'Rectangle':
+        const rectangleSpecs = itemSpecs as DraggableTextInterface;
+        return <DraggableText id={id} standardSpecs={rectangleSpecs} content={rectangleSpecs.data} toggleEditing={toggleEditing} />;
+      case 'Circle':
+        const circleSpecs = itemSpecs as DraggableCircleInterface;
+        return <DraggableText id={id} standardSpecs={circleSpecs} content={circleSpecs.data} toggleEditing={toggleEditing} />;
       case 'List':
         const listSpecs = itemSpecs as DraggableListInterface;
         return <DraggableList id={id} standardSpecs={listSpecs} listData={listSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexList} setFocusedIndex={setFocusedIndexList} draggableRef={draggableRef} />;
@@ -81,7 +87,8 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
         top: `${itemSpecs.location.y}px`,
         width: itemSpecs.width,
         height: itemSpecs.height,
-        zIndex: itemSpecs.zIndex
+        zIndex: itemSpecs.zIndex,
+        transform: `rotate(${itemSpecs.rotation}deg)`
       }}
       onDoubleClick={itemSpecs.isEditing === false ? () => toggleEditing(id) : undefined}
       onMouseDown={(e) => handleMouseDownReposition(e, id)}
@@ -105,6 +112,5 @@ const styles = {
   } as React.CSSProperties,
   editing: {
     border: '1px solid #000',
-    backgroundColor: 'rgb(240, 240, 240)',
   } as React.CSSProperties,
 };

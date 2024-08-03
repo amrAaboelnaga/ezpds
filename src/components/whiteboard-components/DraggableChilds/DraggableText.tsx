@@ -1,14 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 import { whiteBoardStore } from '../../../stores/whiteBoardStore';
 import { TextEditorBar } from '../TextEditorBar';
 import { EditableText } from '../EditableText';
-import { DraggableTextInterface, Text } from '../../../types/whiteBoard';
+import { DraggableTextInterface, Text, DraggableRectangleInterface, DraggableCircleInterface } from '../../../types/whiteBoard';
 
 interface DraggableTextProps {
   id: string;
-  standardSpecs: DraggableTextInterface
+  standardSpecs: DraggableTextInterface | DraggableRectangleInterface | DraggableCircleInterface;
   content: Text;
   toggleEditing: (id: string) => void;
 }
@@ -43,14 +43,18 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, stand
 
   useEffect(() => {
     handleTopTextBar(isEditing, content, handleChange)
-    handleContainerEditor(isEditing, { done: () => toggleEditing(id), deleteItem: () => handleDeleteItem(id), id });
+    handleContainerEditor(isEditing, {
+      done: () => toggleEditing(id),
+      deleteItem: () => handleDeleteItem(id), id: id,
+      isCircle: standardSpecs.type === 'Circle' ? true : undefined
+    });
   }, [isEditing, standardSpecs])
 
   return (
     <div style={{
       ...styles.draggableChildCont, backgroundColor: content.backgroundColor, padding: isEditing ? '0px' : '1px',
       border: `${border}px solid ${borderColor}`,
-      borderRadius: borderRadius,
+      borderRadius: standardSpecs.type === 'Circle' ? "50%" : borderRadius,
     }}>
       <EditableText
         textData={content}
