@@ -135,13 +135,14 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
             }
         } else {
             // Resize logic for rotated object
-            const angle = (rotation * Math.PI) / 180;
+            const angle = (rotation * Math.PI) / 180; // Convert angle from degrees to radians
             const cosAngle = Math.cos(angle);
             const sinAngle = Math.sin(angle);
 
-            // Adjust delta values for rotation
-            const deltaXAdjusted = deltaX * cosAngle - deltaY * sinAngle;
-            const deltaYAdjusted = deltaX * sinAngle + deltaY * cosAngle;
+            // Adjust delta values based on rotation
+            const deltaXAdjusted = deltaX * cosAngle + deltaY * sinAngle; // Corrected formula
+            const deltaYAdjusted = -deltaX * sinAngle + deltaY * cosAngle; // Corrected formula
+
 
             if (resizeStateRef.current.direction.includes('right')) {
                 newWidth += deltaXAdjusted;
@@ -163,8 +164,6 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
                 newWidth = newSize;
                 newHeight = newSize;
             }
-
-            // Adjust position to keep the center fixed
             newLeft = centerX - newWidth / 2;
             newTop = centerY - newHeight / 2;
         }
@@ -172,7 +171,8 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
         // Debugging: Print updated values
         console.log('Updated Size:', newWidth, newHeight);
         console.log('Updated Position:', newLeft, newTop);
-
+        if (newWidth < 50) newWidth = 50
+        if (newHeight < 50) newHeight = 50
         const updatedSpecs = {
             ...whiteBoardStore.jsonSpecs,
             [id]: {

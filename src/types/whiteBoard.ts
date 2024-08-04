@@ -246,13 +246,14 @@ export const createDraggableTriangleSpec = (id: string, x: number, y: number): D
     width: '250px',
     height: '250px',
     isEditing: false,
-    backgroundColor: 'transparent',
+    backgroundColor: '#ffffff',
     zIndex: 1,
     data: defaultText,
     opacity: 1,
-    border: 10,
+    border: 3,
     borderColor: '#000000',
     borderRadius: 0,
     padding: 0,
     rotation: 0
 });
+

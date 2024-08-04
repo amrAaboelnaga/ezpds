@@ -1,6 +1,6 @@
 import { rootStore } from "../stores/rootStore";
 import { useCallback, useState } from "react";
-import { createDraggableCircleleSpec, createDraggableImageSpec, createDraggableListSpec, createDraggableRectangleSpec, createDraggableTableSpec, createDraggableTextSpec, DraggableImageInterface, DraggableListInterface, DraggableTableInterface, DraggableTextInterface, JsonSpecs, Text } from "../types/whiteBoard";
+import { createDraggableCircleleSpec, createDraggableImageSpec, createDraggableListSpec, createDraggableRectangleSpec, createDraggableTableSpec, createDraggableTextSpec, createDraggableTriangleSpec, DraggableImageInterface, DraggableListInterface, DraggableTableInterface, DraggableTextInterface, JsonSpecs, Text } from "../types/whiteBoard";
 
 export const useWhiteBoardHandlers = () => {
     const { whiteBoardStore } = rootStore;
@@ -36,6 +36,10 @@ export const useWhiteBoardHandlers = () => {
                 case 'Circle':
                     newSpec = { [id]: createDraggableCircleleSpec(id, x, y) };
                     break;
+                case 'Triangle':
+                    newSpec = { [id]: createDraggableTriangleSpec(id, x, y) };
+                    break;
+
                 default:
                     newSpec = { [id]: createDraggableTextSpec(id, x, y) };
             }

@@ -5,9 +5,10 @@ import { ResizeBox } from './ResizeBox';
 import { rootStore } from '../../stores/rootStore';
 import { DraggableText } from './DraggableChilds/DraggableText';
 import { DraggableList } from './DraggableChilds/DraggableList';
-import { DraggableItemInterface, DraggableTextInterface, DraggableListInterface, DraggableImageInterface, DraggableTableInterface, DraggableCircleInterface } from '../../types/whiteBoard';
+import { DraggableItemInterface, DraggableTextInterface, DraggableListInterface, DraggableImageInterface, DraggableTableInterface, DraggableCircleInterface, DraggableTriangleInterface } from '../../types/whiteBoard';
 import { DraggableTable } from './DraggableChilds/DraggableTable';
 import { DraggableImage } from './DraggableChilds/DraggableImage';
+import { DraggableTriangle } from './DraggableChilds/DraggableTriangle';
 
 interface DraggableItemProps {
   id: string;
@@ -62,6 +63,9 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
       case 'Circle':
         const circleSpecs = itemSpecs as DraggableCircleInterface;
         return <DraggableText id={id} standardSpecs={circleSpecs} content={circleSpecs.data} toggleEditing={toggleEditing} />;
+      case 'Triangle':
+        const triangleSpecs = itemSpecs as DraggableTriangleInterface;
+        return <DraggableTriangle id={id} standardSpecs={triangleSpecs} content={triangleSpecs.data} toggleEditing={toggleEditing} />;
       case 'List':
         const listSpecs = itemSpecs as DraggableListInterface;
         return <DraggableList id={id} standardSpecs={listSpecs} listData={listSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexList} setFocusedIndex={setFocusedIndexList} draggableRef={draggableRef} />;
