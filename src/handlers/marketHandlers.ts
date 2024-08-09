@@ -1,7 +1,7 @@
 import { productInfosOnly, products } from '../assets/Examples/backEnd';
 import { Product, ProductPages } from '../stores/marketStore';
 import { rootStore } from '../stores/rootStore';
-import { JsonSpecs, ProductInfo } from '../stores/whiteBoardStore';
+import { JsonSpecs, ProductInfo } from '../types/whiteBoard';
 
 export const maxProducts = 10
 
