@@ -258,26 +258,180 @@ export const useWhiteBoardHandlers = () => {
         };
     }
 
-
-    const useHandleMouseDownReposition = (
-    ) => {
+    const useHandleMouseDownReposition = () => {
         return (
             event: React.MouseEvent<HTMLDivElement>,
-            id: string
+            id: string,
+            draggableRef: React.RefObject<HTMLDivElement>
         ) => {
             if (whiteBoardStore.jsonSpecs[id].isEditing) return;
 
+            const snapThreshold = 10;
+            let isSnapped = {
+                left: false,
+                right: false,
+                top: false,
+                bottom: false,
+                center: false
+            };
+
             const offsetX = event.clientX - whiteBoardStore.jsonSpecs[id].location.x;
             const offsetY = event.clientY - whiteBoardStore.jsonSpecs[id].location.y;
+            const draggable = draggableRef.current;
+
+            const topLineRect = document.getElementById('topLineGuid')?.getBoundingClientRect();
+            const rightLineRect = document.getElementById('rightLineGuid')?.getBoundingClientRect();
+            const bottomLineRect = document.getElementById('bottomLineGuid')?.getBoundingClientRect();
+            const leftLineRect = document.getElementById('leftLineGuid')?.getBoundingClientRect();
+            const centerVertLineRect = document.getElementById('centerVertGuidLine')?.getBoundingClientRect();
 
             const handleMouseMoveReposition = (event: MouseEvent) => {
+                if (!draggable) return;
+
+                const objRect = draggable.getBoundingClientRect();
+                const objWidth = objRect.width;
+                const objHeight = objRect.height;
+                const objLeft = objRect.left;
+                const objRight = objRect.right;
+                const objTop = objRect.top;
+                const objBottom = objRect.bottom;
+
+                let newX = event.clientX - offsetX;
+                let newY = event.clientY - offsetY;
+
+                // Left snapping
+                if (leftLineRect && Math.abs(objLeft - leftLineRect.left) < snapThreshold) {
+                    if (Math.abs(event.clientX - offsetX - whiteBoardStore.guidLines.left) < snapThreshold) {
+                        newX = whiteBoardStore.guidLines.left;
+                        isSnapped.left = true;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            leftVisb: true,
+                        });
+                    } else {
+                        isSnapped.left = false;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            leftVisb: false,
+                        });
+                    }
+                } else {
+                    isSnapped.left = false;
+                    whiteBoardStore.setGuidLines({
+                        ...whiteBoardStore.guidLines,
+                        leftVisb: false,
+                    });
+                }
+
+                // Right snapping
+                if (rightLineRect && Math.abs(objRight - rightLineRect.left) < snapThreshold) {
+                    const parentLeft = draggable.offsetParent?.getBoundingClientRect().left || 0;
+                    const rightGuidelineRelativeToParent = rightLineRect.left - parentLeft;
+                    if (Math.abs(event.clientX - offsetX - (rightGuidelineRelativeToParent - objWidth)) < snapThreshold) {
+                        newX = rightGuidelineRelativeToParent - objWidth;
+                        isSnapped.right = true;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            rightVisb: true,
+                        });
+                    } else {
+                        isSnapped.right = false;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            rightVisb: false,
+                        });
+                    }
+                } else {
+                    isSnapped.right = false;
+                    whiteBoardStore.setGuidLines({
+                        ...whiteBoardStore.guidLines,
+                        rightVisb: false,
+                    });
+                }
+
+                // Top snapping
+                if (topLineRect && Math.abs(objTop - topLineRect.top) < snapThreshold) {
+                    if (Math.abs(event.clientY - offsetY - whiteBoardStore.guidLines.top) < snapThreshold) {
+                        newY = whiteBoardStore.guidLines.top;
+                        isSnapped.top = true;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            topVisb: true,
+                        });
+                    } else {
+                        isSnapped.top = false;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            topVisb: false,
+                        });
+                    }
+                } else {
+                    isSnapped.top = false;
+                    whiteBoardStore.setGuidLines({
+                        ...whiteBoardStore.guidLines,
+                        topVisb: false,
+                    });
+                }
+
+                // Bottom snapping
+                if (bottomLineRect && Math.abs(objBottom - bottomLineRect.top) < snapThreshold) {
+                    const parentTop = draggable.offsetParent?.getBoundingClientRect().top || 0;
+                    const bottomGuidelineRelativeToParent = bottomLineRect.top - parentTop;
+                    if (Math.abs(event.clientY - offsetY - (bottomGuidelineRelativeToParent - objHeight)) < snapThreshold) {
+                        newY = bottomGuidelineRelativeToParent - objHeight;
+                        isSnapped.bottom = true;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            bottomVisb: true,
+                        });
+                    } else {
+                        isSnapped.bottom = false;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            bottomVisb: false,
+                        });
+                    }
+                } else {
+                    isSnapped.bottom = false;
+                    whiteBoardStore.setGuidLines({
+                        ...whiteBoardStore.guidLines,
+                        bottomVisb: false,
+                    });
+                }
+
+                // Center snapping
+                if (centerVertLineRect && Math.abs(objLeft + objWidth / 2 - centerVertLineRect.left) < snapThreshold) {
+                    const parentLeft = draggable.offsetParent?.getBoundingClientRect().left || 0;
+                    const centerGuidelineRelativeToParent = centerVertLineRect.left - parentLeft;
+                    if (Math.abs(event.clientX - offsetX - (centerGuidelineRelativeToParent - objWidth / 2)) < snapThreshold) {
+                        newX = centerGuidelineRelativeToParent - objWidth / 2;
+                        isSnapped.center = true;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            centerVisb: true,
+                        });
+                    } else {
+                        isSnapped.center = false;
+                        whiteBoardStore.setGuidLines({
+                            ...whiteBoardStore.guidLines,
+                            centerVisb: false,
+                        });
+                    }
+                } else {
+                    isSnapped.center = false;
+                    whiteBoardStore.setGuidLines({
+                        ...whiteBoardStore.guidLines,
+                        centerVisb: false,
+                    });
+                }
+
                 const updatedSpecs = {
                     ...whiteBoardStore.jsonSpecs,
                     [id]: {
                         ...whiteBoardStore.jsonSpecs[id],
                         location: {
-                            x: event.clientX - offsetX,
-                            y: event.clientY - offsetY,
+                            x: newX,
+                            y: newY,
                         },
                     },
                 };
@@ -285,6 +439,14 @@ export const useWhiteBoardHandlers = () => {
             };
 
             const handleMouseUpReposition = () => {
+                whiteBoardStore.setGuidLines({
+                    ...whiteBoardStore.guidLines,
+                    topVisb: false,
+                    rightVisb: false,
+                    bottomVisb: false,
+                    leftVisb: false,
+                    centerVisb: false
+                });
                 document.removeEventListener('mousemove', handleMouseMoveReposition);
                 document.removeEventListener('mouseup', handleMouseUpReposition);
             };
@@ -292,7 +454,9 @@ export const useWhiteBoardHandlers = () => {
             document.addEventListener('mousemove', handleMouseMoveReposition);
             document.addEventListener('mouseup', handleMouseUpReposition);
         };
-    }
+    };
+
+
 
 
     const useUpdateListSpecs = () => (updatedListData: Text[], id: string, gap: string, containerBackgroundColor: string, newZIndex: number) => {

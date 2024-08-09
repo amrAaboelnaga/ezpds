@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { JsonSpecs, ProductInfo } from '../types/whiteBoard';
+import { Guidelines, JsonSpecs, ProductInfo } from '../types/whiteBoard';
 
 
 
@@ -8,7 +8,18 @@ class WhiteBoardStore {
   productInfo: ProductInfo = { id: 0, title: '', price: '', category: '' };
   textContent: any = null;
   textOnChange: any = null;
-  containerEditor: any = null;;
+  containerEditor: any = null;
+  guidLines: Guidelines = {
+    left: 50,
+    leftVisb: false,
+    top: 50,
+    topVisb: false,
+    right: 50,
+    rightVisb: false,
+    bottom: 50,
+    bottomVisb: false,
+    centerVisb: false
+  }
 
   constructor() {
     makeAutoObservable(this);
@@ -36,6 +47,12 @@ class WhiteBoardStore {
   setContainerEditor(object: any) {
     runInAction(() => {
       this.containerEditor = object;
+    });
+  }
+
+  setGuidLines(object: any) {
+    runInAction(() => {
+      this.guidLines = object;
     });
   }
 

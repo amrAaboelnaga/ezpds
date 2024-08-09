@@ -8,6 +8,8 @@ import ExportAndImport from './ExportAndImport';
 import ProductInfoBox from './productInfoBox';
 import { TextEditorBar } from './TextEditorBar';
 import ContainerEditor from './ContainerEditor';
+import PageGuids from './PageGuids';
+import RulerComponent from './RulerComponent';
 //import ExportAndImport from './ExportAndImport/ExportAndImport';
 
 const CreateOrEditCont: React.FC = observer(() => {
@@ -17,7 +19,7 @@ const CreateOrEditCont: React.FC = observer(() => {
   const handleDrop = useHandleDrop();
   const handleDragOver = useHandleDragOver();
   const toggleEditing = useToggleEditing();
-  
+
   return (
     <div style={{ ...styles.createOrEditCont, userSelect: 'none' }}>
       <LeftToolBar />
@@ -50,6 +52,8 @@ const CreateOrEditCont: React.FC = observer(() => {
               toggleEditing={toggleEditing}
             />
           ))}
+          <RulerComponent />
+          <PageGuids />
         </div>
       </div>
       {<ExportAndImport page={page} />}

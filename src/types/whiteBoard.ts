@@ -96,6 +96,17 @@ export interface ProductInfo {
     category: string;
 }
 
+export interface Guidelines {
+    left: number;
+    leftVisb: boolean;
+    top: number;
+    topVisb: boolean;
+    right: number;
+    rightVisb: boolean;
+    bottom: number;
+    bottomVisb: boolean;
+    centerVisb?: boolean; // Optional if center visibility is not always required
+}
 
 
 

@@ -95,7 +95,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
         transform: `rotate(${itemSpecs.rotation}deg)`
       }}
       onDoubleClick={itemSpecs.isEditing === false ? () => toggleEditing(id) : undefined}
-      onMouseDown={(e) => handleMouseDownReposition(e, id)}
+      onMouseDown={(e) => handleMouseDownReposition(e, id, draggableRef)}
     >
       {renderContent()}
       {itemSpecs.isEditing && <ResizeBox id={id} draggableRef={draggableRef} />}
