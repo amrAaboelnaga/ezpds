@@ -4,6 +4,8 @@ import { observer } from "mobx-react-lite";
 import { rootStore } from "../../stores/rootStore";
 import logo from '../../assets/images/logo.png'
 import { useAuthHandlers } from '../../handlers/authHandler';
+import { position } from 'html2canvas/dist/types/css/property-descriptors/position';
+import { zIndex } from 'html2canvas/dist/types/css/property-descriptors/z-index';
 
 const Nav: React.FC = observer(() => {
     const { authStore } = rootStore;
@@ -53,6 +55,8 @@ const Nav: React.FC = observer(() => {
 const styles = {
     navbar: {
         display: 'flex',
+        position: 'sticky' as const,
+        top: '0px',
         justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#f0f0f0',
@@ -60,6 +64,7 @@ const styles = {
         padding: '10px',
         height: '50px',
         boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+        zIndex: 100
     },
     navbarLogo: {
         marginLeft: '10px',

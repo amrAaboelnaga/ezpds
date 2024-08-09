@@ -1,75 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 
+import { EditableText } from '../EditableText';
+import { TextEditorBar } from '../TextEditorBar';
+import { ColorSelectorForConts } from '../ColorSelectorForConts';
+import { defaultText, DraggableListInterface, Text } from '../../../types/whiteBoard';
+
+
 interface DraggableListProps {
     id: string;
-    listData: string[];
-    isEditing: boolean;
+    standardSpecs: DraggableListInterface;
+    listData: Text[];
     toggleEditing: (id: string) => void;
+    focusedIndex: any;
+    setFocusedIndex: any;
+    draggableRef: React.RefObject<HTMLDivElement>,
 }
 
-export const DraggableList: React.FC<DraggableListProps> = observer(({
-    id,
-    listData,
-    isEditing,
-    toggleEditing,
-}) => {
-    const { useDeleteItem, useUpdateListSpecs } = useWhiteBoardHandlers();
-    const [editedListData, setEditedListData] = useState<string[]>(listData);
+
+
+export const DraggableList: React.FC<DraggableListProps> = observer(({ id, standardSpecs, listData, toggleEditing, focusedIndex, setFocusedIndex, draggableRef }) => {
+    const { useHandleListMouseDown, useHandleContainerEditorBar, useAddList, useRemoveList, useHandleListItemChange, useChangeListRowHeight, useUpdateListGap, useHandleListTextStyleChange, useDeleteItem, useUpdateListSpecs, useHandleTopTextBar, useZIndexHandler } = useWhiteBoardHandlers();
+    const { rowHeight, padding, gap, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
+    const resizeRefs = useRef<(HTMLDivElement | null)[]>([]);
     const handleDeleteItem = useDeleteItem();
     const updateListSpecs = useUpdateListSpecs();
+    const handleTopTextBar = useHandleTopTextBar();
 
-    const addList = () => {
-        const updatedListData = [...editedListData, 'New Item']; // Add a new default list item
-        setEditedListData(updatedListData);
-        updateListSpecs(updatedListData, id);
+    const handleContainerEditor = useHandleContainerEditorBar();
+    const addList = useAddList(listData, id, gap, backgroundColor, zIndex, updateListSpecs, defaultText);
+    const removeList = useRemoveList(listData, id, gap, backgroundColor, zIndex, updateListSpecs);
+    const handleListItemChange = useHandleListItemChange(listData, id, gap, backgroundColor, zIndex, updateListSpecs);
+    const changeListRowHeight = useChangeListRowHeight();
+    const updateListGap = useUpdateListGap(listData, id, gap, backgroundColor, zIndex, updateListSpecs);
+    const handleListTextStyleChange = useHandleListTextStyleChange(listData, id, gap, backgroundColor, zIndex, updateListSpecs, focusedIndex);
+    const handleListMouseDown = useHandleListMouseDown(id, resizeRefs, changeListRowHeight);
+
+
+
+    const getBorderStyle = (index: number, totalItems: number): React.CSSProperties => {
+        let style: any = {};
+
+        if (index === 0) {
+            // Top border for the first item
+            style.borderTopLeftRadius = borderRadius;
+            style.borderTopRightRadius = borderRadius;
+        }
+        if (index === totalItems - 1) {
+            // Bottom border for the last item
+            style.borderBottomLeftRadius = borderRadius;
+            style.borderBottomRightRadius = borderRadius;
+        }
+
+        return style;
     };
 
-    const removeList = () => {
-        if (editedListData.length === 0) return;
-        const updatedListData = editedListData.slice(0, -1); // Remove the last item
-        setEditedListData(updatedListData);
-        updateListSpecs(updatedListData, id);
+    const handleBlur = (event: React.FocusEvent | MouseEvent) => {
+        //setFocusedIndex(null);
     };
 
-    const handleListItemChange = (index: number, newValue: string) => {
-        const updatedListData = [...editedListData];
-        updatedListData[index] = newValue;
-        setEditedListData(updatedListData);
-        updateListSpecs(updatedListData, id);
-    };
+    useEffect(() => {
+        handleTopTextBar(isEditing, focusedIndex !== null ? listData[focusedIndex] : listData[0], handleListTextStyleChange);
+        handleContainerEditor(isEditing, { done: () => toggleEditing(id), rowIncrease: () => addList(), rowDecrease: () => removeList(), rowGapIncrease: () => updateListGap('increase'), rowGapDecrease: () => updateListGap('decrease'), deleteItem: () => handleDeleteItem(id), id });
+    }, [isEditing, standardSpecs, focusedIndex]);
+
+
+
 
     return (
-        <div style={styles.draggableChildCont}>
-            {isEditing && (
-                <div style={styles.editTableCount}>
-                    <button onClick={() => toggleEditing(id)}>Done</button>
-                    <button onClick={addList}>List +</button>
-                    <button onClick={removeList}>List -</button>
-                    <button onClick={() => handleDeleteItem(id)}>Delete</button>
-                </div>
-            )}
-
-            {isEditing ? (
-                <div style={styles.draggableList}>
-                    {editedListData.map((item, index) => (
-                        <input
-                            key={index}
-                            type="text"
-                            value={item}
-                            onChange={(e) => handleListItemChange(index, e.target.value)}
-                            style={styles.tableInput}
+        <div style={{
+            ...styles.draggableChildCont, backgroundColor: backgroundColor,
+            border: `${border}px solid ${borderColor}`,
+            borderRadius: borderRadius,
+            padding: padding
+        }}>
+            <div style={{ ...styles.draggableList, gap: gap, padding: isEditing ? '0px' : '1px', borderRadius: borderRadius }}>
+                {listData.map((item, index) => (
+                    <div
+                        key={index}
+                        style={{
+                            ...getBorderStyle(index, listData.length),
+                            ...styles.row,
+                            height: rowHeight[index]?.height || '50px',
+                            backgroundColor: item.backgroundColor
+                        }}
+                        ref={el => resizeRefs.current[index] = el as HTMLDivElement}
+                    >
+                        <EditableText
+                            textData={item}
+                            isEditing={isEditing}
+                            onFocus={() => setFocusedIndex(index)}
+                            onBlur={handleBlur}
+                            onChange={(newValue) => handleListItemChange(index, newValue)}
                         />
-                    ))}
-                </div>
-            ) : (
-                <div style={styles.draggableList}>
-                    {editedListData.map((item, index) => (
-                        <p key={index} style={styles.draggableListItem}>- {item}</p>
-                    ))}
-                </div>
-            )}
+                        {isEditing && (
+                            <div style={{ ...styles.resizeHandle, bottom: index !== (listData.length - 1) ? `calc(-16px - (${gap} * 0.5))` : "-16px" }}
+                                onMouseDown={(e) => handleListMouseDown(e, index, draggableRef, 5, resizeRefs)}
+                            >
+                                <div style={styles.horzLine} />
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 });
@@ -80,31 +114,46 @@ const styles = {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
     } as React.CSSProperties,
     editTableCount: {
         position: 'absolute',
-        right: '-60px',
+        top: '5px',
+        right: '-65px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
+        gap: '5px',
+        zIndex: '900',
+        overflow: 'visible'
+    } as React.CSSProperties,
+    colorBoxWrapper: {
+        position: 'absolute',
+        right: '-220px',
     } as React.CSSProperties,
     draggableList: {
-        width: '100%',
-        textAlign: 'left',
-        fontSize: '16px',
-        marginTop: '10px', // Adjust as needed
-    } as React.CSSProperties,
-    draggableListItem: {
-        margin: '3px',
-    } as React.CSSProperties,
-    tableInput: {
         display: 'flex',
-        textAlign: 'center',
+        flexDirection: 'column',
         width: '100%',
-        border: '0px',
-        backgroundColor: '#00000000',
-        fontSize: '16px',
-        marginBottom: '0px', // Adjust as needed
+        height: '100%',
+        alignItems: 'center',
+    } as React.CSSProperties,
+    row: {
+        position: 'relative',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+    } as React.CSSProperties,
+    resizeHandle: {
+        position: 'absolute',
+        width: '100%',
+        height: '16px',
+        cursor: 'row-resize',
+        backgroundColor: 'transparent',
+        zIndex: 100
+    } as React.CSSProperties,
+    horzLine: {
+        height: '1px',
+        backgroundColor: 'black',
+        width: '100%'
     } as React.CSSProperties,
 };

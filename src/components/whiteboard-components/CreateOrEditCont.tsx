@@ -6,6 +6,10 @@ import { LeftToolBar } from './LeftToolBar';
 import { DraggableItem } from './DraggableItem';
 import ExportAndImport from './ExportAndImport';
 import ProductInfoBox from './productInfoBox';
+import { TextEditorBar } from './TextEditorBar';
+import ContainerEditor from './ContainerEditor';
+import PageGuids from './PageGuids';
+import RulerComponent from './RulerComponent';
 //import ExportAndImport from './ExportAndImport/ExportAndImport';
 
 const CreateOrEditCont: React.FC = observer(() => {
@@ -17,10 +21,29 @@ const CreateOrEditCont: React.FC = observer(() => {
   const toggleEditing = useToggleEditing();
 
   return (
-    <div style={styles.createOrEditCont}>
+    <div style={{ ...styles.createOrEditCont, userSelect: 'none' }}>
       <LeftToolBar />
+      <div style={styles.editTableCount}>
+        {(whiteBoardStore.textContent && whiteBoardStore.textOnChange) && (< TextEditorBar content={whiteBoardStore.textContent} onChange={whiteBoardStore.textOnChange} />)}
+      </div>
       <div style={styles.workSpaceCont}>
         <div ref={page} style={styles.workSpaceFile} onDrop={handleDrop} onDragOver={handleDragOver} >
+          {(whiteBoardStore.containerEditor) && (
+            <div
+              id="ContainerEditor"
+              style={{
+                position: 'absolute',
+                top: (whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].location.y),
+                left: `calc(${whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].location.x}px + ${whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].width} + 10px)`,
+                height: whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].height,
+
+              }}>
+              <ContainerEditor
+                data={whiteBoardStore.containerEditor}
+                standardSpecs={whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id]}
+              />
+            </div>
+          )}
           {Object.keys(whiteBoardStore.jsonSpecs).map((id) => (
             <DraggableItem
               key={id}
@@ -29,6 +52,8 @@ const CreateOrEditCont: React.FC = observer(() => {
               toggleEditing={toggleEditing}
             />
           ))}
+          <RulerComponent />
+          <PageGuids />
         </div>
       </div>
       {<ExportAndImport page={page} />}
@@ -38,9 +63,9 @@ const CreateOrEditCont: React.FC = observer(() => {
 });
 
 const styles = {
-  createOrEditCont: {   
+  createOrEditCont: {
     display: 'grid',
-    gridTemplateColumns: '15% 85%', 
+    gridTemplateColumns: '15% 85%',
   } as React.CSSProperties,
   workSpaceCont: {
     backgroundColor: 'rgb(214, 214, 214)',
@@ -52,8 +77,15 @@ const styles = {
     width: '210mm',
     height: '297mm',
     backgroundColor: 'white',
-    margin: '30px auto',
+    margin: '60px auto',
     position: 'relative',
+  } as React.CSSProperties,
+  editTableCount: {
+    position: 'absolute',
+    right: '-60px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
   } as React.CSSProperties,
 };
 

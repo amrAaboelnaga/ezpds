@@ -10,18 +10,18 @@ export function LeftToolBar() {
 
   return (
     <div style={styles.leftToolBarCont}>
-     
-        {['title', 'subtitle', 'smallText', 'image', 'table', 'list'].map(item => (
-          <div
-            key={item}
-            className='singleLeftButton'
-            style={styles.singleLeftButton}
-            draggable
-            onDragStart={(e) => handleDragStart(e, item)}
-          >
-            {item.charAt(0).toUpperCase() + item.slice(1)}
-          </div>
-        ))}
+
+      {['Text', 'Image', 'List', 'Table', 'Rectangle', 'Circle', 'Triangle'].map(item => (
+        <div
+          key={item}
+          className='singleLeftButton'
+          style={styles.singleLeftButton}
+          draggable
+          onDragStart={(e) => handleDragStart(e, item)}
+        >
+          {item.charAt(0).toUpperCase() + item.slice(1)}
+        </div>
+      ))}
 
     </div>
   );
@@ -37,9 +37,9 @@ const styles = {
     alignItems: 'center',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     borderRight: '1px solid #ddd',
-    position:'sticky',
-    top:'100px'
-  } as React.CSSProperties, 
+    position: 'sticky',
+    top: '100px'
+  } as React.CSSProperties,
   singleLeftButton: {
     margin: '15px 0',
     backgroundColor: '#e0e0e0',
