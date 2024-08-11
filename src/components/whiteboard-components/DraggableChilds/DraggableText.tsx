@@ -4,16 +4,18 @@ import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 import { whiteBoardStore } from '../../../stores/whiteBoardStore';
 import { TextEditorBar } from '../TextEditorBar';
 import { EditableText } from '../EditableText';
-import { DraggableTextInterface, Text, DraggableRectangleInterface, DraggableCircleInterface } from '../../../types/whiteBoard';
+import { DraggableTextInterface, Text, DraggableRectangleInterface, DraggableCircleInterface, DraggablePageNumberInterface } from '../../../types/whiteBoard';
 
 interface DraggableTextProps {
   id: string;
-  standardSpecs: DraggableTextInterface | DraggableRectangleInterface | DraggableCircleInterface;
+  standardSpecs: DraggableTextInterface | DraggableRectangleInterface | DraggableCircleInterface | DraggablePageNumberInterface;
   content: Text;
-  toggleEditing: (id: string) => void;
+  toggleEditing: (pageId: number, id: string) => void;
+  pageId: number;
+  pageNumbHelper?: number
 }
 
-export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, standardSpecs, content, toggleEditing }) => {
+export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, standardSpecs, content, toggleEditing, pageId, pageNumbHelper }) => {
   const { isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
   const { useHandleContainerEditorBar, useHandleTextEdit, useZIndexHandler, useHandleBlur, useHandleKeyDown, useDeleteItem, useHandleTopTextBar } = useWhiteBoardHandlers();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -29,7 +31,7 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, stand
       const event = {
         target: { name: key, value } as EventTarget & HTMLTextAreaElement,
       } as React.ChangeEvent<HTMLTextAreaElement>;
-      handleTextEdit(id, event);
+      handleTextEdit(pageId, id, event);
     }
   };
 
@@ -44,8 +46,10 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, stand
   useEffect(() => {
     handleTopTextBar(isEditing, content, handleChange)
     handleContainerEditor(isEditing, {
-      done: () => toggleEditing(id),
-      deleteItem: () => handleDeleteItem(id), id: id,
+      done: () => toggleEditing(pageId, id),
+      deleteItem: () => handleDeleteItem(pageId, id),
+      pageId: pageId,
+      id: id,
       isCircle: standardSpecs.type === 'Circle' ? true : undefined
     });
   }, [isEditing, standardSpecs])
@@ -60,10 +64,12 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, stand
         textData={content}
         isEditing={isEditing}
         onChange={(newValue) => {
-          handleTextEdit(id, undefined, undefined, newValue)
+          handleTextEdit(pageId, id, undefined, undefined, newValue)
         }}
         onFocus={() => { }}
         onBlur={() => { }}
+        type={standardSpecs.type}
+        pageNumbHelper={pageNumbHelper}
       />
     </div>
   );

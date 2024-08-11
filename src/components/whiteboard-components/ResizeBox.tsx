@@ -1,13 +1,14 @@
-import React, { useRef, useCallback, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { rootStore } from '../../stores/rootStore';
 
 interface ResizeBoxProps {
     id: string;
     draggableRef: React.RefObject<HTMLDivElement>;
+    pageId: number;
 }
 
-export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef }) => {
+export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef, pageId }) => {
     const { whiteBoardStore } = rootStore;
     const resizeStateRef = useRef<{
         direction: string;
@@ -53,32 +54,41 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
         };
     }, [handleKeyDown, handleKeyUp]);
 
+    const getJsonSpecs = () => whiteBoardStore.pages.find(page => page.id === pageId)?.jsonSpecs || {};
+    const updateJsonSpecs = (updatedSpecs: any) => {
+        const page = whiteBoardStore.pages.find(page => page.id === pageId);
+        if (page) {
+            whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+        }
+    };
+
     const handleMouseDownResize = (event: React.MouseEvent, direction: string) => {
         event.preventDefault();
+        const jsonSpecs = getJsonSpecs();
         resizeStateRef.current = {
             direction,
             initialMouseX: event.clientX,
             initialMouseY: event.clientY,
-            initialWidth: parseFloat(whiteBoardStore.jsonSpecs[id].width),
-            initialHeight: parseFloat(whiteBoardStore.jsonSpecs[id].height),
-            initialLeft: whiteBoardStore.jsonSpecs[id].location.x,
-            initialTop: whiteBoardStore.jsonSpecs[id].location.y,
+            initialWidth: parseFloat(jsonSpecs[id].width),
+            initialHeight: parseFloat(jsonSpecs[id].height),
+            initialLeft: jsonSpecs[id].location.x,
+            initialTop: jsonSpecs[id].location.y,
         };
         console.log('Mouse down resize:', resizeStateRef.current);
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     };
 
-
     const handleMouseDownRotation = (event: React.MouseEvent) => {
         event.preventDefault();
         const rect = draggableRef.current!.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
+        const jsonSpecs = getJsonSpecs();
         rotationStateRef.current = {
             initialMouseX: event.clientX,
             initialMouseY: event.clientY,
-            initialRotation: whiteBoardStore.jsonSpecs[id].rotation,
+            initialRotation: jsonSpecs[id].rotation,
             centerX,
             centerY
         };
@@ -99,12 +109,12 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
         let newLeft = resizeStateRef.current.initialLeft;
         let newTop = resizeStateRef.current.initialTop;
 
-        const rotation = whiteBoardStore.jsonSpecs[id].rotation || 0;
+        const jsonSpecs = getJsonSpecs();
+        const rotation = jsonSpecs[id].rotation || 0;
         const centerX = resizeStateRef.current.initialLeft + resizeStateRef.current.initialWidth / 2;
         const centerY = resizeStateRef.current.initialTop + resizeStateRef.current.initialHeight / 2;
 
         if (rotation === 0) {
-            // Resize logic for no rotation
             if (resizeStateRef.current.direction.includes('right')) {
                 newWidth += deltaX;
             }
@@ -134,15 +144,12 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
                 newHeight = newSize;
             }
         } else {
-            // Resize logic for rotated object
-            const angle = (rotation * Math.PI) / 180; // Convert angle from degrees to radians
+            const angle = (rotation * Math.PI) / 180;
             const cosAngle = Math.cos(angle);
             const sinAngle = Math.sin(angle);
 
-            // Adjust delta values based on rotation
-            const deltaXAdjusted = deltaX * cosAngle + deltaY * sinAngle; // Corrected formula
-            const deltaYAdjusted = -deltaX * sinAngle + deltaY * cosAngle; // Corrected formula
-
+            const deltaXAdjusted = deltaX * cosAngle + deltaY * sinAngle;
+            const deltaYAdjusted = -deltaX * sinAngle + deltaY * cosAngle;
 
             if (resizeStateRef.current.direction.includes('right')) {
                 newWidth += deltaXAdjusted;
@@ -168,15 +175,15 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
             newTop = centerY - newHeight / 2;
         }
 
-        // Debugging: Print updated values
         console.log('Updated Size:', newWidth, newHeight);
         console.log('Updated Position:', newLeft, newTop);
-        if (newWidth < 50) newWidth = 50
-        if (newHeight < 50) newHeight = 50
+        if (newWidth < 50) newWidth = 50;
+        if (newHeight < 50) newHeight = 50;
+
         const updatedSpecs = {
-            ...whiteBoardStore.jsonSpecs,
+            ...getJsonSpecs(),
             [id]: {
-                ...whiteBoardStore.jsonSpecs[id],
+                ...getJsonSpecs()[id],
                 location: {
                     x: newLeft,
                     y: newTop
@@ -186,11 +193,8 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
             },
         };
 
-        whiteBoardStore.setJsonSpecs(updatedSpecs);
+        updateJsonSpecs(updatedSpecs);
     }, [id, whiteBoardStore]);
-
-
-
 
     const handleMouseMoveRotation = useCallback((event: MouseEvent) => {
         if (!rotationStateRef.current) return;
@@ -206,12 +210,10 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
         const angleDiff = angle2 - angle1;
         let newRotation = initialRotation + (angleDiff * 180) / Math.PI;
 
-        // Normalize the rotation angle to the range [0, 360]
         newRotation = (newRotation + 360) % 360;
 
-        // Snap to multiples of 45 degrees
-        const snapTolerance = 5; // degrees
-        const snapAngles = Array.from({ length: 8 }, (_, i) => i * 45); // [0, 45, 90, 135, 180, 225, 270, 315]
+        const snapTolerance = 5;
+        const snapAngles = Array.from({ length: 8 }, (_, i) => i * 45);
         for (let snapAngle of snapAngles) {
             if (Math.abs(newRotation - snapAngle) < snapTolerance) {
                 newRotation = snapAngle;
@@ -220,17 +222,15 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
         }
 
         const updatedSpecs = {
-            ...whiteBoardStore.jsonSpecs,
+            ...getJsonSpecs(),
             [id]: {
-                ...whiteBoardStore.jsonSpecs[id],
+                ...getJsonSpecs()[id],
                 rotation: newRotation
             },
         };
 
-        whiteBoardStore.setJsonSpecs(updatedSpecs);
+        updateJsonSpecs(updatedSpecs);
     }, [id, whiteBoardStore]);
-
-
 
     const handleMouseUp = useCallback(() => {
         resizeStateRef.current = null;
@@ -241,19 +241,10 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
 
     const handleMouseUpRotation = useCallback(() => {
         rotationStateRef.current = null;
-        console.log('Mouse up');
+        console.log('Mouse up rotation');
         document.removeEventListener('mousemove', handleMouseMoveRotation);
         document.removeEventListener('mouseup', handleMouseUpRotation);
     }, [handleMouseMoveRotation]);
-
-    useEffect(() => {
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-            document.removeEventListener('mousemove', handleMouseMoveRotation);
-            document.removeEventListener('mouseup', handleMouseUpRotation);
-        };
-    }, [handleMouseMove, handleMouseUp, handleMouseMoveRotation, handleMouseUpRotation]);
 
 
     return (
@@ -300,6 +291,7 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef 
 
     );
 });
+
 
 
 const resizeHandleStyles = {

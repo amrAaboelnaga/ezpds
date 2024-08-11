@@ -1,4 +1,10 @@
+export interface SingleWBPageInterface {
+    id: number; jsonSpecs: JsonSpecs, guidLines: Guidelines
+}
+
+
 export interface DraggableItemInterface {
+    repeate: boolean;
     type: string;
     location: { x: number; y: number };
     width: string;
@@ -85,6 +91,11 @@ export interface DraggableTriangleInterface extends DraggableItemInterface {
     data: Text;
 }
 
+export interface DraggablePageNumberInterface extends DraggableItemInterface {
+    type: 'PageNumber';
+    data: Text;
+}
+
 export type JsonSpecs = {
     [key: string]: DraggableItemInterface | DraggableTextInterface | DraggableListInterface | DraggableTableInterface | DraggableImageInterface;
 };
@@ -107,6 +118,21 @@ export interface Guidelines {
     bottomVisb: boolean;
     centerVisb?: boolean; // Optional if center visibility is not always required
 }
+
+
+export const defualtPage = (newId: number): SingleWBPageInterface => ({
+    id: newId, jsonSpecs: { ['PageNumber']: createDraggablePageNumberSpec('PageNumber', 371, 1050, newId) }, guidLines: {
+        left: 50,
+        leftVisb: false,
+        top: 50,
+        topVisb: false,
+        right: 50,
+        rightVisb: false,
+        bottom: 50,
+        bottomVisb: false,
+        centerVisb: false
+    }
+});
 
 
 
@@ -136,6 +162,7 @@ const defaultTableData: Text[][] = Array.from({ length: defaultRows }, () =>
 );
 
 export const createDraggableTextSpec = (id: string, x: number, y: number): DraggableTextInterface => ({
+    repeate: false,
     type: 'Text',
     location: { x, y },
     width: '100px',
@@ -153,6 +180,7 @@ export const createDraggableTextSpec = (id: string, x: number, y: number): Dragg
 });
 
 export const createDraggableImageSpec = (id: string, x: number, y: number): DraggableImageInterface => ({
+    repeate: false,
     type: 'Image',
     location: { x, y },
     width: '100px',
@@ -171,6 +199,7 @@ export const createDraggableImageSpec = (id: string, x: number, y: number): Drag
 });
 
 export const createDraggableListSpec = (id: string, x: number, y: number): DraggableListInterface => ({
+    repeate: false,
     type: 'List',
     location: { x, y },
     width: '300px',
@@ -193,6 +222,7 @@ export const createDraggableListSpec = (id: string, x: number, y: number): Dragg
 
 
 export const createDraggableTableSpec = (id: string, x: number, y: number): DraggableTableInterface => ({
+    repeate: false,
     type: 'Table',
     location: { x, y },
     width: '500px',
@@ -217,6 +247,7 @@ export const createDraggableTableSpec = (id: string, x: number, y: number): Drag
 
 
 export const createDraggableRectangleSpec = (id: string, x: number, y: number): DraggableRectangleInterface => ({
+    repeate: false,
     type: 'Rectangle',
     location: { x, y },
     width: '250px',
@@ -234,6 +265,7 @@ export const createDraggableRectangleSpec = (id: string, x: number, y: number): 
 });
 
 export const createDraggableCircleleSpec = (id: string, x: number, y: number): DraggableCircleInterface => ({
+    repeate: false,
     type: 'Circle',
     location: { x, y },
     width: '250px',
@@ -252,6 +284,7 @@ export const createDraggableCircleleSpec = (id: string, x: number, y: number): D
 
 
 export const createDraggableTriangleSpec = (id: string, x: number, y: number): DraggableTriangleInterface => ({
+    repeate: false,
     type: 'Triangle',
     location: { x, y },
     width: '250px',
@@ -267,4 +300,24 @@ export const createDraggableTriangleSpec = (id: string, x: number, y: number): D
     padding: 0,
     rotation: 0
 });
+
+export const createDraggablePageNumberSpec = (id: string, x: number, y: number, pageNumber: number): DraggablePageNumberInterface => ({
+    repeate: true,
+    type: 'PageNumber',
+    location: { x, y },
+    width: '50px',
+    height: '50px',
+    isEditing: false,
+    backgroundColor: '#ffffff',
+    zIndex: 1,
+    data: { ...defaultText, content: `${pageNumber + 1}`, fontWeight: 'bold', fontSize: '16' } as Text,
+    opacity: 1,
+    border: 0,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 0,
+    rotation: 0
+});
+
+
 

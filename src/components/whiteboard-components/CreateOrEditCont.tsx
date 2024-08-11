@@ -10,6 +10,8 @@ import { TextEditorBar } from './TextEditorBar';
 import ContainerEditor from './ContainerEditor';
 import PageGuids from './PageGuids';
 import RulerComponent from './RulerComponent';
+import WBPage from './WBPage';
+import RightDrawer from './RightDrawer';
 //import ExportAndImport from './ExportAndImport/ExportAndImport';
 
 const CreateOrEditCont: React.FC = observer(() => {
@@ -27,37 +29,11 @@ const CreateOrEditCont: React.FC = observer(() => {
         {(whiteBoardStore.textContent && whiteBoardStore.textOnChange) && (< TextEditorBar content={whiteBoardStore.textContent} onChange={whiteBoardStore.textOnChange} />)}
       </div>
       <div style={styles.workSpaceCont}>
-        <div ref={page} style={styles.workSpaceFile} onDrop={handleDrop} onDragOver={handleDragOver} >
-          {(whiteBoardStore.containerEditor) && (
-            <div
-              id="ContainerEditor"
-              style={{
-                position: 'absolute',
-                top: (whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].location.y),
-                left: `calc(${whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].location.x}px + ${whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].width} + 10px)`,
-                height: whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id].height,
-
-              }}>
-              <ContainerEditor
-                data={whiteBoardStore.containerEditor}
-                standardSpecs={whiteBoardStore.jsonSpecs[whiteBoardStore.containerEditor.id]}
-              />
-            </div>
-          )}
-          {Object.keys(whiteBoardStore.jsonSpecs).map((id) => (
-            <DraggableItem
-              key={id}
-              id={id}
-              itemSpecs={whiteBoardStore.jsonSpecs[id]}
-              toggleEditing={toggleEditing}
-            />
-          ))}
-          <RulerComponent />
-          <PageGuids />
-        </div>
+        {whiteBoardStore.pages.map((page, index) => (
+          <WBPage key={page.id} index={index} />
+        ))}
       </div>
-      {<ExportAndImport page={page} />}
-      <ProductInfoBox />
+      <RightDrawer />
     </div>
   );
 });

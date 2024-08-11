@@ -1,11 +1,28 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { rootStore } from '../../stores/rootStore';
 
-const PageGuids: React.FC = () => {
-    const { whiteBoardStore } = rootStore;
+interface PageGuidsProps {
+    pageId: number;
+}
 
+const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
+    const { whiteBoardStore } = rootStore;
     const [dragging, setDragging] = useState<{ line: string; startX: number; startY: number } | null>(null);
+
+    // Get the current page's guidelines
+    const page = whiteBoardStore.pages.find(page => page.id === pageId);
+    const guidLines = page ? page.guidLines : {
+        left: 50,
+        leftVisb: false,
+        top: 50,
+        topVisb: false,
+        right: 50,
+        rightVisb: false,
+        bottom: 50,
+        bottomVisb: false,
+        centerVisb: false
+    };
 
     const handleMouseDown = (line: string, e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation(); // Prevents event from bubbling up to the parent elements
@@ -16,17 +33,17 @@ const PageGuids: React.FC = () => {
         });
         // Set visibility to true when dragging starts
         whiteBoardStore.setGuidLines({
-            ...whiteBoardStore.guidLines,
+            ...guidLines,
             [`${line}Visb`]: true
-        });
+        }, pageId);
     };
 
     const handleDoubleClick = (line: string) => {
         // Reset the corresponding guideline to 50 on double-click
         whiteBoardStore.setGuidLines({
-            ...whiteBoardStore.guidLines,
+            ...guidLines,
             [`${line}`]: 50
-        });
+        }, pageId);
     };
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -34,24 +51,24 @@ const PageGuids: React.FC = () => {
             const dx = e.clientX - dragging.startX;
             const dy = e.clientY - dragging.startY;
 
-            const newGuidelines = { ...whiteBoardStore.guidLines };
+            const newGuidelines = { ...guidLines };
 
             switch (dragging.line) {
                 case 'top':
-                    newGuidelines.top = Math.max(0, whiteBoardStore.guidLines.top + dy);
+                    newGuidelines.top = Math.max(0, guidLines.top + dy);
                     break;
                 case 'bottom':
-                    newGuidelines.bottom = Math.max(0, whiteBoardStore.guidLines.bottom - dy);
+                    newGuidelines.bottom = Math.max(0, guidLines.bottom - dy);
                     break;
                 case 'left':
-                    newGuidelines.left = Math.max(0, whiteBoardStore.guidLines.left + dx);
+                    newGuidelines.left = Math.max(0, guidLines.left + dx);
                     break;
                 case 'right':
-                    newGuidelines.right = Math.max(0, whiteBoardStore.guidLines.right - dx);
+                    newGuidelines.right = Math.max(0, guidLines.right - dx);
                     break;
             }
 
-            whiteBoardStore.setGuidLines(newGuidelines);
+            whiteBoardStore.setGuidLines(newGuidelines, pageId);
 
             setDragging({
                 ...dragging,
@@ -59,20 +76,20 @@ const PageGuids: React.FC = () => {
                 startY: e.clientY
             });
         }
-    }, [dragging, whiteBoardStore]);
+    }, [dragging, guidLines, pageId, whiteBoardStore]);
 
     const handleMouseUp = () => {
         if (dragging) {
             // Set visibility to false when dragging stops
             whiteBoardStore.setGuidLines({
-                ...whiteBoardStore.guidLines,
+                ...guidLines,
                 [`${dragging.line}Visb`]: false
-            });
+            }, pageId);
         }
         setDragging(null);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
 
@@ -88,68 +105,76 @@ const PageGuids: React.FC = () => {
             <div
                 onMouseDown={(e) => handleMouseDown('top', e)}
                 onDoubleClick={() => handleDoubleClick('top')}
-                style={{ ...styles.boxRight, top: (whiteBoardStore.guidLines.top - 5), left: "-25px" }}
+                style={{ ...styles.boxRight, top: (guidLines.top - 5), left: "-25px" }}
+                id={`page${pageId}topLineGuid`}
             />
             <div
-                style={{ ...styles.line, ...styles.horz, top: whiteBoardStore.guidLines.top, backgroundColor: whiteBoardStore.guidLines.topVisb ? 'grey' : 'transparent' }}
-                id='topLineGuid'
+                style={{ ...styles.line, ...styles.horz, top: guidLines.top, backgroundColor: guidLines.topVisb ? 'grey' : 'transparent' }}
+                id={`page${pageId}topLineGuid`}
             />
             <div
                 onMouseDown={(e) => handleMouseDown('top', e)}
                 onDoubleClick={() => handleDoubleClick('top')}
-                style={{ ...styles.boxLeft, top: (whiteBoardStore.guidLines.top - 5), right: "-25px" }}
+                style={{ ...styles.boxLeft, top: (guidLines.top - 5), right: "-25px" }}
+                id={`page${pageId}topLineGuid`}
             />
             {/* Right line */}
             <div
                 onMouseDown={(e) => handleMouseDown('right', e)}
                 onDoubleClick={() => handleDoubleClick('right')}
-                style={{ ...styles.boxBottom, right: (whiteBoardStore.guidLines.right - 5), top: "-25px" }}
+                style={{ ...styles.boxBottom, right: (guidLines.right - 5), top: "-25px" }}
+                id={`page${pageId}rightLineGuid`}
             />
             <div
-                style={{ ...styles.line, ...styles.vert, right: whiteBoardStore.guidLines.right, backgroundColor: whiteBoardStore.guidLines.rightVisb ? 'grey' : 'transparent' }}
-                id='rightLineGuid'
+                style={{ ...styles.line, ...styles.vert, right: guidLines.right, backgroundColor: guidLines.rightVisb ? 'grey' : 'transparent' }}
+                id={`page${pageId}rightLineGuid`}
             />
             <div
                 onMouseDown={(e) => handleMouseDown('right', e)}
                 onDoubleClick={() => handleDoubleClick('right')}
-                style={{ ...styles.boxTop, right: (whiteBoardStore.guidLines.right - 5), bottom: "-25px" }}
+                style={{ ...styles.boxTop, right: (guidLines.right - 5), bottom: "-25px" }}
+                id={`page${pageId}rightLineGuid`}
             />
 
             {/* Bottom line */}
             <div
                 onMouseDown={(e) => handleMouseDown('bottom', e)}
                 onDoubleClick={() => handleDoubleClick('bottom')}
-                style={{ ...styles.boxRight, bottom: (whiteBoardStore.guidLines.bottom - 5), left: "-25px" }}
+                style={{ ...styles.boxRight, bottom: (guidLines.bottom - 5), left: "-25px" }}
+                id={`page${pageId}bottomLineGuid`}
             />
             <div
-                style={{ ...styles.line, ...styles.horz, bottom: whiteBoardStore.guidLines.bottom, backgroundColor: whiteBoardStore.guidLines.bottomVisb ? 'grey' : 'transparent' }}
-                id='bottomLineGuid'
+                style={{ ...styles.line, ...styles.horz, bottom: guidLines.bottom, backgroundColor: guidLines.bottomVisb ? 'grey' : 'transparent' }}
+                id={`page${pageId}bottomLineGuid`}
             />
             <div
                 onMouseDown={(e) => handleMouseDown('bottom', e)}
                 onDoubleClick={() => handleDoubleClick('bottom')}
-                style={{ ...styles.boxLeft, bottom: (whiteBoardStore.guidLines.bottom - 5), right: "-25px" }}
+                style={{ ...styles.boxLeft, bottom: (guidLines.bottom - 5), right: "-25px" }}
+                id={`page${pageId}bottomLineGuid`}
             />
 
             {/* Left line */}
             <div
                 onMouseDown={(e) => handleMouseDown('left', e)}
                 onDoubleClick={() => handleDoubleClick('left')}
-                style={{ ...styles.boxBottom, left: (whiteBoardStore.guidLines.left - 5), top: "-25px" }}
+                style={{ ...styles.boxBottom, left: (guidLines.left - 5), top: "-25px" }}
+                id={`page${pageId}leftLineGuid`}
             />
             <div
-                style={{ ...styles.line, ...styles.vert, left: whiteBoardStore.guidLines.left, backgroundColor: whiteBoardStore.guidLines.leftVisb ? 'grey' : 'transparent' }}
-                id='leftLineGuid'
+                style={{ ...styles.line, ...styles.vert, left: guidLines.left, backgroundColor: guidLines.leftVisb ? 'grey' : 'transparent' }}
+                id={`page${pageId}leftLineGuid`}
             />
             <div
                 onMouseDown={(e) => handleMouseDown('left', e)}
                 onDoubleClick={() => handleDoubleClick('left')}
-                style={{ ...styles.boxTop, left: (whiteBoardStore.guidLines.left - 5), bottom: "-25px" }}
+                style={{ ...styles.boxTop, left: (guidLines.left - 5), bottom: "-25px" }}
+                id={`page${pageId}leftLineGuid`}
             />
             {/* Center vertical line */}
             <div
-                style={{ ...styles.vert, ...styles.centerVert, backgroundColor: whiteBoardStore.guidLines.centerVisb ? 'grey' : 'transparent' }}
-                id='centerVertGuidLine'
+                style={{ ...styles.vert, ...styles.centerVert, backgroundColor: guidLines.centerVisb ? 'grey' : 'transparent' }}
+                id={`page${pageId}centerVertGuidLine`}
             />
         </div>
     );

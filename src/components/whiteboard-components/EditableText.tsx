@@ -9,6 +9,9 @@ interface EditableTextProps {
     onChange: (newValue: string) => void;
     onFocus: () => void;
     onBlur: (event: React.FocusEvent) => void;
+    type?: string;
+    pageNumbHelper?: number;
+
 }
 
 export const EditableText: React.FC<EditableTextProps> = observer(({
@@ -17,20 +20,23 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
     onChange,
     onFocus,
     onBlur,
+    type,
+    pageNumbHelper
 }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [focused, setFocused] = React.useState(false)
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = textData.fontSize;
-            textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+            textareaRef.current.style.height = (textareaRef.current.scrollHeight - 1) + 'px';
         }
     }, [isEditing, textData, onBlur]);
 
     return (
         <div style={{ ...styles.EditableTextCont }}>
-            {isEditing ? (
+            {isEditing && type !== 'PageNumber' ? (
                 <textarea
+
                     name="content"
                     value={`${textData.content}`}
                     onFocus={() => {
@@ -83,7 +89,7 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
                     whiteSpace: textData.whiteSpace,
                     wordBreak: textData.wordBreak,
                 }}>
-                    {textData.content}
+                    {pageNumbHelper && type && type === 'PageNumber' ? pageNumbHelper : textData.content}
                 </p>
             )}
         </div>

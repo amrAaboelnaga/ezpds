@@ -48,6 +48,8 @@ const ProductInfoBox: React.FC = () => {
                     </option>
                 ))}
             </select>
+            <button style={styles.addPageButon} onClick={() => whiteBoardStore.addPage()}>Add Page</button>
+            <button style={styles.addPageButon} onClick={() => whiteBoardStore.setShowPageNumber()}>Show Page Number</button>
         </div>
     );
 };
@@ -55,9 +57,7 @@ const ProductInfoBox: React.FC = () => {
 const styles = {
     productInfoInputCont: {
         display: 'flex',
-        position: 'fixed',
-        bottom: '300px',
-        right: '50px',
+        position: 'relative',
         flexWrap: 'wrap',
         padding: '10px',
         borderRadius: '5px',
@@ -79,6 +79,14 @@ const styles = {
         boxSizing: 'border-box',
     } as React.CSSProperties,
     select: {
+        margin: '5px 0',
+        padding: '8px',
+        width: '100%',
+        borderRadius: '3px',
+        border: '1px solid #ccc',
+        boxSizing: 'border-box',
+    } as React.CSSProperties,
+    addPageButon: {
         margin: '5px 0',
         padding: '8px',
         width: '100%',

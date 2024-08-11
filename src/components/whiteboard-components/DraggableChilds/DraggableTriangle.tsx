@@ -10,10 +10,11 @@ interface DraggableTriangleProps {
   id: string;
   standardSpecs: DraggableTriangleInterface;
   content: Text;
-  toggleEditing: (id: string) => void;
+  toggleEditing: (pageId: number, id: string) => void;
+  pageId: number
 }
 
-export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ id, standardSpecs, content, toggleEditing }) => {
+export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ pageId, id, standardSpecs, content, toggleEditing }) => {
   const { isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
   const { useHandleContainerEditorBar, useHandleTextEdit, useZIndexHandler, useHandleBlur, useHandleKeyDown, useDeleteItem, useHandleTopTextBar } = useWhiteBoardHandlers();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -29,7 +30,7 @@ export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ i
       const event = {
         target: { name: key, value } as EventTarget & HTMLTextAreaElement,
       } as React.ChangeEvent<HTMLTextAreaElement>;
-      handleTextEdit(id, event);
+      handleTextEdit(pageId, id, event);
     }
   };
 
@@ -44,8 +45,10 @@ export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ i
   useEffect(() => {
     handleTopTextBar(isEditing, content, handleChange)
     handleContainerEditor(isEditing, {
-      done: () => toggleEditing(id),
-      deleteItem: () => handleDeleteItem(id), id: id,
+      pageId: pageId,
+      done: () => toggleEditing(pageId, id),
+      deleteItem: () => handleDeleteItem(pageId, id),
+      id: id,
       isTriangle: standardSpecs.type === 'Triangle' ? true : undefined
     });
   }, [isEditing, standardSpecs])
@@ -78,7 +81,7 @@ export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ i
         textData={content}
         isEditing={isEditing}
         onChange={(newValue) => {
-          handleTextEdit(id, undefined, undefined, newValue)
+          handleTextEdit(pageId, id, undefined, undefined, newValue)
         }}
         onFocus={() => { }}
         onBlur={() => { }}

@@ -3,6 +3,7 @@ import { ColorSelectorForConts } from './ColorSelectorForConts'; // Update impor
 import { observer } from 'mobx-react-lite';
 import { DraggableItemInterface } from '../../types/whiteBoard';
 import { useWhiteBoardHandlers } from '../../handlers/whiteBoardHandlers';
+import { rootStore } from '../../stores/rootStore';
 
 interface ContainerEditorProps {
   data: any;
@@ -10,19 +11,34 @@ interface ContainerEditorProps {
 }
 
 const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }) => {
-  const { borderColor, backgroundColor } = standardSpecs;
+  const { whiteBoardStore } = rootStore;
+  const { borderColor, backgroundColor, type } = standardSpecs;
   const { useUpdateStandards, useEditStandards } = useWhiteBoardHandlers();
   const [showBackgroundColorBox, setShowBackgroundColorBox] = useState(false);
   const [showBorderColorBox, setShowBorderColorBox] = useState(false);
   const updateStandards = useUpdateStandards();
-  const editStandards = useEditStandards(data.id, standardSpecs, updateStandards);
+  const editStandards = useEditStandards(data.pageId, data.id, standardSpecs, updateStandards);
 
   const handleBackgroundColorChange = (color: string) => {
-    updateStandards(data.id, undefined, undefined, undefined, undefined, undefined, color);
+    updateStandards(data.pageId, data.id, undefined, undefined, undefined, undefined, undefined, color);
   };
 
   const handleBorderColorChange = (color: string) => {
-    updateStandards(data.id, undefined, undefined, color, undefined);
+    updateStandards(data.pageId, data.id, undefined, undefined, color, undefined);
+  };
+
+  const handleRepeateState = () => {
+    updateStandards(data.pageId, data.id, undefined, undefined, undefined, undefined, undefined, undefined, undefined, !standardSpecs.repeate);
+    try {
+      if (data.pageId !== 0) {
+        const id = `${type}-${Object.keys(whiteBoardStore.pages[0]?.jsonSpecs || {}).length}`;
+        const newRepeatable = { [id]: whiteBoardStore.pages[data.pageId].jsonSpecs[data.id] }
+        whiteBoardStore.addObjectToPage(0, newRepeatable);
+        data.deleteItem()
+      }
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   return (
@@ -38,6 +54,7 @@ const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }
         <button style={styles.button} onClick={() => editStandards('opacity', 'increase')}>OP -</button>
         <button style={styles.button} onClick={() => editStandards('zIndex', 'increase')}>↑</button>
         <button style={styles.button} onClick={() => editStandards('zIndex', 'decrease')}>↓</button>
+        <button style={styles.button} onClick={handleRepeateState}>R</button>
         {standardSpecs.type !== 'Text' && <button
           style={{ ...styles.button, backgroundColor: backgroundColor || 'transparent', border: `1px solid black` }}
           onClick={() => setShowBackgroundColorBox((prev) => !prev)}

@@ -3,11 +3,8 @@ import { observer } from "mobx-react-lite";
 import { rootStore } from '../../stores/rootStore';
 import html2canvas from 'html2canvas';
 
-interface ExportAndImportProps {
-    page: React.RefObject<HTMLElement>;
-}
 
-const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
+const ExportAndImport: React.FC = ({ }) => {
     const { whiteBoardStore } = rootStore;
 
     // Function to handle reset
@@ -15,7 +12,7 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
         whiteBoardStore.setTextEditor(null, null)
         whiteBoardStore.setContainerEditor(null)
         whiteBoardStore.setTextEditor(null, null)
-        whiteBoardStore.setJsonSpecs({});
+        whiteBoardStore.resetPages();
         whiteBoardStore.setProductInfo({ id: 0, title: '', price: '', category: '' });
     };
 
@@ -25,10 +22,8 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
             alert('Make shure you add title and price')
             return
         }
-        const exportData = {
-            productInfo: whiteBoardStore.productInfo,
-            jsonSpecs: whiteBoardStore.jsonSpecs
-        };
+        const exportData = whiteBoardStore.pages
+
         const dataStr = JSON.stringify(exportData, null, 2);
         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
@@ -50,8 +45,7 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
                 try {
                     if (typeof content === 'string') {
                         const importedData = JSON.parse(content);
-                        whiteBoardStore.setJsonSpecs(importedData.jsonSpecs);
-                        whiteBoardStore.setProductInfo(importedData.productInfo);
+                        whiteBoardStore.importProject(importedData)
                     }
                 } catch (error) {
                     console.error('Error parsing imported JSON:', error);
@@ -63,18 +57,18 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
 
     // Function to convert page to image and download
     const handlePageToImage = () => {
-        if (page.current) {
-            html2canvas(page.current, {
-                scale: 1, // Increase scale for higher resolution
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png');
-                link.download = `${whiteBoardStore.productInfo.title}.png`;
-                link.click();
-            }).catch(error => {
-                console.error('Failed to capture page as image:', error);
-            });
-        }
+        //if (page.current) {
+        //    html2canvas(page.current, {
+        //        scale: 1, // Increase scale for higher resolution
+        //    }).then(canvas => {
+        //        const link = document.createElement('a');
+        //        link.href = canvas.toDataURL('image/png');
+        //        link.download = `${whiteBoardStore.productInfo.title}.png`;
+        //        link.click();
+        //    }).catch(error => {
+        //        console.error('Failed to capture page as image:', error);
+        //    });
+        //}
     };
 
     return (
@@ -93,9 +87,7 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ page }) => {
 const styles = {
     exportAndImportCont: {
         display: 'flex',
-        position: 'fixed',
-        bottom: '100px',
-        right: '50px',
+        position: 'relative',
         flexWrap: 'wrap',
         padding: '5px',
         borderRadius: '5px',

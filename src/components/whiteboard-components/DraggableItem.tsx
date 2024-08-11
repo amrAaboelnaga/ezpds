@@ -13,10 +13,11 @@ import { DraggableTriangle } from './DraggableChilds/DraggableTriangle';
 interface DraggableItemProps {
   id: string;
   itemSpecs: DraggableItemInterface;
-  toggleEditing: (id: string) => void;
+  toggleEditing: (pageId: number, id: string) => void;
+  pageId: number
 }
 
-export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemSpecs, toggleEditing }) => {
+export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemSpecs, toggleEditing, pageId }) => {
   const [focusedIndexTable, setFocusedIndexTable] = useState<{ row: number, col: number } | null>(null);
   const [focusedIndexList, setFocusedIndexList] = useState<number | null>(null);
   const draggableRef = useRef<HTMLDivElement>(null);
@@ -36,7 +37,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
           setFocusedIndexList(null);
           setFocusedIndexTable(null);
         } else if (itemSpecs.isEditing === true) {
-          toggleEditing(id);
+          toggleEditing(pageId, id);
         }
       }
     };
@@ -56,25 +57,25 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
     switch (itemSpecs.type) {
       case 'Text':
         const textSpecs = itemSpecs as DraggableTextInterface;
-        return <DraggableText id={id} standardSpecs={textSpecs} content={textSpecs.data} toggleEditing={toggleEditing} />;
+        return <DraggableText id={id} standardSpecs={textSpecs} content={textSpecs.data} toggleEditing={toggleEditing} pageId={pageId} />;
       case 'Rectangle':
         const rectangleSpecs = itemSpecs as DraggableTextInterface;
-        return <DraggableText id={id} standardSpecs={rectangleSpecs} content={rectangleSpecs.data} toggleEditing={toggleEditing} />;
+        return <DraggableText id={id} standardSpecs={rectangleSpecs} content={rectangleSpecs.data} toggleEditing={toggleEditing} pageId={pageId} />;
       case 'Circle':
         const circleSpecs = itemSpecs as DraggableCircleInterface;
-        return <DraggableText id={id} standardSpecs={circleSpecs} content={circleSpecs.data} toggleEditing={toggleEditing} />;
+        return <DraggableText id={id} standardSpecs={circleSpecs} content={circleSpecs.data} toggleEditing={toggleEditing} pageId={pageId} />;
       case 'Triangle':
         const triangleSpecs = itemSpecs as DraggableTriangleInterface;
-        return <DraggableTriangle id={id} standardSpecs={triangleSpecs} content={triangleSpecs.data} toggleEditing={toggleEditing} />;
+        return <DraggableTriangle id={id} standardSpecs={triangleSpecs} content={triangleSpecs.data} toggleEditing={toggleEditing} pageId={pageId} />;
       case 'List':
         const listSpecs = itemSpecs as DraggableListInterface;
-        return <DraggableList id={id} standardSpecs={listSpecs} listData={listSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexList} setFocusedIndex={setFocusedIndexList} draggableRef={draggableRef} />;
+        return <DraggableList id={id} standardSpecs={listSpecs} listData={listSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexList} setFocusedIndex={setFocusedIndexList} draggableRef={draggableRef} pageId={pageId} />;
       case 'Image':
         const imageSpecs = itemSpecs as DraggableImageInterface;
-        return <DraggableImage id={id} standardSpecs={imageSpecs} toggleEditing={toggleEditing} />;
+        return <DraggableImage id={id} standardSpecs={imageSpecs} toggleEditing={toggleEditing} pageId={pageId} />;
       case 'Table':
         const tableSpecs = itemSpecs as DraggableTableInterface;
-        return <DraggableTable id={id} standardSpecs={tableSpecs} tableData={tableSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={tableSpecs.cellDimensions} />;
+        return <DraggableTable id={id} standardSpecs={tableSpecs} tableData={tableSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={tableSpecs.cellDimensions} pageId={pageId} />;
       default:
         return null;
     }
@@ -94,11 +95,11 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
         zIndex: itemSpecs.zIndex,
         transform: `rotate(${itemSpecs.rotation}deg)`
       }}
-      onDoubleClick={itemSpecs.isEditing === false ? () => toggleEditing(id) : undefined}
-      onMouseDown={(e) => handleMouseDownReposition(e, id, draggableRef)}
+      onDoubleClick={itemSpecs.isEditing === false ? () => toggleEditing(pageId, id) : undefined}
+      onMouseDown={(e) => handleMouseDownReposition(e, id, draggableRef, pageId)}
     >
       {renderContent()}
-      {itemSpecs.isEditing && <ResizeBox id={id} draggableRef={draggableRef} />}
+      {itemSpecs.isEditing && <ResizeBox id={id} draggableRef={draggableRef} pageId={pageId} />}
     </div>
   );
 });
