@@ -22,7 +22,7 @@ const ExportAndImport: React.FC = ({ }) => {
             alert('Make shure you add title and price')
             return
         }
-        const exportData = whiteBoardStore.pages
+        const exportData = { pages: whiteBoardStore.pages, productInfo: whiteBoardStore.productInfo }
 
         const dataStr = JSON.stringify(exportData, null, 2);
         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);

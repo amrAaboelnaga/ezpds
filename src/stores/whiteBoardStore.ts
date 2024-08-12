@@ -116,7 +116,8 @@ class WhiteBoardStore {
 
   importProject(obj: any) {
     runInAction(() => {
-      this.pages = obj
+      this.pages = obj.pages
+      this.productInfo = obj.productInfo
     });
   }
 
