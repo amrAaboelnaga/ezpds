@@ -28,7 +28,7 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = textData.fontSize;
-            textareaRef.current.style.height = (textareaRef.current.scrollHeight - 1) + 'px';
+            textareaRef.current.style.height = (textareaRef.current.scrollHeight) + 'px';
         }
     }, [isEditing, textData, onBlur]);
 

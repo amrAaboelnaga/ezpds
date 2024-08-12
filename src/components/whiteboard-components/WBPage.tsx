@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { DraggableItem } from './DraggableItem';
 import ContainerEditor from './ContainerEditor';
@@ -15,19 +15,43 @@ interface WBPageProps {
 const WBPage: React.FC<WBPageProps> = ({ index }) => {
     const { whiteBoardStore } = rootStore;
     const { useHandleDrop, useHandleDragOver, useToggleEditing } = useWhiteBoardHandlers();
-    const page = useRef<HTMLDivElement>(null);
+    const [showItems, setShowItems] = useState(false)
+    const pageRef = useRef<HTMLDivElement>(null);
     const handleDrop = useHandleDrop();
     const handleDragOver = useHandleDragOver();
     const toggleEditing = useToggleEditing();
 
-    // Get the current page's jsonSpecs using the index
+    useEffect(() => {
+        const page = pageRef.current;
+        const options: IntersectionObserverInit = { root: null, rootMargin: '0px', threshold: 0.001 };
+        const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setShowItems(true);
+                } else {
+                    setShowItems(false);
+                }
+            });
+        };
+        const observer = new IntersectionObserver(handleIntersection, options);
+        if (page) {
+            observer.observe(page);
+        }
+        return () => {
+            if (page) {
+                observer.unobserve(page);
+            }
+        };
+    }, []);
+
     const currentPage = whiteBoardStore.pages[index];
     const jsonSpecs = currentPage?.jsonSpecs || {};
-    console.log(jsonSpecs)
+    //console.log(jsonSpecs)
     return (
-        <div ref={page} style={styles.workSpaceFile} onDrop={(e) => handleDrop(e, index)} onDragOver={handleDragOver}>
-            {(whiteBoardStore.containerEditor) && (whiteBoardStore.pages[index].jsonSpecs[whiteBoardStore.containerEditor.id])?.isEditing && (
+        <div ref={pageRef} style={styles.workSpaceFile} onDrop={(e) => handleDrop(e, index)} onDragOver={handleDragOver}>
+            {(whiteBoardStore.containerEditor) && (whiteBoardStore.containerEditor.pageId === index) && (whiteBoardStore.pages[index].jsonSpecs[whiteBoardStore.containerEditor.id])?.isEditing && (
                 <div
+                    className='ContainerEditor'
                     id="ContainerEditor"
                     style={{
                         position: 'absolute',
@@ -41,7 +65,7 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
                     />
                 </div>
             )}
-            {Object.keys(jsonSpecs).map((id) => {
+            {showItems && Object.keys(jsonSpecs).map((id) => {
                 if (jsonSpecs[id].repeate === false) {
                     return (
                         <DraggableItem
@@ -54,7 +78,7 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
                     );
                 }
             })}
-            {Object.keys(whiteBoardStore.pages[0].jsonSpecs).map((id) => {
+            {showItems && Object.keys(whiteBoardStore.pages[0].jsonSpecs).map((id) => {
                 if (whiteBoardStore.pages[0].jsonSpecs[id].repeate === true) {
                     return (
                         <DraggableRepeate

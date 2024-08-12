@@ -97,9 +97,7 @@ const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }
 
 const styles = {
   container: {
-    position: 'absolute',
-    top: '5px',
-    right: '-220px',
+    position: 'relative',  
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',

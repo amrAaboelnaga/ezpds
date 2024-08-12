@@ -9,6 +9,7 @@ interface PageGuidsProps {
 const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
     const { whiteBoardStore } = rootStore;
     const [dragging, setDragging] = useState<{ line: string; startX: number; startY: number } | null>(null);
+    const [shiftPressed, setShiftPressed] = useState(false);
 
     // Get the current page's guidelines
     const page = whiteBoardStore.pages.find(page => page.id === pageId);
@@ -35,7 +36,7 @@ const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
         whiteBoardStore.setGuidLines({
             ...guidLines,
             [`${line}Visb`]: true
-        }, pageId);
+        }, pageId, shiftPressed);
     };
 
     const handleDoubleClick = (line: string) => {
@@ -43,7 +44,7 @@ const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
         whiteBoardStore.setGuidLines({
             ...guidLines,
             [`${line}`]: 50
-        }, pageId);
+        }, pageId, shiftPressed);
     };
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -68,7 +69,7 @@ const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
                     break;
             }
 
-            whiteBoardStore.setGuidLines(newGuidelines, pageId);
+            whiteBoardStore.setGuidLines(newGuidelines, pageId, shiftPressed);
 
             setDragging({
                 ...dragging,
@@ -76,7 +77,7 @@ const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
                 startY: e.clientY
             });
         }
-    }, [dragging, guidLines, pageId, whiteBoardStore]);
+    }, [dragging, guidLines, pageId, whiteBoardStore, shiftPressed]);
 
     const handleMouseUp = () => {
         if (dragging) {
@@ -84,18 +85,34 @@ const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
             whiteBoardStore.setGuidLines({
                 ...guidLines,
                 [`${dragging.line}Visb`]: false
-            }, pageId);
+            }, pageId, shiftPressed);
         }
         setDragging(null);
     };
 
     useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Shift') {
+                setShiftPressed(true);
+            }
+        };
+
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.key === 'Shift') {
+                setShiftPressed(false);
+            }
+        };
+
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
 
         return () => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
         };
     }, [handleMouseMove]);
 
@@ -235,8 +252,10 @@ const styles = {
         borderLeft: '10px solid black',
     } as React.CSSProperties,
     centerVert: {
-        margin: 'auto'
-    } as React.CSSProperties,
+        left: '50%',
+        width: '1px',
+        height: '100%',
+    } as React.CSSProperties
 };
 
 export default observer(PageGuids);

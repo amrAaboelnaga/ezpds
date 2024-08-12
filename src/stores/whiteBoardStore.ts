@@ -48,16 +48,27 @@ class WhiteBoardStore {
     });
   }
 
-  setGuidLines(object: Guidelines, pageId: number) {
+  setGuidLines(object: Guidelines, pageId: number, shiftPressed?: boolean) {
     runInAction(() => {
-      const page = this.pages.find(page => page.id === pageId);
-      if (page) {
-        page.guidLines = {
-          ...page.guidLines,
-          ...object,
-        };
+      if (shiftPressed) {
+        // Update guidelines for all pages
+        this.pages.forEach(page => {
+          page.guidLines = {
+            ...page.guidLines,
+            ...object,
+          };
+        });
       } else {
-        console.error(`Page with ID ${pageId} not found.`);
+        // Update guidelines for the specific page
+        const page = this.pages.find(page => page.id === pageId);
+        if (page) {
+          page.guidLines = {
+            ...page.guidLines,
+            ...object,
+          };
+        } else {
+          console.error(`Page with ID ${pageId} not found.`);
+        }
       }
     });
   }

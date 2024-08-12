@@ -13,8 +13,8 @@ const Home: React.FC = observer(() => {
   const navigate = useNavigate();
   const { handleCheckLogin } = useAuthHandlers();
 
-  useEffect(() => {   
-      handleCheckLogin(navigate, setCheckedUser);    
+  useEffect(() => {
+    handleCheckLogin(navigate, setCheckedUser);
   }, []);
 
   return (
@@ -34,6 +34,7 @@ const styles = {
     display: 'flex',
     height: '100%',
     flexDirection: 'column' as const,
+    paddingTop: '50px'
   }
 };
 

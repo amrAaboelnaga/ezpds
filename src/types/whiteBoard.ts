@@ -121,7 +121,7 @@ export interface Guidelines {
 
 
 export const defualtPage = (newId: number): SingleWBPageInterface => ({
-    id: newId, jsonSpecs: { ['PageNumber']: createDraggablePageNumberSpec('PageNumber', 371, 1050, newId) }, guidLines: {
+    id: newId, jsonSpecs: { ['PageNumber']: createDraggablePageNumberSpec('PageNumber', 371, 1070, newId) }, guidLines: {
         left: 50,
         leftVisb: false,
         top: 50,
@@ -237,7 +237,7 @@ export const createDraggableTableSpec = (id: string, x: number, y: number): Drag
     data: defaultTableData,
     cellDimensions: {}, // Initialize with an empty object or a default structure if needed
     opacity: 1,
-    border: 0,
+    border: 1,
     borderColor: '#000000',
     borderRadius: 0,
     padding: 0,
