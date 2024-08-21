@@ -48,8 +48,6 @@ const ProductInfoBox: React.FC = () => {
                     </option>
                 ))}
             </select>
-            <button style={styles.addPageButon} onClick={() => whiteBoardStore.addPage()}>Add Page</button>
-            <button style={styles.addPageButon} onClick={() => whiteBoardStore.setShowPageNumber()}>Show Page Number</button>
         </div>
     );
 };

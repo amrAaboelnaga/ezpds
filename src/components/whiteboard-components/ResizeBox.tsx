@@ -256,7 +256,8 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef,
                 onMouseDown={(e) => handleMouseDownResize(e, 'top-left')}
             />
             <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.rotator }}
+                className='fa fa-undo'
+                style={{ ...resizeHandleStyles.rotator }}
                 onMouseDown={handleMouseDownRotation}
             />
             <div
@@ -324,10 +325,9 @@ const resizeHandleStyles = {
         cursor: 'nwse-resize',
     },
     rotator: {
+        position: 'absolute' as const,
         left: 'calc(50% - 4px)',
         top: '-50px',
-        width: '8px',
-        height: '8px',
         cursor: 'pointer',  // Adjust cursor as needed
     },
     top: {

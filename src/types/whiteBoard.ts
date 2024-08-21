@@ -120,7 +120,7 @@ export interface Guidelines {
 }
 
 
-export const defualtPage = (newId: number): SingleWBPageInterface => ({
+export const defaultPage = (newId: number): SingleWBPageInterface => ({
     id: newId, jsonSpecs: { ['PageNumber']: createDraggablePageNumberSpec('PageNumber', 371, 1070, newId) }, guidLines: {
         left: 50,
         leftVisb: false,

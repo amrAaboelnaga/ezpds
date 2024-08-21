@@ -12,6 +12,7 @@ import PageGuids from './PageGuids';
 import RulerComponent from './RulerComponent';
 import WBPage from './WBPage';
 import RightDrawer from './RightDrawer';
+import PageModifiers from './PageModifiers';
 //import ExportAndImport from './ExportAndImport/ExportAndImport';
 
 const CreateOrEditCont: React.FC = observer(() => {
@@ -25,12 +26,14 @@ const CreateOrEditCont: React.FC = observer(() => {
   return (
     <div style={{ ...styles.createOrEditCont, userSelect: 'none' }}>
       <LeftToolBar />
+
       <div style={styles.editTableCount}>
         {(whiteBoardStore.textContent && whiteBoardStore.textOnChange) && (< TextEditorBar content={whiteBoardStore.textContent} onChange={whiteBoardStore.textOnChange} />)}
       </div>
       <div style={styles.workSpaceCont}>
+        <PageModifiers />
         {whiteBoardStore.pages.map((page, index) => (
-          <WBPage key={page.id} index={index} />
+          <WBPage key={index} index={index} />
         ))}
       </div>
       <RightDrawer />
@@ -41,9 +44,10 @@ const CreateOrEditCont: React.FC = observer(() => {
 const styles = {
   createOrEditCont: {
     display: 'grid',
-    gridTemplateColumns: '15% 85%',
+    gridTemplateColumns: '100px auto',
   } as React.CSSProperties,
   workSpaceCont: {
+    paddingTop: '20px',
     backgroundColor: 'rgb(214, 214, 214)',
     position: 'relative',
     height: '100%',

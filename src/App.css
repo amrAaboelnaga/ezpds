@@ -1,7 +1,30 @@
-*{
+* {
   box-sizing: border-box;
 }
 
 #root {
   height: 100vh;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+}
+
+.testColor {
+  color: rgb(245, 245, 245);
+}
+
+.textEditButton:active {
+  transform: scale(0.95);
+  background-color: #aeaeae;
+}
+
+.textEditButton {
+  background-color: #fff;
+}
+
+.textEditButton:hover {
+  background-color: #e0e0e0;
 }

@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { defualtPage, Guidelines, JsonSpecs, ProductInfo, SingleWBPageInterface } from '../types/whiteBoard';
+import { defaultPage, Guidelines, JsonSpecs, ProductInfo, SingleWBPageInterface } from '../types/whiteBoard';
 
 class WhiteBoardStore {
   jsonSpecs: JsonSpecs = {};
@@ -7,8 +7,9 @@ class WhiteBoardStore {
   textContent: any = null;
   textOnChange: any = null;
   containerEditor: any = null;
-  pages: SingleWBPageInterface[] = [defualtPage(0)]; // Use empty array to start
+  pages: SingleWBPageInterface[] = [defaultPage(0)]; // Use empty array to start
   showPageNumber: boolean = true
+  currentPage: number = 0
 
   constructor() {
     makeAutoObservable(this);
@@ -73,12 +74,80 @@ class WhiteBoardStore {
     });
   }
 
+  setCurrentPage(currentPage: number) {
+    runInAction(() => {
+      this.currentPage = currentPage
+      console.log(`Looking at pageId: ${currentPage}`)
+    });
+  }
+
   addPage() {
     runInAction(() => {
       const newId = this.pages.length ? this.pages[this.pages.length - 1].id + 1 : 0;
-      this.pages.push(defualtPage(newId));
+      this.pages.push(defaultPage(newId));
     });
   }
+  addPageAfter(currentPageId: number) {
+    runInAction(() => {
+      // Ensure the currentPageId corresponds to an existing index
+      if (currentPageId < 0 || currentPageId >= this.pages.length) {
+        console.error(`Page with ID ${currentPageId} not found.`);
+        return;
+      }
+
+      // Insert a new page after the current page
+      this.pages.splice(currentPageId + 1, 0, defaultPage(currentPageId + 1));
+
+      // Update IDs of all pages to match their new indices
+      this.pages.forEach((page, index) => {
+        page.id = index;
+      });
+    });
+  }
+
+  addPageBefore(currentPageId: number) {
+    runInAction(() => {
+      // Ensure the currentPageId corresponds to an existing index
+      if (currentPageId < 0 || currentPageId >= this.pages.length) {
+        console.error(`Page with ID ${currentPageId} not found.`);
+        return;
+      }
+
+      // Insert a new page before the current page
+      this.pages.splice(currentPageId, 0, defaultPage(currentPageId));
+
+      // Update IDs of all pages to match their new indices
+      this.pages.forEach((page, index) => {
+        page.id = index;
+      });
+    });
+  }
+
+  handleOnDragEnd(result: any) {
+    const { destination, source } = result;
+
+    if (!destination) {
+      // If dropped outside the list
+      return;
+    }
+
+    // Ensure the source and destination are different
+    if (source.index === destination.index) {
+      return;
+    }
+
+    runInAction(() => {
+      // Reorder the pages array
+      const [removed] = this.pages.splice(source.index, 1);
+      this.pages.splice(destination.index, 0, removed);
+
+      // Update IDs of all pages to match their new indices
+      this.pages.forEach((page, index) => {
+        page.id = index;
+      });
+    });
+  }
+
 
   deletePage(id: number) {
     runInAction(() => {
@@ -110,7 +179,7 @@ class WhiteBoardStore {
 
   resetPages() {
     runInAction(() => {
-      this.pages = [defualtPage(0)]
+      this.pages = [defaultPage(0)]
     });
   }
 

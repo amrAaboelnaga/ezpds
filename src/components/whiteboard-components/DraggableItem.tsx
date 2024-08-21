@@ -15,9 +15,10 @@ interface DraggableItemProps {
   itemSpecs: DraggableItemInterface;
   toggleEditing: (pageId: number, id: string) => void;
   pageId: number
+  inMini?: boolean
 }
 
-export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemSpecs, toggleEditing, pageId }) => {
+export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemSpecs, toggleEditing, pageId, inMini }) => {
   const [focusedIndexTable, setFocusedIndexTable] = useState<{ row: number, col: number } | null>(null);
   const [focusedIndexList, setFocusedIndexList] = useState<number | null>(null);
   const draggableRef = useRef<HTMLDivElement>(null);
@@ -27,6 +28,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+      if (inMini) return
       const textEditorBarElement = document.getElementById('TextEditorBar');
       const containerEditorElement = document.getElementById('ContainerEditor');
 

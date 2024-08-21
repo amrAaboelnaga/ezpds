@@ -65,7 +65,7 @@ const styles = {
         padding: '10px',
         height: '50px',
         boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-        zIndex: 100
+        zIndex: 9000
     },
     navbarLogo: {
         marginLeft: '10px',

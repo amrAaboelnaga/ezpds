@@ -33,7 +33,8 @@ const RightDrawer: React.FC = () => {
         }
     }, []);
     return (
-        <div onMouseOver={() => setshowObject(true)} ref={componentRef} style={{ ...styles.rightDrawerCont, right: showObject ? '-10px' : '-180px' }}>
+        <div onMouseLeave={() => setshowObject(false)} onMouseOver={() => setshowObject(true)} ref={componentRef} style={{ ...styles.rightDrawerCont, right: showObject ? '-10px' : '-200px' }}>
+            <i style={{ ...styles.settingOppener }} className="fa fa-cog" ></i>
             <ProductInfoBox />
             <div style={{ height: '10px' }} />
             <ExportAndImport />
@@ -51,7 +52,21 @@ const styles = {
         borderRadius: '5px',
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        borderTopLeftRadius: '0px',
         width: '200px',
+        transition: 'all 0.4s'
+    } as React.CSSProperties,
+    settingOppener: {
+        position: 'absolute',
+        backgroundColor: 'rgb(255, 255, 255)',
+        left: '-30px',
+        top: '6px',
+        transform: 'scale(1.5)',
+        padding: '4px',
+        borderRadius: '5px',
+        borderTopRightRadius: '0px',
+        borderBottomRightRadius: '0px'
+
     } as React.CSSProperties,
     productLabel: {
         marginBottom: '5px',

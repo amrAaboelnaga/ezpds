@@ -8,11 +8,11 @@ import { useWhiteBoardHandlers } from '../../handlers/whiteBoardHandlers';
 import { rootStore } from "../../stores/rootStore";
 import { DraggableRepeate } from './DraggableRepeate';
 
-interface WBPageProps {
+interface MiniPageProps {
     index: number; // Add index prop
 }
 
-const WBPage: React.FC<WBPageProps> = ({ index }) => {
+const MiniPage: React.FC<MiniPageProps> = ({ index }) => {
     const { whiteBoardStore } = rootStore;
     const { useHandleDrop, useHandleDragOver, useToggleEditing } = useWhiteBoardHandlers();
     const [showItems, setShowItems] = useState(false)
@@ -60,24 +60,8 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
     const jsonSpecs = currentPage?.jsonSpecs || {};
     //console.log(jsonSpecs)
     return (
-        <div id={`pageIndex${index}`} ref={pageRef} style={styles.workSpaceFile} onDrop={(e) => handleDrop(e, index)} onDragOver={handleDragOver}>
-            {(whiteBoardStore.containerEditor) && (whiteBoardStore.containerEditor.pageId === index) && (whiteBoardStore.pages[index].jsonSpecs[whiteBoardStore.containerEditor.id])?.isEditing && (
-                <div
-                    className='ContainerEditor'
-                    id="ContainerEditor"
-                    style={{
-                        position: 'absolute',
-                        top: (jsonSpecs[whiteBoardStore.containerEditor.id]?.location?.y || 0),
-                        left: `calc(${jsonSpecs[whiteBoardStore.containerEditor.id]?.location?.x || 0}px + ${jsonSpecs[whiteBoardStore.containerEditor.id]?.width || 0} + 10px)`,
-                        height: jsonSpecs[whiteBoardStore.containerEditor.id]?.height || 0,
-                    }}>
-                    <ContainerEditor
-                        data={whiteBoardStore.containerEditor}
-                        standardSpecs={jsonSpecs[whiteBoardStore.containerEditor.id] || {}}
-                    />
-                </div>
-            )}
-            {showItems && Object.keys(jsonSpecs).map((id) => {
+        <div ref={pageRef} style={{ ...styles.workSpaceFile }} onDrop={(e) => handleDrop(e, index)} onDragOver={handleDragOver}>
+            {Object.keys(jsonSpecs).map((id) => {
                 if (jsonSpecs[id].repeate === false) {
                     return (
                         <DraggableItem
@@ -86,11 +70,12 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
                             itemSpecs={jsonSpecs[id]}
                             toggleEditing={toggleEditing}
                             pageId={index}
+                            inMini={true}
                         />
                     );
                 }
             })}
-            {showItems && Object.keys(whiteBoardStore.pages[0].jsonSpecs).map((id) => {
+            {Object.keys(whiteBoardStore.pages[0].jsonSpecs).map((id) => {
                 if (whiteBoardStore.pages[0].jsonSpecs[id].repeate === true) {
                     return (
                         <DraggableRepeate
@@ -99,13 +84,12 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
                             itemSpecs={whiteBoardStore.pages[0].jsonSpecs[id]}
                             toggleEditing={toggleEditing}
                             pageId={index}
+                            inMini={true}
                         />
                     );
                 }
             })}
-            <RulerComponent />
-            <PageGuids pageId={index} />
-            <div style={styles.rulerHider} />
+            <div style={styles.miniCover} />
         </div>
     );
 };
@@ -115,9 +99,16 @@ const styles = {
         width: '210mm',
         height: '297mm',
         backgroundColor: 'white',
-        margin: '60px auto',
         position: 'relative',
-        marginBottom: '150px'
+        padding: '1px'
+    } as React.CSSProperties,
+    miniCover: {
+        width: '210mm',
+        height: '297mm',
+        zIndex: '9000',
+        position: 'absolute',
+        left: '0px',
+        top: '0px'
     } as React.CSSProperties,
     rulerHider: {
         position: 'absolute',
@@ -126,7 +117,6 @@ const styles = {
         width: '20px',
         height: '20px',
         backgroundColor: 'rgb(214, 214, 214)',
-
     } as React.CSSProperties,
     delPageButton: {
         position: 'absolute',
@@ -138,4 +128,4 @@ const styles = {
     } as React.CSSProperties,
 };
 
-export default observer(WBPage);
+export default observer(MiniPage);

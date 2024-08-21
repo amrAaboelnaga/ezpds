@@ -252,7 +252,7 @@ const styles = {
         borderLeft: '10px solid black',
     } as React.CSSProperties,
     centerVert: {
-        left: '50%',
+        marginLeft: '50%',
         width: '1px',
         height: '100%',
     } as React.CSSProperties
