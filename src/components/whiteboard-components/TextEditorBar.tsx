@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Text } from '../../types/whiteBoard';
 import { ColorSelectorForConts } from './ColorSelectorForConts';
+import TextEditButton from './UnifiedTextEditorButton';
 
 interface TextEditorBarProps {
   content: Text;
@@ -138,90 +139,92 @@ export const TextEditorBar: React.FC<TextEditorBarProps> = observer(({ content, 
 
       <div  >|</div>
 
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="fontWeight"
+        value="bold"
+        description={'Bold text'}
+        currentValue={content.fontWeight}
+        iconClass="fa fa-bold"
         onClick={() => toggleOption('fontWeight', 'normal', 'bold')}
-        className="textEditButton"
-      >
-        <i className="fa fa-bold"></i>
-      </div>
+      />
 
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="fontStyle"
+        value="italic"
+        description={'Italic text'}
+        currentValue={content.fontStyle}
+        iconClass="fa fa-italic"
         onClick={() => toggleOption('fontStyle', 'normal', 'italic')}
-        className="textEditButton"
-      >
-        <i className="fa fa-italic"></i>
-      </div>
+      />
+
 
       <div  >|</div>
 
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="textAlign"
+        value="left"
+        description={'Left text align'}
+        currentValue={content.textAlign}
+        iconClass="fa fa-align-left"
         onClick={() => handleOptionClick('textAlign', 'left')}
-        className="textEditButton"
-      >
-        <i className="fa fa-align-left"></i>
-      </div>
+      />
 
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="textAlign"
+        value="center"
+        description={'Center text align'}
+        currentValue={content.textAlign}
+        iconClass="fa fa-align-center"
         onClick={() => handleOptionClick('textAlign', 'center')}
-        className="textEditButton"
-      >
-        <i className="fa fa-align-center"></i>
-      </div>
+      />
 
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="textAlign"
+        value="right"
+        description={'Right text align'}
+        currentValue={content.textAlign}
+        iconClass="fa fa-align-right"
         onClick={() => handleOptionClick('textAlign', 'right')}
-        className="textEditButton"
-      >
-        <i className="fa fa-align-right"></i>
-      </div>
+      />
 
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="textAlign"
+        value="justify"
+        description={'Justify text align'}
+        currentValue={content.textAlign}
+        iconClass="fa fa-align-justify"
         onClick={() => handleOptionClick('textAlign', 'justify')}
-        className="textEditButton"
-      >
-        <i className="fa fa-align-justify"></i>
-      </div>
+      />
+
 
       <div  >|</div>
 
-      {/*<div
-        style={styles.box}
-        onClick={() => handleOptionClick('textDecoration', 'none')}
-        className="textEditButton"
-      >
-        <i className="fa fa-times"></i>
-      </div>*/}
-
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="textDecoration"
+        value="underline"
+        currentValue={content.textDecoration}
+        description={'Underline'}
+        toggleValue="none"
+        iconClass="fa fa-underline"
         onClick={() => {
           content.textDecoration !== 'underline'
             ? handleOptionClick('textDecoration', 'underline')
             : handleOptionClick('textDecoration', 'none')
         }}
-        className="textEditButton"
-      >
-        <i className="fa fa-underline"></i>
-      </div>
-
-      <div
-        style={styles.box}
+      />
+      <TextEditButton
+        option="textDecoration"
+        value="line-through"
+        currentValue={content.textDecoration}
+        description={'Line-through'}
+        toggleValue="none"
+        iconClass="fa fa-strikethrough"
         onClick={() => {
           content.textDecoration !== 'line-through'
             ? handleOptionClick('textDecoration', 'line-through')
             : handleOptionClick('textDecoration', 'none')
         }}
-        className="textEditButton"
-      >
-        <i className="fa fa-strikethrough"></i>
-      </div>
-
+      />
       {/*<div
         style={styles.box}
         onClick={() => {
@@ -235,11 +238,15 @@ export const TextEditorBar: React.FC<TextEditorBarProps> = observer(({ content, 
 
       <div  >|</div>
 
-      <div
-        style={{ ...styles.box, transform: showLetterSpacing ? 'scale(1)' : "" }}
-        className="textEditButton"
-      >
-        <i onClick={() => { setShowLetterSpacing(!showLetterSpacing); setShowLineHeight(false) }} className="fa fa-text-width"></i>
+      <div      >
+        <TextEditButton
+          option="textAlign"
+          value="none1"
+          description={'Change letter spacting'}
+          currentValue={'none'}
+          iconClass="fa fa-text-width"
+          onClick={() => { setShowLetterSpacing(!showLetterSpacing); setShowLineHeight(false) }}
+        />
         {showLetterSpacing && (
           <div style={{ ...styles.boxWihtInput, ...styles.hiddenInput }}>
             <button
@@ -271,11 +278,16 @@ export const TextEditorBar: React.FC<TextEditorBarProps> = observer(({ content, 
         )}
       </div>
 
-      <div
-        style={{ ...styles.box, transform: showLineHeight ? 'scale(1)' : "" }}
-        className="textEditButton"
-      >
-        <i onClick={() => { setShowLineHeight(!showLineHeight); setShowLetterSpacing(false) }} className="fa fa-text-height"></i>
+      <div      >
+        <TextEditButton
+          option="textAlign"
+          value="none1"
+          description={'Change text height'}
+          currentValue={'none'}
+          iconClass="fa fa-text-height"
+          onClick={() => { setShowLineHeight(!showLineHeight); setShowLetterSpacing(false) }}
+        />
+
         {showLineHeight && (
           <div style={{ ...styles.boxWihtInput, ...styles.hiddenInput }}>
             <button
@@ -309,30 +321,30 @@ export const TextEditorBar: React.FC<TextEditorBarProps> = observer(({ content, 
       </div>
 
       <div  >|</div>
-
-      <div
-        style={styles.box}
+      <TextEditButton
+        option="textTransform"
+        value="none"
+        currentValue={content.textTransform}
+        description={'Default text casing'} 
         onClick={() => handleOptionClick('textTransform', 'none')}
-        className="textEditButton"
-      >
-        Tt
-      </div>
-
-      <div
-        style={styles.box}
+        text='Tt'
+      />
+      <TextEditButton
+        option="textTransform"
+        value="uppercase"
+        currentValue={content.textTransform}
+        description={'All text upper-case'} 
         onClick={() => handleOptionClick('textTransform', 'uppercase')}
-        className="textEditButton"
-      >
-        TT
-      </div>
-
-      <div
-        style={styles.box}
+        text='TT'
+      />
+      <TextEditButton
+        option="textTransform"
+        value="lowercase"
+        currentValue={content.textTransform}
+        description={'All text lower-case'}      
         onClick={() => handleOptionClick('textTransform', 'lowercase')}
-        className="textEditButton"
-      >
-        tt
-      </div>
+        text='tt'
+      />
     </div >
 
   );
@@ -380,6 +392,7 @@ const styles = {
     position: 'absolute',
     top: '32px',
     padding: '8px',
+    transform: 'translateX(-39%)',
     borderRadius: '4px',
     backgroundColor: '#fff',
   } as React.CSSProperties,
@@ -405,7 +418,7 @@ const styles = {
   picker: {
     position: 'absolute',
     top: '33px',
-    left:'-40px',
+    left: '-40px',
     zIndex: 2,
     backgroundColor: '#fff',
     padding: '2px',

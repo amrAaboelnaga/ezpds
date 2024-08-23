@@ -49,6 +49,7 @@ export interface DraggableListInterface extends DraggableItemInterface {
     data: Text[];
     gap: string;
     rowHeight: RowHeight
+    orderedList: boolean
 }
 
 export interface RowHeight {
@@ -207,7 +208,7 @@ export const createDraggableListSpec = (id: string, x: number, y: number): Dragg
     isEditing: false,
     backgroundColor: '#ffffff00',
     zIndex: 1,
-    data: [defaultText, defaultText, defaultText, defaultText], // Default list items
+    data: [{ ...defaultText, textAlign: 'left' }, { ...defaultText, textAlign: 'left' }, { ...defaultText, textAlign: 'left' }, { ...defaultText, textAlign: 'left' }], // Default list items
     gap: '10px',
     opacity: 1,
     border: 0,
@@ -215,7 +216,8 @@ export const createDraggableListSpec = (id: string, x: number, y: number): Dragg
     borderRadius: 0,
     padding: 0,
     rowHeight: {},
-    rotation: 0
+    rotation: 0,
+    orderedList: true
 
 });
 
@@ -257,7 +259,7 @@ export const createDraggableRectangleSpec = (id: string, x: number, y: number): 
     zIndex: 1,
     data: defaultText,
     opacity: 1,
-    border: 10,
+    border: 1,
     borderColor: '#000000',
     borderRadius: 0,
     padding: 0,
@@ -275,7 +277,7 @@ export const createDraggableCircleleSpec = (id: string, x: number, y: number): D
     zIndex: 1,
     data: defaultText,
     opacity: 1,
-    border: 10,
+    border: 1,
     borderColor: '#000000',
     borderRadius: 0,
     padding: 0,
@@ -290,11 +292,11 @@ export const createDraggableTriangleSpec = (id: string, x: number, y: number): D
     width: '250px',
     height: '250px',
     isEditing: false,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'transparent',
     zIndex: 1,
     data: defaultText,
     opacity: 1,
-    border: 3,
+    border: 1,
     borderColor: '#000000',
     borderRadius: 0,
     padding: 0,

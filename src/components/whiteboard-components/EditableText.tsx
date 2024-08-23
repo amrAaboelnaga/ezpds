@@ -11,6 +11,7 @@ interface EditableTextProps {
     onBlur: (event: React.FocusEvent) => void;
     type?: string;
     pageNumbHelper?: number;
+    order?: number
 
 }
 
@@ -21,7 +22,8 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
     onFocus,
     onBlur,
     type,
-    pageNumbHelper
+    pageNumbHelper,
+    order
 }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [focused, setFocused] = React.useState(false)
@@ -34,6 +36,22 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
 
     return (
         <div style={{ ...styles.EditableTextCont }}>
+            <p style={{
+                ...styles.number,
+                fontSize: textData.fontSize,
+                fontWeight: textData.fontWeight,
+                fontStyle: textData.fontStyle,
+                color: textData.color,
+                textDecoration: textData.textDecoration,
+                textAlign: textData.textAlign,
+                justifyContent: textData.textAlign,
+                letterSpacing: textData.letterSpacing,
+                lineHeight: textData.lineHeight,
+                fontFamily: textData.fontFamily,
+                textTransform: textData.textTransform,
+                whiteSpace: textData.whiteSpace,
+                wordBreak: textData.wordBreak,
+            }}>{order ? `${order}-` : type === 'List' && !order ? '-' : ""} </p>
             {isEditing && type !== 'PageNumber' ? (
                 <textarea
 
@@ -102,6 +120,10 @@ const styles = {
         display: 'flex',
         height: '100%',
         width: '100%'
+    } as React.CSSProperties,
+    number: {
+        padding: '0px',
+        margin: '0px'
     } as React.CSSProperties,
     text: {
         width: '100%',

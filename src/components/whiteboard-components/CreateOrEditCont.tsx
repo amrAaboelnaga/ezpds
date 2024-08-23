@@ -24,7 +24,7 @@ const CreateOrEditCont: React.FC = observer(() => {
   const toggleEditing = useToggleEditing();
 
   return (
-    <div style={{ ...styles.createOrEditCont, userSelect: 'none' }}>
+    <div style={{ ...styles.createOrEditCont }}>
       <LeftToolBar />
 
       <div style={styles.editTableCount}>

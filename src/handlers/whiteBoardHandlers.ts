@@ -453,7 +453,7 @@ export const useWhiteBoardHandlers = () => {
 
 
 
-    const useUpdateListSpecs = () => (pageId: number, updatedListData: Text[], id: string, gap: string, containerBackgroundColor: string, newZIndex: number) => {
+    const useUpdateListSpecs = () => (pageId: number, updatedListData: Text[], id: string, gap: string, containerBackgroundColor: string, newZIndex: number, updatedOrderedList?: boolean) => {
         const page = whiteBoardStore.pages.find(page => page.id === pageId);
         if (page) {
             const updatedSpecs = {
@@ -463,7 +463,8 @@ export const useWhiteBoardHandlers = () => {
                     data: updatedListData,
                     gap: gap,
                     backgroundColor: containerBackgroundColor,
-                    zIndex: newZIndex
+                    zIndex: newZIndex,
+                    orderedList: updatedOrderedList && (updatedOrderedList)
                 },
             };
             whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
@@ -472,6 +473,22 @@ export const useWhiteBoardHandlers = () => {
         }
     };
 
+    const useOrderedList = (
+        pageId: number,
+        listData: Text[],
+        id: string,
+        newGap: string,
+        orderedList: boolean,
+        containerBackgroundColor: string,
+        zIndex: number,
+        updateListSpecs: ReturnType<typeof useUpdateListSpecs>
+    ) => {
+        return () => {
+            const newOrderedList = !orderedList;
+            console.log(newOrderedList)
+            updateListSpecs(pageId, listData, id, newGap, containerBackgroundColor, zIndex, newOrderedList);
+        };
+    };
 
 
     const useAddList = (
@@ -876,6 +893,7 @@ export const useWhiteBoardHandlers = () => {
         useHandleListItemChange,
         useChangeListRowHeight,
         useUpdateListGap,
+        useOrderedList,
         useHandleListTextStyleChange,
         useHandleListMouseDown,
         useHandleCellChange,
