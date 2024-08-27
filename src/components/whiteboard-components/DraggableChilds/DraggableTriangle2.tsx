@@ -4,18 +4,17 @@ import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 import { whiteBoardStore } from '../../../stores/whiteBoardStore';
 import { TextEditorBar } from '../TextEditorBar';
 import { EditableText } from '../EditableText';
-import { DraggableTextInterface, Text, DraggableRectangleInterface, DraggableCircleInterface, DraggablePageNumberInterface } from '../../../types/whiteBoard';
+import { DraggableTextInterface, Text, DraggableRectangleInterface, DraggableCircleInterface, DraggableTriangleInterface } from '../../../types/whiteBoard';
 
-interface DraggableTextProps {
+interface DraggableTriangleProps {
   id: string;
-  standardSpecs: DraggableTextInterface | DraggableRectangleInterface | DraggableCircleInterface | DraggablePageNumberInterface;
+  standardSpecs: DraggableTriangleInterface;
   content: Text;
   toggleEditing: (pageId: number, id: string) => void;
-  pageId: number;
-  pageNumbHelper?: number
+  pageId: number
 }
 
-export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, standardSpecs, content, toggleEditing, pageId, pageNumbHelper }) => {
+export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ pageId, id, standardSpecs, content, toggleEditing }) => {
   const { isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
   const { useHandleContainerEditorBar, useHandleTextEdit, useZIndexHandler, useHandleBlur, useHandleKeyDown, useDeleteItem, useHandleTopTextBar } = useWhiteBoardHandlers();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -25,6 +24,7 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, stand
   const handleDeleteItem = useDeleteItem();
   const handleTopTextBar = useHandleTopTextBar();
   const handleContainerEditor = useHandleContainerEditorBar();
+  const grandParentTriangleRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (updatedContent: Partial<Text>, newZIndex?: number) => {
     for (const [key, value] of Object.entries(updatedContent)) {
@@ -46,20 +46,40 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, stand
   useEffect(() => {
     handleTopTextBar(isEditing, content, handleChange)
     handleContainerEditor(isEditing, {
+      pageId: pageId,
       done: () => toggleEditing(pageId, id),
       deleteItem: () => handleDeleteItem(pageId, id),
-      pageId: pageId,
       id: id,
-      isCircle: standardSpecs.type === 'Circle' ? true : undefined
+      isTriangle: standardSpecs.type === 'Triangle' ? true : undefined
     });
   }, [isEditing, standardSpecs])
 
+
   return (
-    <div style={{
-      ...styles.draggableChildCont, backgroundColor: content.backgroundColor, padding: isEditing ? '0px' : '1px',
-      border: `${border}px solid ${borderColor}`,
-      borderRadius: standardSpecs.type === 'Circle' ? "50%" : borderRadius,
+    <div ref={grandParentTriangleRef} style={{
+      ...styles.draggableChildCont,
+      padding: isEditing ? '-1px' : '1px',
+
     }}>
+      <div style={{
+        ...styles.mainTriangle,
+        width: standardSpecs.width,
+        height: standardSpecs.height,
+        padding: isEditing ? '-1px' : '1px',
+        backgroundColor: borderColor,
+        boxSizing: "content-box",
+      }} />
+      <div style={{
+        ...styles.innerTriangle,
+        width: '100%',
+        height: '100%',
+        padding: isEditing ? '-1px' : '1px',
+        backgroundColor: standardSpecs.backgroundColor,
+        bottom: -standardSpecs.border / 2,
+        position: 'absolute',
+        transform: `scale(${1 - border / 100})`
+      }} />
+
       <EditableText
         textData={content}
         isEditing={isEditing}
@@ -68,8 +88,6 @@ export const DraggableText: React.FC<DraggableTextProps> = observer(({ id, stand
         }}
         onFocus={() => { }}
         onBlur={() => { }}
-        type={standardSpecs.type}
-        pageNumbHelper={pageNumbHelper}
       />
     </div>
   );
@@ -110,4 +128,31 @@ const styles = {
     boxSizing: 'border-box', // Includes padding in the element's total width and height
     backgroundColor: 'transparent'
   } as React.CSSProperties,
+  innerTriangleCont: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: -1
+
+  } as React.CSSProperties,
+  mainTriangle: {
+    display: 'flex',
+    width: `100%`,
+    height: `100%`,
+    clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)', // Creates a triangle shape
+    overflow: 'hidden',
+    zIndex: -2,
+    position: 'absolute',
+  } as React.CSSProperties,
+  innerTriangle: {
+    display: 'flex',
+    width: `100%`,
+    height: `100%`,
+    clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)', // Creates a triangle shape
+    overflow: 'hidden',
+  } as React.CSSProperties,
+
 };

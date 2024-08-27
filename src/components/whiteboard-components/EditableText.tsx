@@ -9,6 +9,10 @@ interface EditableTextProps {
     onChange: (newValue: string) => void;
     onFocus: () => void;
     onBlur: (event: React.FocusEvent) => void;
+    type?: string;
+    pageNumbHelper?: number;
+    order?: number
+
 }
 
 export const EditableText: React.FC<EditableTextProps> = observer(({
@@ -17,20 +21,40 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
     onChange,
     onFocus,
     onBlur,
+    type,
+    pageNumbHelper,
+    order
 }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [focused, setFocused] = React.useState(false)
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = textData.fontSize;
-            textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+            textareaRef.current.style.height = (textareaRef.current.scrollHeight) + 'px';
         }
     }, [isEditing, textData, onBlur]);
 
     return (
         <div style={{ ...styles.EditableTextCont }}>
-            {isEditing ? (
+            <p style={{
+                ...styles.number,
+                fontSize: textData.fontSize,
+                fontWeight: textData.fontWeight,
+                fontStyle: textData.fontStyle,
+                color: textData.color,
+                textDecoration: textData.textDecoration,
+                textAlign: textData.textAlign,
+                justifyContent: textData.textAlign,
+                letterSpacing: textData.letterSpacing,
+                lineHeight: textData.lineHeight,
+                fontFamily: textData.fontFamily,
+                textTransform: textData.textTransform,
+                whiteSpace: textData.whiteSpace,
+                wordBreak: textData.wordBreak,
+            }}>{order ? `${order}-` : type === 'List' && !order ? '-' : ""} </p>
+            {isEditing && type !== 'PageNumber' ? (
                 <textarea
+
                     name="content"
                     value={`${textData.content}`}
                     onFocus={() => {
@@ -83,7 +107,7 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
                     whiteSpace: textData.whiteSpace,
                     wordBreak: textData.wordBreak,
                 }}>
-                    {textData.content}
+                    {pageNumbHelper && type && type === 'PageNumber' ? pageNumbHelper : textData.content}
                 </p>
             )}
         </div>
@@ -96,6 +120,10 @@ const styles = {
         display: 'flex',
         height: '100%',
         width: '100%'
+    } as React.CSSProperties,
+    number: {
+        padding: '0px',
+        margin: '0px'
     } as React.CSSProperties,
     text: {
         width: '100%',

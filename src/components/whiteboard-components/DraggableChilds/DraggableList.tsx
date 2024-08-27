@@ -12,30 +12,32 @@ interface DraggableListProps {
     id: string;
     standardSpecs: DraggableListInterface;
     listData: Text[];
-    toggleEditing: (id: string) => void;
+    toggleEditing: (pageId: number, id: string) => void;
     focusedIndex: any;
     setFocusedIndex: any;
     draggableRef: React.RefObject<HTMLDivElement>,
+    pageId: number
 }
 
 
 
-export const DraggableList: React.FC<DraggableListProps> = observer(({ id, standardSpecs, listData, toggleEditing, focusedIndex, setFocusedIndex, draggableRef }) => {
-    const { useHandleListMouseDown, useHandleContainerEditorBar, useAddList, useRemoveList, useHandleListItemChange, useChangeListRowHeight, useUpdateListGap, useHandleListTextStyleChange, useDeleteItem, useUpdateListSpecs, useHandleTopTextBar, useZIndexHandler } = useWhiteBoardHandlers();
-    const { rowHeight, padding, gap, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
+export const DraggableList: React.FC<DraggableListProps> = observer(({ pageId, id, standardSpecs, listData, toggleEditing, focusedIndex, setFocusedIndex, draggableRef }) => {
+    const { useOrderedList, useHandleListMouseDown, useHandleContainerEditorBar, useAddList, useRemoveList, useHandleListItemChange, useChangeListRowHeight, useUpdateListGap, useHandleListTextStyleChange, useDeleteItem, useUpdateListSpecs, useHandleTopTextBar, useZIndexHandler } = useWhiteBoardHandlers();
+    const { orderedList, rowHeight, padding, gap, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
     const resizeRefs = useRef<(HTMLDivElement | null)[]>([]);
     const handleDeleteItem = useDeleteItem();
     const updateListSpecs = useUpdateListSpecs();
     const handleTopTextBar = useHandleTopTextBar();
 
     const handleContainerEditor = useHandleContainerEditorBar();
-    const addList = useAddList(listData, id, gap, backgroundColor, zIndex, updateListSpecs, defaultText);
-    const removeList = useRemoveList(listData, id, gap, backgroundColor, zIndex, updateListSpecs);
-    const handleListItemChange = useHandleListItemChange(listData, id, gap, backgroundColor, zIndex, updateListSpecs);
+    const handeOrderedList = useOrderedList(pageId, listData, id, gap, orderedList, backgroundColor, zIndex, updateListSpecs);
+    const addList = useAddList(pageId, listData, id, gap, backgroundColor, zIndex, updateListSpecs, { ...defaultText, textAlign: 'left' });
+    const removeList = useRemoveList(pageId, listData, id, gap, backgroundColor, zIndex, updateListSpecs);
+    const handleListItemChange = useHandleListItemChange(pageId, listData, id, gap, backgroundColor, zIndex, updateListSpecs);
     const changeListRowHeight = useChangeListRowHeight();
-    const updateListGap = useUpdateListGap(listData, id, gap, backgroundColor, zIndex, updateListSpecs);
-    const handleListTextStyleChange = useHandleListTextStyleChange(listData, id, gap, backgroundColor, zIndex, updateListSpecs, focusedIndex);
-    const handleListMouseDown = useHandleListMouseDown(id, resizeRefs, changeListRowHeight);
+    const updateListGap = useUpdateListGap(pageId, listData, id, gap, backgroundColor, zIndex, updateListSpecs);
+    const handleListTextStyleChange = useHandleListTextStyleChange(pageId, listData, id, gap, backgroundColor, zIndex, updateListSpecs, focusedIndex);
+    const handleListMouseDown = useHandleListMouseDown(pageId, id, resizeRefs, changeListRowHeight);
 
 
 
@@ -62,10 +64,8 @@ export const DraggableList: React.FC<DraggableListProps> = observer(({ id, stand
 
     useEffect(() => {
         handleTopTextBar(isEditing, focusedIndex !== null ? listData[focusedIndex] : listData[0], handleListTextStyleChange);
-        handleContainerEditor(isEditing, { done: () => toggleEditing(id), rowIncrease: () => addList(), rowDecrease: () => removeList(), rowGapIncrease: () => updateListGap('increase'), rowGapDecrease: () => updateListGap('decrease'), deleteItem: () => handleDeleteItem(id), id });
+        handleContainerEditor(isEditing, { pageId: pageId, done: () => toggleEditing(pageId, id), rowIncrease: () => addList(), rowDecrease: () => removeList(), rowGapIncrease: () => updateListGap('increase'), rowGapDecrease: () => updateListGap('decrease'), deleteItem: () => handleDeleteItem(pageId, id), id: id, orderedList: () => handeOrderedList() });
     }, [isEditing, standardSpecs, focusedIndex]);
-
-
 
 
     return (
@@ -93,10 +93,12 @@ export const DraggableList: React.FC<DraggableListProps> = observer(({ id, stand
                             onFocus={() => setFocusedIndex(index)}
                             onBlur={handleBlur}
                             onChange={(newValue) => handleListItemChange(index, newValue)}
+                            order={orderedList ? index + 1 : undefined}
+                            type={standardSpecs.type}
                         />
                         {isEditing && (
                             <div style={{ ...styles.resizeHandle, bottom: index !== (listData.length - 1) ? `calc(-16px - (${gap} * 0.5))` : "-16px" }}
-                                onMouseDown={(e) => handleListMouseDown(e, index, draggableRef, 5, resizeRefs)}
+                                onMouseDown={(e) => handleListMouseDown(e, index, draggableRef, 5)}
                             >
                                 <div style={styles.horzLine} />
                             </div>

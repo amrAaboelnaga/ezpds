@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 import { whiteBoardStore } from '../../../stores/whiteBoardStore';
@@ -10,13 +10,16 @@ interface DraggableTriangleProps {
   id: string;
   standardSpecs: DraggableTriangleInterface;
   content: Text;
-  toggleEditing: (id: string) => void;
+  toggleEditing: (pageId: number, id: string) => void;
+  pageId: number;
 }
 
-export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ id, standardSpecs, content, toggleEditing }) => {
-  const { isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
+export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ pageId, id, standardSpecs, content, toggleEditing }) => {
+  const { isEditing, border, borderColor, borderRadius, zIndex, width, height, backgroundColor } = standardSpecs;
   const { useHandleContainerEditorBar, useHandleTextEdit, useZIndexHandler, useHandleBlur, useHandleKeyDown, useDeleteItem, useHandleTopTextBar } = useWhiteBoardHandlers();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const grandParentTriangleRef = useRef<HTMLDivElement>(null);
+
   const handleTextEdit = useHandleTextEdit();
   const handleBlur = useHandleBlur();
   const handleKeyDown = useHandleKeyDown(handleBlur);
@@ -29,7 +32,7 @@ export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ i
       const event = {
         target: { name: key, value } as EventTarget & HTMLTextAreaElement,
       } as React.ChangeEvent<HTMLTextAreaElement>;
-      handleTextEdit(id, event);
+      handleTextEdit(pageId, id, event);
     }
   };
 
@@ -40,45 +43,61 @@ export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ i
     }
   }, [isEditing, content]);
 
-
   useEffect(() => {
-    handleTopTextBar(isEditing, content, handleChange)
+    handleTopTextBar(isEditing, content, handleChange);
     handleContainerEditor(isEditing, {
-      done: () => toggleEditing(id),
-      deleteItem: () => handleDeleteItem(id), id: id,
-      isTriangle: standardSpecs.type === 'Triangle' ? true : undefined
+      pageId: pageId,
+      done: () => toggleEditing(pageId, id),
+      deleteItem: () => handleDeleteItem(pageId, id),
+      id: id,
+      isTriangle: standardSpecs.type === 'Triangle' ? true : undefined,
     });
-  }, [isEditing, standardSpecs])
+  }, [isEditing, standardSpecs]);
 
+  // Define the inline styles for the SVG
+  const svgStyle: React.CSSProperties = {
+    width,
+    height,
+    border: border,
+    borderColor: borderColor,
+    backgroundColor: backgroundColor,
+    display: 'block', // Ensures the SVG takes up space according to width and height
+  };
+
+  // Function to calculate points based on width and height
+  const calculatePoints = (w: string, h: string, border: number): string => {
+    const wNum = parseFloat(w);
+    const hNum = parseFloat(h);
+    const borderOffset = border; // Border width to be considered
+  
+    // Adjust the triangle points to keep it within the SVG container considering the border
+    return `${wNum / 2},${borderOffset} ${wNum - borderOffset},${hNum - borderOffset} ${borderOffset},${hNum - borderOffset}`;
+  };
+  // Compute the points dynamically
+  const dynamicPoints = calculatePoints(width, height, border);
 
   return (
-    <div style={{
-      ...styles.draggableChildCont, padding: isEditing ? '0px' : '1px',
+    <div
+      ref={grandParentTriangleRef}
+      style={{
+        ...styles.draggableChildCont,
+        padding: isEditing ? '-1px' : '1px',
+      }}
+    >
+      <svg style={{ ...svgStyle, ...styles.innerTriangle, background: 'transparent' }} xmlns="http://www.w3.org/2000/svg">
+        <polygon
+          points={dynamicPoints} // Use dynamic points
+          stroke={borderColor || 'black'}
+          strokeWidth={border}
+          fill={backgroundColor}
+        />
+      </svg>
 
-    }}>
-      <div style={{
-        ...styles.mainTriangle,
-        width: standardSpecs.width,
-        height: standardSpecs.height,
-        padding: isEditing ? '0px' : '1px',
-        backgroundColor: borderColor,
-      }} />
-      <div style={{ ...styles.innerTriangleCont }}>
-        <div style={{
-          ...styles.innerTriangle,
-          padding: isEditing ? '0px' : '1px',
-          backgroundColor: standardSpecs.backgroundColor,
-          transform: `scale(${1 - border / 100})`,
-          marginTop: (border / parseFloat(standardSpecs.height) * 100)
-          //backgroundColor: content.backgroundColor
-
-        }} />
-      </div>
       <EditableText
         textData={content}
         isEditing={isEditing}
         onChange={(newValue) => {
-          handleTextEdit(id, undefined, undefined, newValue)
+          handleTextEdit(pageId, id, undefined, undefined, newValue);
         }}
         onFocus={() => { }}
         onBlur={() => { }}
@@ -89,6 +108,7 @@ export const DraggableTriangle: React.FC<DraggableTriangleProps> = observer(({ i
 
 const styles = {
   draggableChildCont: {
+    userSelect: 'none',
     height: '100%',
     width: '100%',
     display: 'flex',
@@ -107,7 +127,7 @@ const styles = {
     height: '100%',
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   } as React.CSSProperties,
   textareaStyle: {
     padding: '0px',
@@ -120,7 +140,7 @@ const styles = {
     justifyContent: 'center',
     overflow: 'hidden', // Ensures the text stays within the textarea
     boxSizing: 'border-box', // Includes padding in the element's total width and height
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   } as React.CSSProperties,
   innerTriangleCont: {
     position: 'absolute',
@@ -129,24 +149,26 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: -1
-
+    zIndex: -1,
   } as React.CSSProperties,
   mainTriangle: {
     display: 'flex',
     width: `100%`,
     height: `100%`,
     clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)', // Creates a triangle shape
-    overflow: 'hidden',
+    overflow: '',
     zIndex: -2,
     position: 'absolute',
   } as React.CSSProperties,
   innerTriangle: {
-    display: 'flex',
-    width: `100%`,
-    height: `100%`,
-    clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)', // Creates a triangle shape
-    overflow: 'hidden',
+    position: 'absolute',
+    zIndex: -1,
   } as React.CSSProperties,
-
 };
+
+
+
+
+
+
+

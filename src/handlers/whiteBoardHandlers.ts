@@ -7,14 +7,13 @@ export const useWhiteBoardHandlers = () => {
 
 
     const useHandleDrop = () => {
-        return (event: React.DragEvent<HTMLDivElement>) => {
+        return (event: React.DragEvent<HTMLDivElement>, pageId: number) => {
             event.preventDefault();
             const itemType = event.dataTransfer.getData('itemType');
-            const id = `${itemType}-${Object.keys(whiteBoardStore.jsonSpecs).length}`;
+            const id = `${itemType}-${Object.keys(whiteBoardStore.pages.find(page => page.id === pageId)?.jsonSpecs || {}).length}`;
             const rect = event.currentTarget.getBoundingClientRect();
             const x = event.clientX - rect.left - 50;
             const y = event.clientY - rect.top - 25;
-
 
             let newSpec;
             switch (itemType) {
@@ -39,15 +38,11 @@ export const useWhiteBoardHandlers = () => {
                 case 'Triangle':
                     newSpec = { [id]: createDraggableTriangleSpec(id, x, y) };
                     break;
-
                 default:
                     newSpec = { [id]: createDraggableTextSpec(id, x, y) };
             }
 
-            whiteBoardStore.setJsonSpecs({
-                ...whiteBoardStore.jsonSpecs,
-                ...newSpec,
-            });
+            whiteBoardStore.addObjectToPage(pageId, newSpec);
         };
     };
 
@@ -58,19 +53,28 @@ export const useWhiteBoardHandlers = () => {
     }
 
     const useToggleEditing = () => {
-        return (id: string) => {
-            const updatedSpecs = {
-                ...whiteBoardStore.jsonSpecs,
-                [id]: {
-                    ...whiteBoardStore.jsonSpecs[id],
-                    isEditing: !whiteBoardStore.jsonSpecs[id].isEditing,
-                },
-            };
-            whiteBoardStore.setJsonSpecs(updatedSpecs);
+
+        return (pageId: number, id: string) => {
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            if (page) {
+                const updatedSpecs = {
+                    ...page.jsonSpecs,
+                    [id]: {
+                        ...page.jsonSpecs[id],
+                        isEditing: !page.jsonSpecs[id]?.isEditing,
+                    },
+                };
+
+                // Update the jsonSpecs for the specified page
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+            }
         };
-    }
+    };
 
     const useEditStandards = (
+        pageId: number,
         id: string,
         standardSpecs: {
             border?: number,
@@ -91,29 +95,31 @@ export const useWhiteBoardHandlers = () => {
             if (type === 'border') {
                 const currentBorder = standardSpecs.border || 0;
                 const newBorder = action === 'increase' ? currentBorder + borderStep : Math.max(0, currentBorder - borderStep);
-                updateStandards(id, undefined, newBorder, undefined, undefined, undefined, undefined);
+                updateStandards(pageId, id, undefined, newBorder, undefined, undefined, undefined, undefined);
             } else if (type === 'borderRadius') {
                 const currentBorderRadius = standardSpecs.borderRadius || 0;
                 const newBorderRadius = action === 'increase' ? currentBorderRadius + borderRadiusStep : Math.max(0, currentBorderRadius - borderRadiusStep);
-                updateStandards(id, undefined, undefined, undefined, newBorderRadius, undefined, undefined);
+                updateStandards(pageId, id, undefined, undefined, undefined, newBorderRadius, undefined, undefined);
             } else if (type === 'opacity') {
                 const currentOpacity = standardSpecs.opacity || 1;
                 const newOpacity = action === 'increase' ? Math.min(1, currentOpacity + opacityStep) : Math.max(0, currentOpacity - opacityStep);
-                updateStandards(id, newOpacity, undefined, undefined, undefined, undefined, undefined);
+                updateStandards(pageId, id, newOpacity, undefined, undefined, undefined, undefined, undefined);
             } else if (type === 'zIndex') {
                 const currentZIndex = standardSpecs.zIndex || 0;
                 const newZIndex = action === 'increase' ? currentZIndex + zIndexStep : Math.max(0, currentZIndex - zIndexStep);
-                updateStandards(id, undefined, undefined, undefined, undefined, newZIndex, undefined);
+                updateStandards(pageId, id, undefined, undefined, undefined, undefined, newZIndex, undefined);
             } else if (type === 'padding') {
                 const currentPadding = standardSpecs.padding || 0;
                 const newPadding = action === 'increase' ? currentPadding + paddingStep : Math.max(0, currentPadding - paddingStep);
-                updateStandards(id, undefined, undefined, undefined, undefined, undefined, undefined, newPadding);
+                updateStandards(pageId, id, undefined, undefined, undefined, undefined, undefined, undefined, newPadding);
             }
         };
     };
 
     const useUpdateStandards = () => {
+
         return (
+            pageId: number,
             id: string,
             opacity?: number,
             border?: number,
@@ -121,69 +127,81 @@ export const useWhiteBoardHandlers = () => {
             borderRadius?: number,
             zIndex?: number,
             backgroundColor?: string,
-            padding?: number
+            padding?: number,
+            repeate?: boolean
         ) => {
-            const updatedSpecs = {
-                ...whiteBoardStore.jsonSpecs,
-                [id]: {
-                    ...whiteBoardStore.jsonSpecs[id],
-                    opacity: opacity !== undefined ? opacity : whiteBoardStore.jsonSpecs[id]?.opacity,
-                    border: border !== undefined ? border : whiteBoardStore.jsonSpecs[id]?.border,
-                    borderColor: borderColor !== undefined ? borderColor : whiteBoardStore.jsonSpecs[id]?.borderColor,
-                    borderRadius: borderRadius !== undefined ? borderRadius : whiteBoardStore.jsonSpecs[id]?.borderRadius,
-                    zIndex: zIndex !== undefined ? zIndex : whiteBoardStore.jsonSpecs[id]?.zIndex,
-                    backgroundColor: backgroundColor !== undefined ? backgroundColor : whiteBoardStore.jsonSpecs[id]?.backgroundColor,
-                    padding: padding !== undefined ? padding : whiteBoardStore.jsonSpecs[id]?.padding,
-                },
-            };
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            if (page) {
+                const updatedSpecs = {
+                    ...page.jsonSpecs,
+                    [id]: {
+                        ...page.jsonSpecs[id],
+                        opacity: opacity !== undefined ? opacity : page.jsonSpecs[id]?.opacity,
+                        border: border !== undefined ? border : page.jsonSpecs[id]?.border,
+                        borderColor: borderColor !== undefined ? borderColor : page.jsonSpecs[id]?.borderColor,
+                        borderRadius: borderRadius !== undefined ? borderRadius : page.jsonSpecs[id]?.borderRadius,
+                        zIndex: zIndex !== undefined ? zIndex : page.jsonSpecs[id]?.zIndex,
+                        backgroundColor: backgroundColor !== undefined ? backgroundColor : page.jsonSpecs[id]?.backgroundColor,
+                        padding: padding !== undefined ? padding : page.jsonSpecs[id]?.padding,
+                        repeate: repeate !== undefined ? repeate : page.jsonSpecs[id]?.repeate
+                    },
+                };
 
-            whiteBoardStore.setJsonSpecs(updatedSpecs);
+                // Update the jsonSpecs for the specified page
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+            }
         };
     };
 
 
     const useDeleteItem = () => {
-        return (id: string) => {
-            whiteBoardStore.setTextEditor(null, null)
-            whiteBoardStore.setContainerEditor(null)
-            whiteBoardStore.setTextEditor(null, null)
-            const updatedSpecs = { ...whiteBoardStore.jsonSpecs };
-            if (id in updatedSpecs) {
-                delete updatedSpecs[id];
+        return (pageId: number, id: string) => {
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            whiteBoardStore.setTextEditor(null, null);
+            whiteBoardStore.setContainerEditor(null);
+            if (page) {
+                const oldSpecs = whiteBoardStore.pages[pageId].jsonSpecs
+                delete oldSpecs[id]
+                whiteBoardStore.setJsonSpecs(oldSpecs, pageId);
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
             }
-            whiteBoardStore.setJsonSpecs(updatedSpecs);
-
         };
-    }
+    };
 
 
     const useHandleTextEdit = () => {
-        return (id: string, event?: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>, textIndex?: number, updatedText?: string) => {
-            let updatedData;
-            if (event) {
-                const { name, value } = event.target;
-                updatedData = { ...(whiteBoardStore.jsonSpecs[id] as DraggableTextInterface).data, [name]: value };
+
+        return (pageId: number, id: string, event?: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>, textIndex?: number, updatedText?: string) => {
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            if (page) {
+                let updatedData;
+                if (event) {
+                    const { name, value } = event.target;
+                    updatedData = { ...(page.jsonSpecs[id] as DraggableTextInterface).data, [name]: value };
+                } else {
+                    updatedData = { ...(page.jsonSpecs[id] as any).data, content: updatedText };
+                }
+
+                const updatedSpecs = {
+                    ...page.jsonSpecs,
+                    [id]: {
+                        ...(page.jsonSpecs[id] as DraggableTextInterface),
+                        data: updatedData,
+                        zIndex: textIndex !== undefined ? textIndex : page.jsonSpecs[id].zIndex,
+                    },
+                };
+
+                // Update the jsonSpecs for the specified page
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
             } else {
-                updatedData = { ...(whiteBoardStore.jsonSpecs[id] as any).data, content: updatedText };
+                console.error(`Page with ID ${pageId} not found.`);
             }
-            whiteBoardStore.jsonSpecs[id] = {
-                ...(whiteBoardStore.jsonSpecs[id] as DraggableTextInterface),
-                data: updatedData,
-                zIndex: textIndex !== undefined ? textIndex : whiteBoardStore.jsonSpecs[id].zIndex,
-
-            };
-
-            const updatedSpecs = {
-                ...whiteBoardStore.jsonSpecs,
-                [id]: {
-                    ...whiteBoardStore.jsonSpecs[id],
-                    data: updatedData
-                },
-            };
-
-            whiteBoardStore.setJsonSpecs(updatedSpecs);
         };
     };
+
 
 
     const useZIndexHandler = () => {
@@ -235,7 +253,7 @@ export const useWhiteBoardHandlers = () => {
     }
 
     const useHandleImageUpload = () => {
-        return (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
+        return (pageId: number, event: React.ChangeEvent<HTMLInputElement>, id: string) => {
             const file = event.target.files?.[0];
 
             if (file) {
@@ -243,28 +261,40 @@ export const useWhiteBoardHandlers = () => {
                 reader.onloadend = () => {
                     const base64String = reader.result as string;
 
-                    const updatedSpecs = {
-                        ...whiteBoardStore.jsonSpecs,
-                        [id]: {
-                            ...whiteBoardStore.jsonSpecs[id],
-                            src: base64String,
-                        },
-                    };
-                    whiteBoardStore.setJsonSpecs(updatedSpecs);
+                    // Find the page by pageId
+                    const page = whiteBoardStore.pages.find(page => page.id === pageId);
+
+                    if (page) {
+                        const updatedSpecs = {
+                            ...page.jsonSpecs,
+                            [id]: {
+                                ...page.jsonSpecs[id],
+                                src: base64String,
+                            },
+                        };
+
+                        // Update jsonSpecs for the specified page
+                        whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+                    } else {
+                        console.error(`Page with ID ${pageId} not found.`);
+                    }
                 };
 
                 reader.readAsDataURL(file);
             }
         };
-    }
+    };
+
 
     const useHandleMouseDownReposition = () => {
         return (
             event: React.MouseEvent<HTMLDivElement>,
             id: string,
-            draggableRef: React.RefObject<HTMLDivElement>
+            draggableRef: React.RefObject<HTMLDivElement>,
+            pageId: number
         ) => {
-            if (whiteBoardStore.jsonSpecs[id].isEditing) return;
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            if (!page || page.jsonSpecs[id].isEditing) return;
 
             const snapThreshold = 10;
             let isSnapped = {
@@ -275,15 +305,17 @@ export const useWhiteBoardHandlers = () => {
                 center: false
             };
 
-            const offsetX = event.clientX - whiteBoardStore.jsonSpecs[id].location.x;
-            const offsetY = event.clientY - whiteBoardStore.jsonSpecs[id].location.y;
+            const guidLines = page.guidLines;
+
+            const offsetX = event.clientX - page.jsonSpecs[id].location.x;
+            const offsetY = event.clientY - page.jsonSpecs[id].location.y;
             const draggable = draggableRef.current;
 
-            const topLineRect = document.getElementById('topLineGuid')?.getBoundingClientRect();
-            const rightLineRect = document.getElementById('rightLineGuid')?.getBoundingClientRect();
-            const bottomLineRect = document.getElementById('bottomLineGuid')?.getBoundingClientRect();
-            const leftLineRect = document.getElementById('leftLineGuid')?.getBoundingClientRect();
-            const centerVertLineRect = document.getElementById('centerVertGuidLine')?.getBoundingClientRect();
+            const topLineRect = document.getElementById(`page${pageId}topLineGuid`)?.getBoundingClientRect();
+            const rightLineRect = document.getElementById(`page${pageId}rightLineGuid`)?.getBoundingClientRect();
+            const bottomLineRect = document.getElementById(`page${pageId}bottomLineGuid`)?.getBoundingClientRect();
+            const leftLineRect = document.getElementById(`page${pageId}leftLineGuid`)?.getBoundingClientRect();
+            const centerVertLineRect = document.getElementById(`page${pageId}centerVertGuidLine`)?.getBoundingClientRect();
 
             const handleMouseMoveReposition = (event: MouseEvent) => {
                 if (!draggable) return;
@@ -299,28 +331,21 @@ export const useWhiteBoardHandlers = () => {
                 let newX = event.clientX - offsetX;
                 let newY = event.clientY - offsetY;
 
+                let updatedGuidelines = { ...guidLines };
+
                 // Left snapping
                 if (leftLineRect && Math.abs(objLeft - leftLineRect.left) < snapThreshold) {
-                    if (Math.abs(event.clientX - offsetX - whiteBoardStore.guidLines.left) < snapThreshold) {
-                        newX = whiteBoardStore.guidLines.left;
+                    if (Math.abs(event.clientX - offsetX - guidLines.left) < snapThreshold) {
+                        newX = guidLines.left;
                         isSnapped.left = true;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            leftVisb: true,
-                        });
+                        updatedGuidelines.leftVisb = true;
                     } else {
                         isSnapped.left = false;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            leftVisb: false,
-                        });
+                        updatedGuidelines.leftVisb = false;
                     }
                 } else {
                     isSnapped.left = false;
-                    whiteBoardStore.setGuidLines({
-                        ...whiteBoardStore.guidLines,
-                        leftVisb: false,
-                    });
+                    updatedGuidelines.leftVisb = false;
                 }
 
                 // Right snapping
@@ -328,49 +353,31 @@ export const useWhiteBoardHandlers = () => {
                     const parentLeft = draggable.offsetParent?.getBoundingClientRect().left || 0;
                     const rightGuidelineRelativeToParent = rightLineRect.left - parentLeft;
                     if (Math.abs(event.clientX - offsetX - (rightGuidelineRelativeToParent - objWidth)) < snapThreshold) {
-                        newX = rightGuidelineRelativeToParent - objWidth;
+                        newX = rightGuidelineRelativeToParent - objWidth + 4;
                         isSnapped.right = true;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            rightVisb: true,
-                        });
+                        updatedGuidelines.rightVisb = true;
                     } else {
                         isSnapped.right = false;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            rightVisb: false,
-                        });
+                        updatedGuidelines.rightVisb = false;
                     }
                 } else {
                     isSnapped.right = false;
-                    whiteBoardStore.setGuidLines({
-                        ...whiteBoardStore.guidLines,
-                        rightVisb: false,
-                    });
+                    updatedGuidelines.rightVisb = false;
                 }
 
                 // Top snapping
                 if (topLineRect && Math.abs(objTop - topLineRect.top) < snapThreshold) {
-                    if (Math.abs(event.clientY - offsetY - whiteBoardStore.guidLines.top) < snapThreshold) {
-                        newY = whiteBoardStore.guidLines.top;
+                    if (Math.abs(event.clientY - offsetY - guidLines.top) < snapThreshold) {
+                        newY = guidLines.top;
                         isSnapped.top = true;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            topVisb: true,
-                        });
+                        updatedGuidelines.topVisb = true;
                     } else {
                         isSnapped.top = false;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            topVisb: false,
-                        });
+                        updatedGuidelines.topVisb = false;
                     }
                 } else {
                     isSnapped.top = false;
-                    whiteBoardStore.setGuidLines({
-                        ...whiteBoardStore.guidLines,
-                        topVisb: false,
-                    });
+                    updatedGuidelines.topVisb = false;
                 }
 
                 // Bottom snapping
@@ -378,25 +385,16 @@ export const useWhiteBoardHandlers = () => {
                     const parentTop = draggable.offsetParent?.getBoundingClientRect().top || 0;
                     const bottomGuidelineRelativeToParent = bottomLineRect.top - parentTop;
                     if (Math.abs(event.clientY - offsetY - (bottomGuidelineRelativeToParent - objHeight)) < snapThreshold) {
-                        newY = bottomGuidelineRelativeToParent - objHeight;
+                        newY = bottomGuidelineRelativeToParent - objHeight + 4;
                         isSnapped.bottom = true;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            bottomVisb: true,
-                        });
+                        updatedGuidelines.bottomVisb = true;
                     } else {
                         isSnapped.bottom = false;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            bottomVisb: false,
-                        });
+                        updatedGuidelines.bottomVisb = false;
                     }
                 } else {
                     isSnapped.bottom = false;
-                    whiteBoardStore.setGuidLines({
-                        ...whiteBoardStore.guidLines,
-                        bottomVisb: false,
-                    });
+                    updatedGuidelines.bottomVisb = false;
                 }
 
                 // Center snapping
@@ -406,47 +404,41 @@ export const useWhiteBoardHandlers = () => {
                     if (Math.abs(event.clientX - offsetX - (centerGuidelineRelativeToParent - objWidth / 2)) < snapThreshold) {
                         newX = centerGuidelineRelativeToParent - objWidth / 2;
                         isSnapped.center = true;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            centerVisb: true,
-                        });
+                        updatedGuidelines.centerVisb = true;
                     } else {
                         isSnapped.center = false;
-                        whiteBoardStore.setGuidLines({
-                            ...whiteBoardStore.guidLines,
-                            centerVisb: false,
-                        });
+                        updatedGuidelines.centerVisb = false;
                     }
                 } else {
                     isSnapped.center = false;
-                    whiteBoardStore.setGuidLines({
-                        ...whiteBoardStore.guidLines,
-                        centerVisb: false,
-                    });
+                    updatedGuidelines.centerVisb = false;
                 }
 
+                // Update guideline visibility in the store
+                whiteBoardStore.setGuidLines(updatedGuidelines, pageId);
+
                 const updatedSpecs = {
-                    ...whiteBoardStore.jsonSpecs,
+                    ...page.jsonSpecs,
                     [id]: {
-                        ...whiteBoardStore.jsonSpecs[id],
+                        ...page.jsonSpecs[id],
                         location: {
                             x: newX,
                             y: newY,
                         },
                     },
                 };
-                whiteBoardStore.setJsonSpecs(updatedSpecs);
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
             };
 
             const handleMouseUpReposition = () => {
                 whiteBoardStore.setGuidLines({
-                    ...whiteBoardStore.guidLines,
+                    ...guidLines,
                     topVisb: false,
                     rightVisb: false,
                     bottomVisb: false,
                     leftVisb: false,
                     centerVisb: false
-                });
+                }, pageId);
                 document.removeEventListener('mousemove', handleMouseMoveReposition);
                 document.removeEventListener('mouseup', handleMouseUpReposition);
             };
@@ -459,22 +451,48 @@ export const useWhiteBoardHandlers = () => {
 
 
 
-    const useUpdateListSpecs = () => (updatedListData: Text[], id: string, gap: string, containerBackgroundColor: string, newZIndex: number) => {
-        const updatedSpecs = {
-            ...whiteBoardStore.jsonSpecs,
-            [id]: {
-                ...whiteBoardStore.jsonSpecs[id],
-                data: updatedListData,
-                gap: gap,
-                backgroundColor: containerBackgroundColor,
-                zIndex: newZIndex
-            },
+
+
+    const useUpdateListSpecs = () => (pageId: number, updatedListData: Text[], id: string, gap: string, containerBackgroundColor: string, newZIndex: number, updatedOrderedList?: boolean) => {
+        const page = whiteBoardStore.pages.find(page => page.id === pageId);
+        if (page) {
+            const updatedSpecs = {
+                ...page.jsonSpecs,
+                [id]: {
+                    ...page.jsonSpecs[id],
+                    data: updatedListData,
+                    gap: gap,
+                    backgroundColor: containerBackgroundColor,
+                    zIndex: newZIndex,
+                    orderedList: updatedOrderedList && (updatedOrderedList)
+                },
+            };
+            whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+        } else {
+            console.error(`Page with ID ${pageId} not found.`);
+        }
+    };
+
+    const useOrderedList = (
+        pageId: number,
+        listData: Text[],
+        id: string,
+        newGap: string,
+        orderedList: boolean,
+        containerBackgroundColor: string,
+        zIndex: number,
+        updateListSpecs: ReturnType<typeof useUpdateListSpecs>
+    ) => {
+        return () => {
+            const newOrderedList = !orderedList;
+            console.log(newOrderedList)
+            updateListSpecs(pageId, listData, id, newGap, containerBackgroundColor, zIndex, newOrderedList);
         };
-        whiteBoardStore.setJsonSpecs(updatedSpecs);
     };
 
 
     const useAddList = (
+        pageId: number,
         listData: Text[],
         id: string,
         gap: string,
@@ -485,11 +503,12 @@ export const useWhiteBoardHandlers = () => {
     ) => {
         return () => {
             const updatedListData = [...listData, { ...defaultText }];
-            updateListSpecs(updatedListData, id, gap, containerBackgroundColor, zIndex);
+            updateListSpecs(pageId, updatedListData, id, gap, containerBackgroundColor, zIndex);
         };
     };
 
     const useRemoveList = (
+        pageId: number,
         listData: Text[],
         id: string,
         gap: string,
@@ -500,11 +519,12 @@ export const useWhiteBoardHandlers = () => {
         return () => {
             if (listData.length === 0) return;
             const updatedListData = listData.slice(0, -1);
-            updateListSpecs(updatedListData, id, gap, containerBackgroundColor, zIndex);
+            updateListSpecs(pageId, updatedListData, id, gap, containerBackgroundColor, zIndex);
         };
     };
 
     const useHandleListItemChange = (
+        pageId: number,
         listData: Text[],
         id: string,
         gap: string,
@@ -515,35 +535,42 @@ export const useWhiteBoardHandlers = () => {
         return (index: number, newValue: string) => {
             const updatedListData = [...listData];
             updatedListData[index] = { ...updatedListData[index], content: newValue };
-            updateListSpecs(updatedListData, id, gap, containerBackgroundColor, zIndex);
+            updateListSpecs(pageId, updatedListData, id, gap, containerBackgroundColor, zIndex);
         };
     };
 
     const useChangeListRowHeight = () => {
-        return (id: string, index: number, newHeight: number) => {
-            // Retrieve the current rowHeight
-            const currentRowHeight = (whiteBoardStore.jsonSpecs[id] as DraggableListInterface)?.rowHeight || {};
-            // Update the rowHeight with the new value
-            const updatedRowHeight = {
-                ...currentRowHeight,
-                [index]: { height: newHeight }
-            };
-            // Create the updated specs object
-            const updatedSpecs = {
-                ...whiteBoardStore.jsonSpecs,
-                [id]: {
-                    ...whiteBoardStore.jsonSpecs[id],
-                    rowHeight: updatedRowHeight
-                }
-            };
+        return (pageId: number, id: string, index: number, newHeight: number) => {
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            if (page) {
+                // Retrieve the current rowHeight
+                const currentRowHeight = (page.jsonSpecs[id] as DraggableListInterface)?.rowHeight || {};
+                // Update the rowHeight with the new value
+                const updatedRowHeight = {
+                    ...currentRowHeight,
+                    [index]: { height: newHeight }
+                };
+                // Create the updated specs object
+                const updatedSpecs = {
+                    ...page.jsonSpecs,
+                    [id]: {
+                        ...page.jsonSpecs[id],
+                        rowHeight: updatedRowHeight
+                    }
+                };
 
-            // Set the updated specs in the store
-            whiteBoardStore.setJsonSpecs(updatedSpecs);
+                // Set the updated specs in the store
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+            }
         };
     };
 
 
+
     const useUpdateListGap = (
+        pageId: number,
         listData: Text[],
         id: string,
         gap: string,
@@ -556,17 +583,18 @@ export const useWhiteBoardHandlers = () => {
             const newGap = action === 'increase'
                 ? `${currentGap + 10}px`
                 : `${Math.max(0, currentGap - 10)}px`;
-            updateListSpecs(listData, id, newGap, containerBackgroundColor, zIndex);
+            updateListSpecs(pageId, listData, id, newGap, containerBackgroundColor, zIndex);
         };
     };
 
     const useHandleListTextStyleChange = (
+        pageId: number,
         listData: Text[],
         id: string,
         gap: string,
         containerBackgroundColor: string,
         zIndex: number,
-        updateListSpecs: (listData: Text[], id: string, gap: string, containerBackgroundColor: string, zIndex: number) => void,
+        updateListSpecs: (pageId: number, listData: Text[], id: string, gap: string, containerBackgroundColor: string, zIndex: number) => void,
         focusedIndex: number | null
     ) => {
         return useCallback((newStyle: Partial<Text>) => {
@@ -576,22 +604,22 @@ export const useWhiteBoardHandlers = () => {
                 )
                 : listData.map(item => ({ ...item, ...newStyle }));
 
-            updateListSpecs(updatedListData, id, gap, containerBackgroundColor, zIndex);
+            updateListSpecs(pageId, updatedListData, id, gap, containerBackgroundColor, zIndex);
         }, [listData, id, gap, containerBackgroundColor, zIndex, focusedIndex, updateListSpecs]);
     };
 
     const useHandleListMouseDown = (
+        pageId: number,
         id: string,
         resizeRefs: any,
-        changeListRowHeight: (id: string, index: number, height: number) => void
+        changeListRowHeight: (pageId: number, id: string, index: number, height: number) => void
     ) => {
         return useCallback(
             (
                 e: React.MouseEvent,
                 index: number,
                 draggableRef: React.RefObject<HTMLDivElement>,
-                threshold: number = 5,
-                resizeRefs: any
+                threshold: number = 5
             ) => {
                 const startY = e.clientY;
                 const startHeight = resizeRefs.current[index]?.clientHeight || 0;
@@ -617,8 +645,9 @@ export const useWhiteBoardHandlers = () => {
                     } else {
                         isSnapped = false;
                     }
-                    changeListRowHeight(id, index, newHeight);
-                    changeListRowHeight(id, index + 1, newNextHeight);
+
+                    changeListRowHeight(pageId, id, index, newHeight);
+                    changeListRowHeight(pageId, id, index + 1, newNextHeight);
                 };
 
                 const onMouseUp = () => {
@@ -629,36 +658,45 @@ export const useWhiteBoardHandlers = () => {
                 document.addEventListener('mousemove', onMouseMove);
                 document.addEventListener('mouseup', onMouseUp);
             },
-            [id, resizeRefs, changeListRowHeight]
+            [pageId, id, resizeRefs, changeListRowHeight]
         );
     };
 
-    const useUpdateTableSpecs = () => (updatedTableData: Text[][], id: string, updatedRows?: number, updatedColumns?: number, updatedRowGap?: number, updatedColumnGap?: number, newZIndex?: number, backgroundColor?: string, upDatedCellDimensions?: any) => {
-        const currentSpecs = rootStore.whiteBoardStore.jsonSpecs[id];
 
-        if (currentSpecs && 'rows' in currentSpecs && 'columns' in currentSpecs) {
-            const updatedSpecs = {
-                ...rootStore.whiteBoardStore.jsonSpecs,
-                [id]: {
-                    ...currentSpecs,
-                    rows: updatedRows !== undefined ? updatedRows : currentSpecs.rows,
-                    columns: updatedColumns !== undefined ? updatedColumns : currentSpecs.columns,
-                    data: updatedTableData,
-                    rowGap: updatedRowGap !== undefined ? updatedRowGap : currentSpecs.rowGap,
-                    columnGap: updatedColumnGap !== undefined ? updatedColumnGap : currentSpecs.columnGap,
-                    zIndex: newZIndex !== undefined ? newZIndex : currentSpecs.zIndex,
-                    backgroundColor: backgroundColor !== undefined ? backgroundColor : currentSpecs.backgroundColor,
-                    cellDimensions: upDatedCellDimensions !== undefined ? upDatedCellDimensions : currentSpecs.cellDimensions,
-                },
-            };
+    const useUpdateTableSpecs = () => (pageId: number, updatedTableData: Text[][], id: string, updatedRows?: number, updatedColumns?: number, updatedRowGap?: number, updatedColumnGap?: number, newZIndex?: number, backgroundColor?: string, upDatedCellDimensions?: any) => {
+        const page = whiteBoardStore.pages.find(page => page.id === pageId);
 
-            rootStore.whiteBoardStore.setJsonSpecs(updatedSpecs);
+        if (page) {
+            const currentSpecs = page.jsonSpecs[id];
+
+            if (currentSpecs && 'rows' in currentSpecs && 'columns' in currentSpecs) {
+                const updatedSpecs = {
+                    ...page.jsonSpecs,
+                    [id]: {
+                        ...currentSpecs,
+                        rows: updatedRows !== undefined ? updatedRows : currentSpecs.rows,
+                        columns: updatedColumns !== undefined ? updatedColumns : currentSpecs.columns,
+                        data: updatedTableData,
+                        rowGap: updatedRowGap !== undefined ? updatedRowGap : currentSpecs.rowGap,
+                        columnGap: updatedColumnGap !== undefined ? updatedColumnGap : currentSpecs.columnGap,
+                        zIndex: newZIndex !== undefined ? newZIndex : currentSpecs.zIndex,
+                        backgroundColor: backgroundColor !== undefined ? backgroundColor : currentSpecs.backgroundColor,
+                        cellDimensions: upDatedCellDimensions !== undefined ? upDatedCellDimensions : currentSpecs.cellDimensions,
+                    },
+                };
+
+                // Update the jsonSpecs for the specified page
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+            } else {
+                console.error(`Item with id ${id} is not a valid table specification.`);
+            }
         } else {
-            console.error(`Item with id ${id} is not a valid table specification.`);
+            console.error(`Page with ID ${pageId} not found.`);
         }
     };
 
     const useUpdateRowOrColumn = (
+        pageId: number,
         tableData: Text[][],
         id: string,
         rows: number,
@@ -676,21 +714,22 @@ export const useWhiteBoardHandlers = () => {
                     if (columns <= 1) return;
                     updatedTableData.forEach(row => row.pop());
                 }
-                updateTableSpecs(updatedTableData, id, rows, action === 'add' ? columns + 1 : columns - 1);
+                updateTableSpecs(pageId, updatedTableData, id, rows, action === 'add' ? columns + 1 : columns - 1);
             } else if (type === 'row') {
                 if (action === 'add') {
                     updatedTableData.push(new Array(columns).fill({ ...defaultText }));
-                    updateTableSpecs(updatedTableData, id, rows + 1, columns);
+                    updateTableSpecs(pageId, updatedTableData, id, rows + 1, columns);
                 } else {
                     if (rows <= 1) return;
                     updatedTableData.pop();
-                    updateTableSpecs(updatedTableData, id, rows - 1, columns);
+                    updateTableSpecs(pageId, updatedTableData, id, rows - 1, columns);
                 }
             }
         };
     };
 
     const useUpdateGap = (
+        pageId: number,
         tableData: Text[][],
         id: string,
         rows: number,
@@ -702,21 +741,22 @@ export const useWhiteBoardHandlers = () => {
         return (type: 'row' | 'column', action: 'increase' | 'decrease') => {
             if (type === 'row') {
                 const newRowGap = action === 'increase' ? rowGap + 2 : Math.max(0, rowGap - 2);
-                updateTableSpecs(tableData, id, rows, columns, newRowGap);
+                updateTableSpecs(pageId, tableData, id, rows, columns, newRowGap);
             } else if (type === 'column') {
                 const newColumnGap = action === 'increase' ? columnGap + 2 : Math.max(0, columnGap - 2);
-                updateTableSpecs(tableData, id, rows, columns, undefined, newColumnGap);
+                updateTableSpecs(pageId, tableData, id, rows, columns, undefined, newColumnGap);
             }
         };
     };
 
     const handleTableMouseMove = (
+        pageId: number,
         e: MouseEvent,
         isResizing: { rowIndex: number; colIndex: number } | null,
         startPos: { x: number; y: number } | null,
         cellDimensionsStore: { [key: string]: { width?: string; height?: string } },
         tableData: any[][],
-        updateTableCellDimensions: (id: string, newDimensions: any) => void,
+        updateTableCellDimensions: (pageId: number, id: string, newDimensions: any) => void,
         id: string,
         setStartPos: (pos: { x: number; y: number }) => void
     ) => {
@@ -751,11 +791,12 @@ export const useWhiteBoardHandlers = () => {
             };
         }
 
-        updateTableCellDimensions(id, newDimensions);
+        updateTableCellDimensions(pageId, id, newDimensions);
         setStartPos({ x: e.clientX, y: e.clientY });
     };
 
     const useHandleCellChange = (
+        pageId: number,
         tableData: Text[][],
         id: string,
         updateTableSpecs: ReturnType<typeof useUpdateTableSpecs>
@@ -766,7 +807,7 @@ export const useWhiteBoardHandlers = () => {
                     rIndex === rowIndex && cIndex === colIndex ? { ...cell, content: newValue } : cell
                 )
             );
-            updateTableSpecs(updatedTableData, id);
+            updateTableSpecs(pageId, updatedTableData, id);
         };
 
         return handleCellChange;
@@ -774,6 +815,7 @@ export const useWhiteBoardHandlers = () => {
 
 
     const useHandleTableTextEditorChange = (
+        pageId: number,
         tableData: Text[][],
         id: string,
         focusedIndex: { row: number; col: number } | null,
@@ -787,12 +829,12 @@ export const useWhiteBoardHandlers = () => {
                         rIndex === row && cIndex === col ? { ...cell, ...updatedContent } : cell
                     )
                 );
-                updateTableSpecs(updatedTableData, id);
+                updateTableSpecs(pageId, updatedTableData, id);
             } else {
                 const updatedTableData = tableData.map(row =>
                     row.map(cell => ({ ...cell, ...updatedContent }))
                 );
-                updateTableSpecs(updatedTableData, id);
+                updateTableSpecs(pageId, updatedTableData, id);
             }
         };
 
@@ -801,19 +843,28 @@ export const useWhiteBoardHandlers = () => {
 
 
     const useUpdateTableCellDimensions = () => {
-        return (id: string, updatedCellDimension: any) => {
+        const { whiteBoardStore } = rootStore; // Ensure you have access to rootStore and whiteBoardStore
 
-            const updatedSpecs = {
-                ...whiteBoardStore.jsonSpecs,
-                [id]: {
-                    ...whiteBoardStore.jsonSpecs[id],
-                    cellDimensions: updatedCellDimension
-                },
-            };
+        return (pageId: number, id: string, updatedCellDimension: any) => {
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
 
-            whiteBoardStore.setJsonSpecs(updatedSpecs);
+            if (page) {
+                const updatedSpecs = {
+                    ...page.jsonSpecs,
+                    [id]: {
+                        ...page.jsonSpecs[id],
+                        cellDimensions: updatedCellDimension
+                    },
+                };
+
+                // Update the jsonSpecs for the specified page
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+            }
         };
     };
+
 
 
     const useHandleTopTextBar = () => (isEditing: any, content: any, onChange: any) => {
@@ -842,6 +893,7 @@ export const useWhiteBoardHandlers = () => {
         useHandleListItemChange,
         useChangeListRowHeight,
         useUpdateListGap,
+        useOrderedList,
         useHandleListTextStyleChange,
         useHandleListMouseDown,
         useHandleCellChange,

@@ -6,10 +6,11 @@ import { DraggableImageInterface } from '../../../types/whiteBoard';
 interface DraggableImageProps {
   id: string;
   standardSpecs: DraggableImageInterface
-  toggleEditing: (id: string) => void;
+  toggleEditing: (pageId: number, id: string) => void;
+  pageId: number
 }
 
-export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, standardSpecs, toggleEditing }) => {
+export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, standardSpecs, toggleEditing, pageId }) => {
   const { useDeleteItem, useHandleAddImage, useHandleImageUpload, useHandleContainerEditorBar, useZIndexHandler } = useWhiteBoardHandlers();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleImageUpload = useHandleImageUpload();
@@ -20,7 +21,7 @@ export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, sta
 
 
   useEffect(() => {
-    handleContainerEditor(isEditing, { done: () => toggleEditing(id), deleteItem: () => handleDeleteItem(id), id: id, addImg: () => handleAddImage(id) });
+    handleContainerEditor(isEditing, { pageId: pageId, done: () => toggleEditing(pageId, id), deleteItem: () => handleDeleteItem(pageId, id), id: id, addImg: () => handleAddImage(id) });
   }, [isEditing, standardSpecs]);
 
   return (
@@ -46,7 +47,7 @@ export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, sta
       <input
         type='file'
         accept='image/*'
-        onChange={(e) => handleImageUpload(e, id)}
+        onChange={(e) => handleImageUpload(pageId, e, id)}
         style={{ display: 'none' }}
         ref={inputRef}
       />

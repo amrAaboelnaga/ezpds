@@ -55,8 +55,9 @@ const Nav: React.FC = observer(() => {
 const styles = {
     navbar: {
         display: 'flex',
-        position: 'sticky' as const,
+        position: 'fixed' as const,
         top: '0px',
+        width: '100%',
         justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#f0f0f0',
@@ -64,7 +65,7 @@ const styles = {
         padding: '10px',
         height: '50px',
         boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-        zIndex: 100
+        zIndex: 9000
     },
     navbarLogo: {
         marginLeft: '10px',

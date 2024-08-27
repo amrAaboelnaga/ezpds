@@ -10,11 +10,12 @@ interface DraggableTableProps {
     tableData: Text[][];
     focusedIndex: any;
     setFocusedIndex: any;
-    toggleEditing: (id: string) => void;
+    toggleEditing: (pageId: number, id: string) => void;
     cellDimensionsStore: CellDimensions;
+    pageId: number
 }
 
-export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, standardSpecs, tableData, focusedIndex, setFocusedIndex, toggleEditing, cellDimensionsStore }) => {
+export const DraggableTable: React.FC<DraggableTableProps> = observer(({ pageId, id, standardSpecs, tableData, focusedIndex, setFocusedIndex, toggleEditing, cellDimensionsStore }) => {
     const { padding, rows, rowGap, columnGap, columns, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
     const { useHandleContainerEditorBar, handleTableMouseMove, useDeleteItem, useUpdateTableSpecs, useHandleTopTextBar, useHandleCellChange, useHandleTableTextEditorChange, useZIndexHandler, useUpdateGap, useUpdateTableCellDimensions, useUpdateRowOrColumn } = useWhiteBoardHandlers();
     const handleTopTextBar = useHandleTopTextBar();
@@ -22,10 +23,10 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, sta
     const handleDeleteItem = useDeleteItem();
     const updateTableSpecs = useUpdateTableSpecs();
     const updateTableCellDimensions = useUpdateTableCellDimensions()
-    const updateRowOrColumn = useUpdateRowOrColumn(tableData, id, rows, columns, updateTableSpecs, defaultText);
-    const updateGap = useUpdateGap(tableData, id, rows, columns, rowGap, columnGap, updateTableSpecs);
-    const handleCellChange = useHandleCellChange(tableData, id, updateTableSpecs);
-    const handleTextEditorChange = useHandleTableTextEditorChange(tableData, id, focusedIndex, updateTableSpecs);
+    const updateRowOrColumn = useUpdateRowOrColumn(pageId, tableData, id, rows, columns, updateTableSpecs, defaultText);
+    const updateGap = useUpdateGap(pageId, tableData, id, rows, columns, rowGap, columnGap, updateTableSpecs);
+    const handleCellChange = useHandleCellChange(pageId, tableData, id, updateTableSpecs);
+    const handleTextEditorChange = useHandleTableTextEditorChange(pageId, tableData, id, focusedIndex, updateTableSpecs);
     const tableRef = useRef<HTMLTableElement>(null);
     const [isResizing, setIsResizing] = useState<{ rowIndex: number; colIndex: number } | null>(null);
     const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
@@ -71,7 +72,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, sta
                     }
                 }
             }
-            updateTableCellDimensions(id, dimensions);
+            updateTableCellDimensions(pageId, id, dimensions);
         } catch (e) {
             console.error("Error updating table cell dimensions:", e);
         }
@@ -84,7 +85,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, sta
     };
 
     const onMouseMove = (e: MouseEvent) => {
-        handleTableMouseMove(e, isResizing, startPos, cellDimensionsStore, tableData, updateTableCellDimensions, id, setStartPos);
+        handleTableMouseMove(pageId, e, isResizing, startPos, cellDimensionsStore, tableData, updateTableCellDimensions, id, setStartPos);
     };
 
     const handleMouseUp = () => {
@@ -113,7 +114,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ id, sta
 
     useEffect(() => {
         handleTopTextBar(isEditing, focusedIndex !== null ? tableData[focusedIndex.row][focusedIndex.col] : tableData[0][0], handleTextEditorChange)
-        handleContainerEditor(isEditing, { done: () => toggleEditing(id), colIncrease: () => updateRowOrColumn('column', 'add'), colDecrease: () => updateRowOrColumn('column', 'remove'), rowIncrease: () => updateRowOrColumn('row', 'add'), rowDecrease: () => updateRowOrColumn('row', 'remove'), gapIncrease: () => updateGap('column', 'increase'), gapDecrease: () => updateGap('column', 'decrease'), rowGapIncrease: () => updateGap('row', 'increase'), rowGapDecrease: () => updateGap('row', 'decrease'), deleteItem: () => handleDeleteItem(id), id });
+        handleContainerEditor(isEditing, { pageId: pageId, done: () => toggleEditing(pageId, id), colIncrease: () => updateRowOrColumn('column', 'add'), colDecrease: () => updateRowOrColumn('column', 'remove'), rowIncrease: () => updateRowOrColumn('row', 'add'), rowDecrease: () => updateRowOrColumn('row', 'remove'), gapIncrease: () => updateGap('column', 'increase'), gapDecrease: () => updateGap('column', 'decrease'), rowGapIncrease: () => updateGap('row', 'increase'), rowGapDecrease: () => updateGap('row', 'decrease'), deleteItem: () => handleDeleteItem(pageId, id), id: id });
     }, [isEditing, standardSpecs, focusedIndex])
 
     return (
@@ -219,6 +220,7 @@ const styles = {
         borderCollapse: "separate",
         width: '100%',
         height: '100%',
+        color:'red'
     } as React.CSSProperties,
     resizerCol: {
         position: 'absolute',

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
+import { rootStore } from '../../../stores/rootStore';
+import ContainerEditor from '../ContainerEditor';
 
 
 interface TestComponentProps {
@@ -11,10 +13,27 @@ interface TestComponentProps {
 export const TestComponent: React.FC<TestComponentProps> = observer(({ id }) => {
   const { useHandleTextEdit, useZIndexHandler, useHandleBlur, useHandleKeyDown, useDeleteItem, useHandleTopTextBar } = useWhiteBoardHandlers();
 
+  const { whiteBoardStore } = rootStore;
 
   return (
     <div>
+      {(whiteBoardStore.containerEditor) && (whiteBoardStore.pages[0].jsonSpecs[id])?.isEditing && (
+        <div
+          className='ContainerEditor'
+          id="ContainerEditor"
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: `-250px`,
+            height: 'fit-content',
 
+          }}>
+          <ContainerEditor
+            data={whiteBoardStore.containerEditor}
+            standardSpecs={(whiteBoardStore.pages[0].jsonSpecs[id]) || {}}
+          />
+        </div>
+      )}
     </div>
   );
 });
