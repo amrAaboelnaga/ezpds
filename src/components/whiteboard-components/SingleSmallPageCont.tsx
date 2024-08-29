@@ -10,6 +10,19 @@ interface SingleSmallPageContProps {
 
 const SingleSmallPageCont: React.FC<SingleSmallPageContProps> = ({ index, isActive, onScroll }) => {
     const [showPlus, setShowPlus] = useState(false);
+    const [hoveredIcon, setHoveredIcon] = useState<{ x: number; y: number; description: string | null }>({
+        x: 0,
+        y: 0,
+        description: null,
+    });
+
+    const handleMouseMove = (event: any, description: string) => {
+        setHoveredIcon({ x: event.clientX, y: event.clientY, description });
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredIcon({ x: 0, y: 0, description: null });
+    };
 
     return (
         <div
@@ -18,9 +31,9 @@ const SingleSmallPageCont: React.FC<SingleSmallPageContProps> = ({ index, isActi
             onMouseLeave={() => setShowPlus(false)}
         >
             {showPlus && (
-                <div>
-                    <i onClick={() => whiteBoardStore.addPageBefore(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
-                    <i onClick={() => whiteBoardStore.copyPageBefore(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
+                <div >
+                    <i onMouseMove={(e) => handleMouseMove(e, 'NEW Page BEFORE currunt page')} onMouseLeave={handleMouseLeave} onClick={() => whiteBoardStore.addPageBefore(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
+                    <i onMouseMove={(e) => handleMouseMove(e, 'DUPLICATE currunt page & ADD the copy BEFORE')} onMouseLeave={handleMouseLeave} onClick={() => whiteBoardStore.copyPageBefore(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
                 </div>
             )}
             <div
@@ -35,17 +48,36 @@ const SingleSmallPageCont: React.FC<SingleSmallPageContProps> = ({ index, isActi
                 </div>
                 <p style={styles.miniPageNumber}>{index + 1}</p>
             </div>
-            {showPlus && <i onClick={() => whiteBoardStore.deletePage(index)} className="fa fa-trash textEditButton" style={styles.deletePage}></i>}
             {showPlus && (
-                <div>
-                    <i onClick={() => whiteBoardStore.addPageAfter(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
-                    <i onClick={() => whiteBoardStore.copyPageAfter(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
+                <i
+                    onClick={() => whiteBoardStore.deletePage(index)}
+                    className="fa fa-trash textEditButton"
+                    style={styles.deletePage}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseMove={(e) => handleMouseMove(e, 'Delete currunt page')}
+                ></i>
+            )}
+            {showPlus && (
+                <div >
+                    <i onMouseLeave={handleMouseLeave} onMouseMove={(e) => handleMouseMove(e, 'NEW Page AFTER currunt page')} onClick={() => whiteBoardStore.addPageAfter(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
+                    <i onMouseLeave={handleMouseLeave} onMouseMove={(e) => handleMouseMove(e, 'DUPLICATE this page & ADD the copy AFTER')} onClick={() => whiteBoardStore.copyPageAfter(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
+                </div>
+            )}
+
+            {hoveredIcon.description && (
+                <div
+                    style={{
+                        ...styles.descriptionContainer,
+                        top: hoveredIcon.y + 10,
+                        left: hoveredIcon.x + 10
+                    }}
+                >
+                    {hoveredIcon.description}
                 </div>
             )}
         </div>
     );
 };
-
 
 const styles = {
     singleSmallPageCont: {
@@ -91,7 +123,17 @@ const styles = {
         bottom: '-11px',
         left: 'calc(50% - 3px)'
     } as React.CSSProperties,
-
+    descriptionContainer: {
+        position: 'fixed',
+        backgroundColor: '#f9f9f9',
+        border: '1px solid #ddd',
+        padding: '5px',
+        borderRadius: '3px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        zIndex: 1000,
+        fontSize: '12px',
+        color: '#333',
+    } as React.CSSProperties,
 };
 
 export default SingleSmallPageCont;

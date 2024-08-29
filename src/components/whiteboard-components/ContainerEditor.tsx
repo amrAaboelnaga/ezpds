@@ -49,7 +49,7 @@ const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }
     updateStandards(data.pageId, data.id, undefined, undefined, undefined, undefined, undefined, undefined, undefined, !standardSpecs.repeate);
     try {
       if (data.pageId !== 0) {
-        const id = `${type}-${Object.keys(whiteBoardStore.pages[0]?.jsonSpecs || {}).length}`;
+        const id = `Repeated-${type}-${Object.keys(whiteBoardStore.pages[0]?.jsonSpecs || {}).length}`;
         const newRepeatable = { [id]: whiteBoardStore.pages[data.pageId].jsonSpecs[data.id] };
         whiteBoardStore.addObjectToPage(0, newRepeatable);
         data.deleteItem();

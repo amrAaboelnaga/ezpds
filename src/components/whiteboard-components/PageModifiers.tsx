@@ -78,6 +78,7 @@ const styles = {
         alignItems: 'center',
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
+        zIndex: 905
     } as React.CSSProperties,
 };
 

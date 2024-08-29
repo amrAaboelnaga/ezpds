@@ -32,8 +32,8 @@ const CreateOrEditCont: React.FC = observer(() => {
         {(whiteBoardStore.textContent && whiteBoardStore.textOnChange) && (< TextEditorBar content={whiteBoardStore.textContent} onChange={whiteBoardStore.textOnChange} />)}
       </div>
       <div style={styles.workSpaceCont}>
-        <PageModifiers />
         <TextPageModifiers />
+        <PageModifiers />
         {whiteBoardStore.pages.map((page, index) => (
           <WBPage key={index} index={index} />
         ))}

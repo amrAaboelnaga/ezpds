@@ -33,6 +33,7 @@ const ListTextModifier: React.FC<ListTextModifierProps> = ({ id, standardSpecs, 
 const styles = {
     container: {
         marginBottom: '7px',
+        width: '100%',
         padding: '5px',
         borderRadius: '8px',
         backgroundColor: '#fff',
