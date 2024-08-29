@@ -17,7 +17,12 @@ const SingleSmallPageCont: React.FC<SingleSmallPageContProps> = ({ index, isActi
             onMouseEnter={() => setShowPlus(true)}
             onMouseLeave={() => setShowPlus(false)}
         >
-            {showPlus && <i onClick={() => whiteBoardStore.addPageBefore(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>}
+            {showPlus && (
+                <div>
+                    <i onClick={() => whiteBoardStore.addPageBefore(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
+                    <i onClick={() => whiteBoardStore.copyPageBefore(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
+                </div>
+            )}
             <div
                 onClick={(e) => onScroll(e, index)}
                 style={{
@@ -31,7 +36,12 @@ const SingleSmallPageCont: React.FC<SingleSmallPageContProps> = ({ index, isActi
                 <p style={styles.miniPageNumber}>{index + 1}</p>
             </div>
             {showPlus && <i onClick={() => whiteBoardStore.deletePage(index)} className="fa fa-trash textEditButton" style={styles.deletePage}></i>}
-            {showPlus && <i onClick={() => whiteBoardStore.addPageAfter(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>}
+            {showPlus && (
+                <div>
+                    <i onClick={() => whiteBoardStore.addPageAfter(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
+                    <i onClick={() => whiteBoardStore.copyPageAfter(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
+                </div>
+            )}
         </div>
     );
 };

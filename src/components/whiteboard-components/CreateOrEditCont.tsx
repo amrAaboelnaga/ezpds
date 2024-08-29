@@ -13,6 +13,7 @@ import RulerComponent from './RulerComponent';
 import WBPage from './WBPage';
 import RightDrawer from './RightDrawer';
 import PageModifiers from './PageModifiers';
+import TextPageModifiers from './TextPageModifiers';
 //import ExportAndImport from './ExportAndImport/ExportAndImport';
 
 const CreateOrEditCont: React.FC = observer(() => {
@@ -32,6 +33,7 @@ const CreateOrEditCont: React.FC = observer(() => {
       </div>
       <div style={styles.workSpaceCont}>
         <PageModifiers />
+        <TextPageModifiers />
         {whiteBoardStore.pages.map((page, index) => (
           <WBPage key={index} index={index} />
         ))}

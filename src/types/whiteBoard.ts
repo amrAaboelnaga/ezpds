@@ -135,6 +135,25 @@ export const defaultPage = (newId: number): SingleWBPageInterface => ({
     }
 });
 
+export const copiedDefaultPage = (newId: number, copiedSpecs: any): SingleWBPageInterface => ({
+    id: newId,
+    jsonSpecs: {
+        ...copiedSpecs,
+        PageNumber: createDraggablePageNumberSpec('PageNumber', 371, 1070, newId),
+    },
+    guidLines: {
+        left: 50,
+        leftVisb: false,
+        top: 50,
+        topVisb: false,
+        right: 50,
+        rightVisb: false,
+        bottom: 50,
+        bottomVisb: false,
+        centerVisb: false,
+    },
+});
+
 
 
 export const defaultText: Text = {

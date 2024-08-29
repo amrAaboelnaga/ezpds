@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { defaultPage, Guidelines, JsonSpecs, ProductInfo, SingleWBPageInterface } from '../types/whiteBoard';
+import { copiedDefaultPage, defaultPage, Guidelines, JsonSpecs, ProductInfo, SingleWBPageInterface } from '../types/whiteBoard';
 
 class WhiteBoardStore {
   jsonSpecs: JsonSpecs = {};
@@ -105,6 +105,28 @@ class WhiteBoardStore {
     });
   }
 
+  copyPageAfter(currentPageId: number) {
+    runInAction(() => {
+      // Ensure the currentPageId corresponds to an existing index
+      if (currentPageId < 0 || currentPageId >= this.pages.length) {
+        console.error(`Page with ID ${currentPageId} not found.`);
+        return;
+      }
+
+      // Insert a new page after the current page
+      const newPageId = currentPageId + 1;
+      const copiedSpecs = this.pages[currentPageId].jsonSpecs;
+      const newPage = copiedDefaultPage(newPageId, copiedSpecs);
+
+      this.pages.splice(newPageId, 0, newPage);
+
+      // Update IDs of all pages to match their new indices
+      this.pages.forEach((page, index) => {
+        page.id = index;
+      });
+    });
+  }
+
   addPageBefore(currentPageId: number) {
     runInAction(() => {
       // Ensure the currentPageId corresponds to an existing index
@@ -122,6 +144,29 @@ class WhiteBoardStore {
       });
     });
   }
+
+  copyPageBefore(currentPageId: number) {
+    runInAction(() => {
+      // Ensure the currentPageId corresponds to an existing index
+      if (currentPageId < 0 || currentPageId >= this.pages.length) {
+        console.error(`Page with ID ${currentPageId} not found.`);
+        return;
+      }
+
+      // Insert a new page before the current page
+      const newPageId = currentPageId;
+      const copiedSpecs = this.pages[currentPageId].jsonSpecs;
+      const newPage = copiedDefaultPage(newPageId, copiedSpecs);
+
+      this.pages.splice(newPageId, 0, newPage);
+
+      // Update IDs of all pages to match their new indices
+      this.pages.forEach((page, index) => {
+        page.id = index;
+      });
+    });
+  }
+
 
   handleOnDragEnd(result: any) {
     const { destination, source } = result;

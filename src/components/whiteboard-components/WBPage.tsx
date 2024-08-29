@@ -23,15 +23,13 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
 
     useEffect(() => {
         const page = pageRef.current;
-        const options: IntersectionObserverInit = { root: null, rootMargin: '0px', threshold: [0.01, 0.7] }; // Multiple thresholds
+        const options: IntersectionObserverInit = { root: null, rootMargin: '0px', threshold: [0.01, 0.5] }; // Multiple thresholds
         const handleIntersection = (entries: IntersectionObserverEntry[]) => {
             entries.forEach((entry) => {
                 // Check which threshold was crossed
                 if (entry.isIntersecting) {
                     if (entry.intersectionRatio >= 0.5) {
                         whiteBoardStore.setCurrentPage(index)
-                    } else if (entry.intersectionRatio <= 0.6) {
-                        // console.log('no page slected');
                     }
                     if (entry.intersectionRatio <= 0.01) {
                         setShowItems(false);

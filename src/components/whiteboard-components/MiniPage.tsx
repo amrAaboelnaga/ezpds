@@ -15,45 +15,10 @@ interface MiniPageProps {
 const MiniPage: React.FC<MiniPageProps> = ({ index }) => {
     const { whiteBoardStore } = rootStore;
     const { useHandleDrop, useHandleDragOver, useToggleEditing } = useWhiteBoardHandlers();
-    const [showItems, setShowItems] = useState(false)
     const pageRef = useRef<HTMLDivElement>(null);
     const handleDrop = useHandleDrop();
     const handleDragOver = useHandleDragOver();
     const toggleEditing = useToggleEditing();
-
-    useEffect(() => {
-        const page = pageRef.current;
-        const options: IntersectionObserverInit = { root: null, rootMargin: '0px', threshold: [0.01, 0.7] }; // Multiple thresholds
-        const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-            entries.forEach((entry) => {
-                // Check which threshold was crossed
-                if (entry.isIntersecting) {
-                    if (entry.intersectionRatio >= 0.5) {
-                        whiteBoardStore.setCurrentPage(index)
-                    } else if (entry.intersectionRatio <= 0.6) {
-                        // console.log('no page slected');
-                    }
-                    if (entry.intersectionRatio <= 0.01) {
-                        setShowItems(false);
-                    } else if (entry.intersectionRatio >= 0.01) {
-                        setShowItems(true);
-                    }
-
-                } else {
-
-                }
-            });
-        };
-        const observer = new IntersectionObserver(handleIntersection, options);
-        if (page) {
-            observer.observe(page);
-        }
-        return () => {
-            if (page) {
-                observer.unobserve(page);
-            }
-        };
-    }, []);
 
 
     const currentPage = whiteBoardStore.pages[index];

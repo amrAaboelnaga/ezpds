@@ -10,7 +10,14 @@ export const useWhiteBoardHandlers = () => {
         return (event: React.DragEvent<HTMLDivElement>, pageId: number) => {
             event.preventDefault();
             const itemType = event.dataTransfer.getData('itemType');
-            const id = `${itemType}-${Object.keys(whiteBoardStore.pages.find(page => page.id === pageId)?.jsonSpecs || {}).length}`;
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            const existingSpecs = page?.jsonSpecs || {};
+            const itemIds = Object.keys(existingSpecs).filter(id => id.startsWith(itemType));
+            const newIdNumber = itemIds.length > 0
+                ? Math.max(...itemIds.map(id => parseInt(id.split('-')[1], 10))) + 1
+                : 1; // Start with 1 if no existing IDs
+
+            const id = `${itemType}-${newIdNumber}`;
             const rect = event.currentTarget.getBoundingClientRect();
             const x = event.clientX - rect.left - 50;
             const y = event.clientY - rect.top - 25;

@@ -12,7 +12,7 @@ const PageModifiers: React.FC = () => {
         const targetElement = document.getElementById(`pageIndex${pageId}`);
 
         if (targetElement) {
-            const topPosition = targetElement.getBoundingClientRect().top + window.scrollY - 55;
+            const topPosition = targetElement.getBoundingClientRect().top + window.scrollY - 100;
 
             window.scrollTo({
                 top: topPosition,
@@ -78,7 +78,7 @@ const styles = {
         alignItems: 'center',
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
-    } as React.CSSProperties, 
+    } as React.CSSProperties,
 };
 
 export default observer(PageModifiers);
