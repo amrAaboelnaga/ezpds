@@ -147,7 +147,7 @@ const TextPageModifiers: React.FC = () => {
                     <div
                         onClick={() => { setShow(true); setHoveredIcon(null) }}
                         style={{ ...styles.directTextOpener, top: whiteBoardStore.textContent ? "80px" : "50px" }}
-                        onMouseMove={(e) => handleMouseMove(e, "Quick Edit all text on currunt page.")}
+                        onMouseMove={(e) => handleMouseMove(e, "Quick Edit all text on current page.")}
                         onMouseLeave={handleIconLeave}
                     >
                         <i className="fa fa-edit " style={styles.icon}></i>

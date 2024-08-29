@@ -32,8 +32,8 @@ const SingleSmallPageCont: React.FC<SingleSmallPageContProps> = ({ index, isActi
         >
             {showPlus && (
                 <div >
-                    <i onMouseMove={(e) => handleMouseMove(e, 'NEW Page BEFORE currunt page')} onMouseLeave={handleMouseLeave} onClick={() => whiteBoardStore.addPageBefore(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
-                    <i onMouseMove={(e) => handleMouseMove(e, 'DUPLICATE currunt page & ADD the copy BEFORE')} onMouseLeave={handleMouseLeave} onClick={() => whiteBoardStore.copyPageBefore(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
+                    <i onMouseMove={(e) => handleMouseMove(e, 'NEW Page BEFORE current page')} onMouseLeave={handleMouseLeave} onClick={() => whiteBoardStore.addPageBefore(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
+                    <i onMouseMove={(e) => handleMouseMove(e, 'DUPLICATE current page & ADD the copy BEFORE')} onMouseLeave={handleMouseLeave} onClick={() => whiteBoardStore.copyPageBefore(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
                 </div>
             )}
             <div
@@ -54,12 +54,12 @@ const SingleSmallPageCont: React.FC<SingleSmallPageContProps> = ({ index, isActi
                     className="fa fa-trash textEditButton"
                     style={styles.deletePage}
                     onMouseLeave={handleMouseLeave}
-                    onMouseMove={(e) => handleMouseMove(e, 'Delete currunt page')}
+                    onMouseMove={(e) => handleMouseMove(e, 'Delete current page')}
                 ></i>
             )}
             {showPlus && (
                 <div >
-                    <i onMouseLeave={handleMouseLeave} onMouseMove={(e) => handleMouseMove(e, 'NEW Page AFTER currunt page')} onClick={() => whiteBoardStore.addPageAfter(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
+                    <i onMouseLeave={handleMouseLeave} onMouseMove={(e) => handleMouseMove(e, 'NEW Page AFTER current page')} onClick={() => whiteBoardStore.addPageAfter(index)} className="fa fa-plus textEditButton" style={styles.plusPage}></i>
                     <i onMouseLeave={handleMouseLeave} onMouseMove={(e) => handleMouseMove(e, 'DUPLICATE this page & ADD the copy AFTER')} onClick={() => whiteBoardStore.copyPageAfter(index)} className="fa fa-copy textEditButton" style={styles.plusPage}></i>
                 </div>
             )}
