@@ -97,7 +97,7 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef,
     };
 
     const handleMouseMove = useCallback((event: MouseEvent) => {
-        console.log('Mouse moving:', event.clientX, event.clientY);
+        //console.log('Mouse moving:', event.clientX, event.clientY);
 
         if (!resizeStateRef.current) return;
 
@@ -175,8 +175,8 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef,
             newTop = centerY - newHeight / 2;
         }
 
-        console.log('Updated Size:', newWidth, newHeight);
-        console.log('Updated Position:', newLeft, newTop);
+        //console.log('Updated Size:', newWidth, newHeight);
+        //console.log('Updated Position:', newLeft, newTop);
         if (newWidth < 50) newWidth = 50;
         if (newHeight < 50) newHeight = 50;
 

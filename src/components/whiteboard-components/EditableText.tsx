@@ -38,6 +38,7 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
         <div style={{ ...styles.EditableTextCont }}>
             <p style={{
                 ...styles.number,
+                display: type !== 'List' ? 'none' : '',
                 fontSize: textData.fontSize,
                 fontWeight: textData.fontWeight,
                 fontStyle: textData.fontStyle,
@@ -54,7 +55,7 @@ export const EditableText: React.FC<EditableTextProps> = observer(({
             }}>{order ? `${order}-` : type === 'List' && !order ? '-' : ""} </p>
             {isEditing && type !== 'PageNumber' ? (
                 <textarea
-
+                    wrap="no-wrap"
                     name="content"
                     value={`${textData.content}`}
                     onFocus={() => {

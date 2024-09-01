@@ -94,6 +94,7 @@ const styles = {
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
         width: '200px',
+        zIndex: 9999
     } as React.CSSProperties,
     exportButton: {
         backgroundColor: 'rgb(228, 228, 228)',

@@ -71,7 +71,7 @@ export const DraggableRepeate: React.FC<DraggableRepeateProps> = observer(({ id,
       case 'Image':
         return <DraggableImage id={id} standardSpecs={whiteBoardStore.pages[0].jsonSpecs[id] as DraggableImageInterface} toggleEditing={toggleEditing} pageId={pageId} />;
       case 'Table':
-        return <DraggableTable id={id} standardSpecs={whiteBoardStore.pages[0].jsonSpecs[id] as DraggableTableInterface} tableData={(whiteBoardStore.pages[0].jsonSpecs[id] as DraggableTableInterface).data} toggleEditing={toggleEditing} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={(whiteBoardStore.pages[0].jsonSpecs[id] as DraggableTableInterface).cellDimensions} pageId={0} />;
+        return <DraggableTable id={id} standardSpecs={whiteBoardStore.pages[0].jsonSpecs[id] as DraggableTableInterface} tableData={(whiteBoardStore.pages[0].jsonSpecs[id] as DraggableTableInterface).data} toggleEditing={toggleEditing} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={(whiteBoardStore.pages[0].jsonSpecs[id] as DraggableTableInterface).cellDimensions} pageId={0} draggableRef={draggableRef} />;
       case 'PageNumber':
         if (whiteBoardStore.showPageNumber === true) {
           return <DraggableText id={id} standardSpecs={whiteBoardStore.pages[0].jsonSpecs[id] as DraggablePageNumberInterface} content={(whiteBoardStore.pages[0].jsonSpecs[id] as DraggablePageNumberInterface).data} toggleEditing={toggleEditing} pageId={0} pageNumbHelper={pageId + 1} />;

@@ -13,11 +13,14 @@ interface DraggableTableProps {
     toggleEditing: (pageId: number, id: string) => void;
     cellDimensionsStore: CellDimensions;
     pageId: number
+    draggableRef: React.RefObject<HTMLDivElement>
+
 }
 
-export const DraggableTable: React.FC<DraggableTableProps> = observer(({ pageId, id, standardSpecs, tableData, focusedIndex, setFocusedIndex, toggleEditing, cellDimensionsStore }) => {
+export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggableRef, pageId, id, standardSpecs, tableData, focusedIndex, setFocusedIndex, toggleEditing, cellDimensionsStore }) => {
     const { padding, rows, rowGap, columnGap, columns, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
-    const { useHandleContainerEditorBar, handleTableMouseMove, useDeleteItem, useUpdateTableSpecs, useHandleTopTextBar, useHandleCellChange, useHandleTableTextEditorChange, useZIndexHandler, useUpdateGap, useUpdateTableCellDimensions, useUpdateRowOrColumn } = useWhiteBoardHandlers();
+    const { useDirectSizeUpdate, useHandleContainerEditorBar, handleTableMouseMove, useDeleteItem, useUpdateTableSpecs, useHandleTopTextBar, useHandleCellChange, useHandleTableTextEditorChange, useZIndexHandler, useUpdateGap, useUpdateTableCellDimensions, useUpdateRowOrColumn } = useWhiteBoardHandlers();
+    const directSizeUpdate = useDirectSizeUpdate()
     const handleTopTextBar = useHandleTopTextBar();
     const handleContainerEditor = useHandleContainerEditorBar();
     const handleDeleteItem = useDeleteItem();
@@ -30,6 +33,65 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ pageId,
     const tableRef = useRef<HTMLTableElement>(null);
     const [isResizing, setIsResizing] = useState<{ rowIndex: number; colIndex: number } | null>(null);
     const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
+
+
+    useEffect(() => {
+        try {
+            if (!tableRef.current) return;
+            const dimensions: CellDimensions = { ...cellDimensionsStore };
+            const rows = tableRef.current.rows;
+
+            // Update each row's height based on actual rendered size
+            for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+                const rowHeight = rows[rowIndex]?.getBoundingClientRect().height || dimensions[`row-${rowIndex}`].height;
+                dimensions[`row-${rowIndex}`] = { height: `${rowHeight}px` };
+            }
+
+            if (tableData.length > 0) {
+                const cols = rows[0]?.cells || [];
+
+                // Update each column's width based on actual rendered size
+                for (let colIndex = 0; colIndex < cols.length; colIndex++) {
+                    const colWidth = cols[colIndex]?.getBoundingClientRect().width || dimensions[`col-${colIndex}`].width;
+                    dimensions[`col-${colIndex}`] = { width: `${colWidth}px` };
+                }
+            }
+
+            updateTableCellDimensions(pageId, id, dimensions);
+        } catch (e) {
+            console.error("Error updating table cell dimensions:", e);
+        }
+    }, [standardSpecs.rows, standardSpecs.columns, standardSpecs.rowGap, standardSpecs.columnGap, isResizing, isEditing]);
+
+    useEffect(() => {
+        try {
+            const dimensions: CellDimensions = { ...cellDimensionsStore };
+            for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+                if (!dimensions[`row-${rowIndex}`]) {
+                    dimensions[`row-${rowIndex}`] = { height: `40px` }; // Default height for rows
+                }
+            }
+            if (tableData.length > 0) {
+                for (let colIndex = 0; colIndex < tableData[0].length; colIndex++) {
+                    if (!dimensions[`col-${colIndex}`]) {
+                        dimensions[`col-${colIndex}`] = { width: `125px` }; // Default width for columns
+                    }
+                }
+            }
+            updateTableCellDimensions(pageId, id, dimensions);
+        } catch (e) {
+            console.error("Error updating table cell dimensions:", e);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!tableRef.current) return;
+        const tableHeight = tableRef.current.getBoundingClientRect().height;
+        const intWidth = parseFloat(standardSpecs.width)
+
+        directSizeUpdate(pageId, id, intWidth, (tableHeight));
+
+    }, [isEditing, startPos]);
 
 
     const getBorderRadiusStyle = (rowIndex: any, colIndex: any) => {
@@ -57,35 +119,14 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ pageId,
 
     };
 
-    useEffect(() => {
-        try {
-            const dimensions: CellDimensions = { ...cellDimensionsStore };
-            for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
-                if (!dimensions[`row-${rowIndex}`]) {
-                    dimensions[`row-${rowIndex}`] = { height: `20px` }; // Default height for rows
-                }
-            }
-            if (tableData.length > 0) {
-                for (let colIndex = 0; colIndex < tableData[0].length; colIndex++) {
-                    if (!dimensions[`col-${colIndex}`]) {
-                        dimensions[`col-${colIndex}`] = { width: `100px` }; // Default width for columns
-                    }
-                }
-            }
-            updateTableCellDimensions(pageId, id, dimensions);
-        } catch (e) {
-            console.error("Error updating table cell dimensions:", e);
-        }
-    }, []);
-
-
     const handleMouseDown = (e: any, rowIndex: number, colIndex: number) => {
         setIsResizing({ rowIndex, colIndex });
         setStartPos({ x: e.clientX, y: e.clientY });
     };
 
     const onMouseMove = (e: MouseEvent) => {
-        handleTableMouseMove(pageId, e, isResizing, startPos, cellDimensionsStore, tableData, updateTableCellDimensions, id, setStartPos);
+        handleTableMouseMove(pageId, e, isResizing, startPos, cellDimensionsStore, tableData, updateTableCellDimensions, id, setStartPos, tableRef, draggableRef);
+
     };
 
     const handleMouseUp = () => {
@@ -119,31 +160,35 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ pageId,
 
     return (
         <div style={{
-            ...styles.draggableChildCont, padding: isEditing ? `calc(0px + ${padding}px)` : `calc(1px + ${padding}px)`,
-            borderRadius: borderRadius,
-            backgroundColor: backgroundColor,
-            border: `${border}px solid ${borderColor}`,
+            ...styles.draggableChildCont,
         }}>
             <table ref={tableRef} style={{
                 ...styles.resizableTable, borderSpacing: `${columnGap}px ${rowGap}px`,
                 borderRadius: borderRadius,
+                padding: isEditing ? `calc(0px + ${padding}px)` : `calc(1px + ${padding}px)`,
+                backgroundColor: backgroundColor,
+                border: `${border}px solid ${borderColor}`,
             }}>
                 <tbody style={{
                     ...styles.draggableTableBody,
                     borderRadius: borderRadius,
                 }}>
                     {tableData.map((row, rowIndex) => (
-                        <tr key={rowIndex} style={{ height: cellDimensionsStore[`row-${rowIndex}`]?.height }}>
+                        <tr key={rowIndex} style={{ height: cellDimensionsStore[`row-${rowIndex}`]?.height || '40px' }}>
                             {row.map((cell, colIndex) => (
-                                <td key={colIndex} style={{
-                                    ...getBorderRadiusStyle(rowIndex, colIndex), // Border radius styles
-                                    ...styles.tableCell, // Other predefined styles
-                                    width: cellDimensionsStore[`col-${colIndex}`]?.width || 'auto',
-                                    height: cellDimensionsStore[`row-${rowIndex}`]?.height,
-                                    position: 'relative',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: cell.backgroundColor,
-                                }}>
+                                <td
+                                    onClick={() => console.log(`${cellDimensionsStore[`col-${colIndex}`]?.width}` + cellDimensionsStore[`row-${rowIndex}`]?.height)}
+
+                                    key={colIndex}
+                                    style={{
+                                        ...getBorderRadiusStyle(rowIndex, colIndex), // Border radius styles
+                                        ...styles.tableCell, // Other predefined styles
+                                        width: cellDimensionsStore[`col-${colIndex}`]?.width || '50px',
+                                        height: cellDimensionsStore[`row-${rowIndex}`]?.height || '25px',
+                                        position: 'relative',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: cell.backgroundColor,
+                                    }}>
                                     <EditableText
                                         textData={cell}
                                         isEditing={isEditing}
@@ -176,10 +221,10 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ pageId,
 const styles = {
     draggableChildCont: {
         position: 'relative',
-        height: '100%',
+        height: 'fit-content',
         width: '100%',
         display: 'flex',
-        justifyContent: 'left',
+        alignSelf: 'start'
     } as React.CSSProperties,
     editTableCount: {
         position: 'absolute',
@@ -220,7 +265,7 @@ const styles = {
         borderCollapse: "separate",
         width: '100%',
         height: '100%',
-        color:'red'
+        color: 'red'
     } as React.CSSProperties,
     resizerCol: {
         position: 'absolute',
