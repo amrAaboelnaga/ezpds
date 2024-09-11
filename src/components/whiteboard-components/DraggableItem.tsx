@@ -77,7 +77,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
         return <DraggableImage id={id} standardSpecs={imageSpecs} toggleEditing={toggleEditing} pageId={pageId} />;
       case 'Table':
         const tableSpecs = itemSpecs as DraggableTableInterface;
-        return <DraggableTable id={id} standardSpecs={tableSpecs} tableData={tableSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={tableSpecs.cellDimensions} pageId={pageId} />;
+        return <DraggableTable id={id} standardSpecs={tableSpecs} tableData={tableSpecs.data} toggleEditing={toggleEditing} focusedIndex={focusedIndexTable} setFocusedIndex={setFocusedIndexTable} cellDimensionsStore={tableSpecs.cellDimensions} pageId={pageId} draggableRef={draggableRef} />;
       default:
         return null;
     }

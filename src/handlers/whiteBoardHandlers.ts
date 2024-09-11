@@ -10,7 +10,14 @@ export const useWhiteBoardHandlers = () => {
         return (event: React.DragEvent<HTMLDivElement>, pageId: number) => {
             event.preventDefault();
             const itemType = event.dataTransfer.getData('itemType');
-            const id = `${itemType}-${Object.keys(whiteBoardStore.pages.find(page => page.id === pageId)?.jsonSpecs || {}).length}`;
+            const page = whiteBoardStore.pages.find(page => page.id === pageId);
+            const existingSpecs = page?.jsonSpecs || {};
+            const itemIds = Object.keys(existingSpecs).filter(id => id.startsWith(itemType));
+            const newIdNumber = itemIds.length > 0
+                ? Math.max(...itemIds.map(id => parseInt(id.split('-')[1], 10))) + 1
+                : 1; // Start with 1 if no existing IDs
+
+            const id = `${itemType}-${newIdNumber}`;
             const rect = event.currentTarget.getBoundingClientRect();
             const x = event.clientX - rect.left - 50;
             const y = event.clientY - rect.top - 25;
@@ -284,6 +291,25 @@ export const useWhiteBoardHandlers = () => {
             }
         };
     };
+
+    const useDirectSizeUpdate = () => {
+        return (pageId: number, id: string, newWidth: number, newHeight: number) => {
+            const getJsonSpecs = () => whiteBoardStore.pages.find(page => page.id === pageId)?.jsonSpecs || {};
+
+            const updatedSpecs = {
+                ...getJsonSpecs(),
+                [id]: {
+                    ...getJsonSpecs()[id],
+                    width: `${newWidth}px`,
+                    height: `${newHeight}px`,
+                },
+            };
+            whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+        };
+    };
+
+
+
 
 
     const useHandleMouseDownReposition = () => {
@@ -758,7 +784,9 @@ export const useWhiteBoardHandlers = () => {
         tableData: any[][],
         updateTableCellDimensions: (pageId: number, id: string, newDimensions: any) => void,
         id: string,
-        setStartPos: (pos: { x: number; y: number }) => void
+        setStartPos: (pos: { x: number; y: number }) => void,
+        tableRef: React.RefObject<HTMLTableElement>,
+        parentRef: React.RefObject<HTMLDivElement>
     ) => {
         if (!isResizing || !startPos) return;
 
@@ -768,32 +796,120 @@ export const useWhiteBoardHandlers = () => {
 
         const newDimensions = { ...cellDimensionsStore };
 
-        if (deltaX !== 0 && colIndex < (tableData[0].length - 1)) {
+        const totalRows = tableData.length;
+        const totalCols = tableData[0]?.length || 0;
+
+        if (colIndex >= 0 && colIndex < totalCols - 1) {
             const currentCol = `col-${colIndex}`;
             const nextCol = `col-${colIndex + 1}`;
+
+            const currentWidth = parseFloat(newDimensions[currentCol]?.width || '100px');
+            const nextWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
+
             newDimensions[currentCol] = {
-                width: `${parseFloat(newDimensions[currentCol]?.width || '100px') + deltaX}px`
+                width: `${currentWidth + deltaX}px`
             };
             newDimensions[nextCol] = {
-                width: `${parseFloat(newDimensions[nextCol]?.width || '100px') - deltaX}px`
+                width: `${nextWidth - deltaX}px`
             };
         }
 
-        if (deltaY !== 0 && rowIndex < (tableData.length)) {
+        if (rowIndex >= 0 && rowIndex < totalRows) {
             const currentRow = `row-${rowIndex}`;
-            const nextRow = `row-${rowIndex + 1}`;
-
+            const currentHeight = parseFloat(newDimensions[currentRow]?.height || '40px');
             newDimensions[currentRow] = {
-                height: `${parseFloat(newDimensions[currentRow]?.height || '40px') + deltaY}px`
+                height: `${currentHeight + deltaY}px`
             };
-            newDimensions[nextRow] = {
-                height: `${parseFloat(newDimensions[nextRow]?.height || '40px') - deltaY}px`
-            };
+
+            //if (rowIndex < totalRows - 1) {
+            //    const nextRow = `row-${rowIndex + 1}`;
+            //    const nextHeight = parseFloat(newDimensions[nextRow]?.height || '40px');
+            //    newDimensions[nextRow] = {
+            //        height: `${nextHeight - deltaY}px`
+            //    };
+            //}
+
         }
 
         updateTableCellDimensions(pageId, id, newDimensions);
         setStartPos({ x: e.clientX, y: e.clientY });
     };
+
+
+    //const handleTableMouseMove = (
+    //    pageId: number,
+    //    e: MouseEvent,
+    //    isResizing: { rowIndex: number; colIndex: number } | null,
+    //    startPos: { x: number; y: number } | null,
+    //    cellDimensionsStore: { [key: string]: { width?: string; height?: string } },
+    //    tableData: any[][],
+    //    updateTableCellDimensions: (pageId: number, id: string, newDimensions: any) => void,
+    //    id: string,
+    //    setStartPos: (pos: { x: number; y: number }) => void,
+    //    tableRef: React.RefObject<HTMLTableElement>,
+    //    parentRef: React.RefObject<HTMLDivElement>
+    //) => {
+    //    if (!isResizing || !startPos) return;
+    //
+    //    const { rowIndex, colIndex } = isResizing;
+    //    const deltaX = e.clientX - startPos.x;
+    //    const deltaY = e.clientY - startPos.y;
+    //
+    //    const minDimension = 20; // Minimum width/height in pixels
+    //
+    //    const parentWidth = parentRef.current?.getBoundingClientRect().width || 0;
+    //    const parentHeight = parentRef.current?.getBoundingClientRect().height || 0;
+    //
+    //    const rows = Array.from(tableRef.current?.rows || []);
+    //    const cols = rows[0] ? Array.from(rows[0].cells) : [];
+    //
+    //    let newDimensions = { ...cellDimensionsStore };
+    //
+    //    const resizeColumn = () => {
+    //        if (deltaX === 0 || colIndex >= tableData[0].length - 1) return;
+    //
+    //        const currentCol = `col-${colIndex}`;
+    //        const nextCol = `col-${colIndex + 1}`;
+    //
+    //        const currentColWidth = parseFloat(newDimensions[currentCol]?.width || `${cols[colIndex].offsetWidth}px`);
+    //        const nextColWidth = parseFloat(newDimensions[nextCol]?.width || `${cols[colIndex + 1].offsetWidth}px`);
+    //
+    //        const intendedCurrentColWidth = Math.max(currentColWidth + deltaX, minDimension);
+    //        const intendedNextColWidth = Math.max(nextColWidth - deltaX, minDimension);
+    //
+    //        // Ensure that the resized table doesn't exceed the parent's width
+    //        if (intendedCurrentColWidth + intendedNextColWidth <= parentWidth) {
+    //            newDimensions[currentCol] = { width: `${intendedCurrentColWidth}px` };
+    //            newDimensions[nextCol] = { width: `${intendedNextColWidth}px` };
+    //        }
+    //    };
+    //
+    //    const resizeRow = () => {
+    //        if (deltaY === 0 || rowIndex >= tableData.length - 1) return;
+    //
+    //        const currentRow = `row-${rowIndex}`;
+    //        const nextRow = `row-${rowIndex + 1}`;
+    //
+    //        const currentRowHeight = parseFloat(newDimensions[currentRow]?.height || `${rows[rowIndex].offsetHeight}px`);
+    //        const nextRowHeight = parseFloat(newDimensions[nextRow]?.height || `${rows[rowIndex + 1].offsetHeight}px`);
+    //
+    //        const intendedCurrentRowHeight = Math.max(currentRowHeight + deltaY, minDimension);
+    //        const intendedNextRowHeight = Math.max(nextRowHeight - deltaY, minDimension);
+    //
+    //        // Ensure that the resized table doesn't exceed the parent's height
+    //        if (intendedCurrentRowHeight + intendedNextRowHeight <= parentHeight) {
+    //            newDimensions[currentRow] = { height: `${intendedCurrentRowHeight}px` };
+    //            newDimensions[nextRow] = { height: `${intendedNextRowHeight}px` };
+    //        }
+    //    };
+    //
+    //    resizeColumn();
+    //    resizeRow();
+    //
+    //    updateTableCellDimensions(pageId, id, newDimensions);
+    //    setStartPos({ x: e.clientX, y: e.clientY });
+    //};
+
 
     const useHandleCellChange = (
         pageId: number,
@@ -911,6 +1027,7 @@ export const useWhiteBoardHandlers = () => {
         useHandleBlur,
         useHandleAddImage,
         useHandleImageUpload,
+        useDirectSizeUpdate,
         useHandleMouseDownReposition,
         useUpdateListSpecs,
         useUpdateTableSpecs,

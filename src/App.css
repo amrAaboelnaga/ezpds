@@ -13,16 +13,17 @@ input::-webkit-inner-spin-button {
 }
 
 .testColor {
-  color: rgb(245, 245, 245);
+  color: rgb(230, 230, 230);
 }
 
 .textEditButton:active {
   transform: scale(0.90);
-  background-color: #f0f0f0;
+  background-color: #d5d5d5;
 }
 
 .textEditButton {
   background-color: #fff;
+  transition: all .4s;
 }
 
 .textEditButton:hover {

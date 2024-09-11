@@ -34,7 +34,7 @@ const RightDrawer: React.FC = () => {
     }, []);
     return (
         <div onMouseLeave={() => setshowObject(false)} onMouseOver={() => setshowObject(true)} ref={componentRef} style={{ ...styles.rightDrawerCont, right: showObject ? '-10px' : '-200px' }}>
-            <i style={{ ...styles.settingOppener }} className="fa fa-cog" ></i>
+            <i style={{ ...styles.settingOpener }} className="fa fa-cog" ></i>
             <ProductInfoBox />
             <div style={{ height: '10px' }} />
             <ExportAndImport />
@@ -56,7 +56,7 @@ const styles = {
         width: '200px',
         transition: 'all 0.4s'
     } as React.CSSProperties,
-    settingOppener: {
+    settingOpener: {
         position: 'absolute',
         backgroundColor: 'rgb(255, 255, 255)',
         left: '-30px',
