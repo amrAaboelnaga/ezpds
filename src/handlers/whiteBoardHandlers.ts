@@ -1088,3 +1088,44 @@ export const useWhiteBoardHandlers = () => {
     };
 };
 
+export const extractColorsFromItem = (item: any, colors: Set<string>) => {
+    const isTransparent = (color: string) => {
+        const lowerColor = color.toLowerCase();
+        return lowerColor === 'transparent' ||
+            lowerColor === 'rgba(255, 255, 255, 0)' ||
+            lowerColor === 'rgba(0, 0, 0, 0)' ||
+            lowerColor === 'rgba(0, 0, 0, 0.0)' ||
+            lowerColor === 'rgba(255, 255, 255, 0.0)' ||
+            lowerColor === '#ffffff00';
+    };
+
+    if (item.backgroundColor && !isTransparent(item.backgroundColor)) {
+        colors.add(item.backgroundColor);
+    }
+    if (item.borderColor && !isTransparent(item.borderColor)) {
+        colors.add(item.borderColor);
+    }
+    if (item.data) {
+        const textData = Array.isArray(item.data) ? item.data : [item.data];
+        textData.forEach((textItem: any) => {
+            if (textItem.color && !isTransparent(textItem.color)) {
+                colors.add(textItem.color);
+            }
+            if (textItem.backgroundColor && !isTransparent(textItem.backgroundColor)) {
+                colors.add(textItem.backgroundColor);
+            }
+        });
+    }
+};
+
+export const extractColorsFromPages = (pages: any[]) => {
+    const colors: Set<string> = new Set();
+
+    pages.forEach(page => {
+        Object.values(page.jsonSpecs).forEach(item => {
+            extractColorsFromItem(item, colors);
+        });
+    });
+
+    return Array.from(colors);
+};

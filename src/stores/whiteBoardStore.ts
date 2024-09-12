@@ -1,5 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { copiedDefaultPage, defaultPage, Guidelines, JsonSpecs, ProductInfo, SingleWBPageInterface } from '../types/whiteBoard';
+import { extractColorsFromPages } from '../handlers/whiteBoardHandlers';
 
 class WhiteBoardStore {
   jsonSpecs: JsonSpecs = {};
@@ -10,6 +11,13 @@ class WhiteBoardStore {
   pages: SingleWBPageInterface[] = [defaultPage(0)]; // Use empty array to start
   showPageNumber: boolean = true
   currentPage: number = 0
+  projectColors: string[] = []
+
+  updateProjectColors() {
+    runInAction(() => {
+      this.projectColors = extractColorsFromPages(this.pages);
+    });
+  }
 
   constructor() {
     makeAutoObservable(this);
@@ -234,6 +242,8 @@ class WhiteBoardStore {
       this.productInfo = obj.productInfo
     });
   }
+
+
 
 }
 
