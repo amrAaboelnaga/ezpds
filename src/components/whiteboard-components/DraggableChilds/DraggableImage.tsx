@@ -11,14 +11,13 @@ interface DraggableImageProps {
 }
 
 export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, standardSpecs, toggleEditing, pageId }) => {
-  const { useDeleteItem, useHandleAddImage, useHandleImageUpload, useHandleContainerEditorBar, useZIndexHandler } = useWhiteBoardHandlers();
+  const { useDeleteItem, useHandleAddImage, useHandleImageUpload, useHandleContainerEditorBar } = useWhiteBoardHandlers();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleImageUpload = useHandleImageUpload();
   const handleAddImage = useHandleAddImage(inputRef);
   const handleDeleteItem = useDeleteItem();
-  const handleContainerEditor = useHandleContainerEditorBar()
-  const { padding, src, isEditing, border, borderColor, borderRadius, backgroundColor } = standardSpecs
-
+  const handleContainerEditor = useHandleContainerEditorBar();
+  const { padding, src, isEditing, border, borderColor, borderRadius, backgroundColor } = standardSpecs;
 
   useEffect(() => {
     handleContainerEditor(isEditing, { pageId: pageId, done: () => toggleEditing(pageId, id), deleteItem: () => handleDeleteItem(pageId, id), id: id, addImg: () => handleAddImage(id) });
@@ -27,9 +26,11 @@ export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, sta
   return (
     <div
       style={{
-        display: 'flex',
+        ...styles.imageContainer,
         borderRadius: borderRadius,
-      }}   >
+        padding: padding,
+        backgroundColor: backgroundColor
+      }} >
       {src ? (
         <img
           onDragStart={(e) => e.preventDefault()}
@@ -37,8 +38,6 @@ export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, sta
             ...styles.draggableImage,
             border: `${border}px solid ${borderColor}`,
             borderRadius: borderRadius,
-            padding: padding,
-            backgroundColor: backgroundColor
           }}
           src={src} alt='Uploaded' />
       ) : (
@@ -56,16 +55,16 @@ export const DraggableImage: React.FC<DraggableImageProps> = observer(({ id, sta
 });
 
 const styles = {
-  editTableCount: {
-    position: 'absolute',
-    right: '-60px',
+  imageContainer: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
+    width: '100%',
+    height: 'auto',
+    position: 'relative',
   } as React.CSSProperties,
   draggableImage: {
     width: '100%',
-    height: 'auto',
+    height: '100%',
+    objectFit: 'cover',
     userSelect: "none"
   } as React.CSSProperties,
   addImageButton: {
@@ -73,7 +72,6 @@ const styles = {
     backgroundColor: 'transparent',
     border: 'none',
     cursor: 'pointer',
-    color: '#0000ff', // Adjust color as needed
+    color: '#0000ff',
   } as React.CSSProperties,
 };
-
