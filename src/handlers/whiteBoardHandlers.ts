@@ -826,34 +826,64 @@ export const useWhiteBoardHandlers = () => {
             const currentWidth = parseFloat(newDimensions[currentCol]?.width || '100px');
             const nextWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
 
-            newDimensions[currentCol] = {
-                width: `${currentWidth + deltaX}px`
-            };
-            newDimensions[nextCol] = {
-                width: `${nextWidth - deltaX}px`
-            };
+            const isShiftKey = e.shiftKey; // Check if Shift key is pressed
+
+            if (isShiftKey) {
+                // Apply resizing to all columns
+                for (let i = 0; i < totalCols - 1; i++) {
+                    const col = `col-${i}`;
+                    const nextCol = `col-${i + 1}`;
+
+                    const colWidth = parseFloat(newDimensions[col]?.width || '100px');
+                    const nextColWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
+
+                    newDimensions[col] = {
+                        width: `${colWidth + deltaX}px`
+                    };
+                    newDimensions[nextCol] = {
+                        width: `${nextColWidth - deltaX}px`
+                    };
+                }
+            } else {
+                // Apply resizing to selected column
+                newDimensions[currentCol] = {
+                    width: `${currentWidth + deltaX}px`
+                };
+                newDimensions[nextCol] = {
+                    width: `${nextWidth - deltaX}px`
+                };
+            }
         }
 
         if (rowIndex >= 0 && rowIndex < totalRows) {
             const currentRow = `row-${rowIndex}`;
+
             const currentHeight = parseFloat(newDimensions[currentRow]?.height || '40px');
-            newDimensions[currentRow] = {
-                height: `${currentHeight + deltaY}px`
-            };
 
-            //if (rowIndex < totalRows - 1) {
-            //    const nextRow = `row-${rowIndex + 1}`;
-            //    const nextHeight = parseFloat(newDimensions[nextRow]?.height || '40px');
-            //    newDimensions[nextRow] = {
-            //        height: `${nextHeight - deltaY}px`
-            //    };
-            //}
+            const isShiftKey = e.shiftKey; // Check if Shift key is pressed
 
+            if (isShiftKey) {
+                // Apply resizing to all rows
+                for (let i = 0; i < totalRows; i++) {
+                    const row = `row-${i}`;
+                    const rowHeight = parseFloat(newDimensions[row]?.height || '40px');
+
+                    newDimensions[row] = {
+                        height: `${rowHeight + deltaY}px`
+                    };
+                }
+            } else {
+                // Apply resizing to selected row
+                newDimensions[currentRow] = {
+                    height: `${currentHeight + deltaY}px`
+                };
+            }
         }
 
         updateTableCellDimensions(pageId, id, newDimensions);
         setStartPos({ x: e.clientX, y: e.clientY });
     };
+
 
 
     //const handleTableMouseMove = (

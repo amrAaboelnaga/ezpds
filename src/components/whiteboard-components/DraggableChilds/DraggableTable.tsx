@@ -186,7 +186,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggab
                                         width: cellDimensionsStore[`col-${colIndex}`]?.width || '50px',
                                         height: cellDimensionsStore[`row-${rowIndex}`]?.height || '25px',
                                         position: 'relative',
-                                        border: '1px solid #ccc',
+                                        border: `${border}px solid ${borderColor}`,
                                         backgroundColor: cell.backgroundColor,
                                     }}>
                                     <EditableText

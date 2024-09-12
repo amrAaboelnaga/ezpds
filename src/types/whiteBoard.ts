@@ -176,7 +176,12 @@ export const defaultText: Text = {
 
 const defaultRows = 4;
 const defaultColumns = 4;
-const defaultTableData: Text[][] = Array.from({ length: defaultRows }, () => Array.from({ length: defaultColumns }, () => defaultText));
+const defaultTableData: Text[][] = Array.from({ length: defaultRows }, () =>
+  Array.from({ length: defaultColumns }, () => ({
+    ...defaultText,
+    textAlign: 'center'
+  }))
+);
 
 export const createDraggableTextSpec = (id: string, x: number, y: number): DraggableTextInterface => ({
   repeate: false,
