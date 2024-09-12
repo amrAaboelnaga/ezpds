@@ -51,6 +51,7 @@ export interface DraggableListInterface extends DraggableItemInterface {
   gap: string;
   rowHeight: RowHeight;
   orderedList: boolean;
+  marker?: string
 }
 
 export interface RowHeight {
@@ -237,6 +238,7 @@ export const createDraggableListSpec = (id: string, x: number, y: number): Dragg
   rowHeight: {},
   rotation: 0,
   orderedList: true,
+  marker: ""
 });
 
 export const createDraggableTableSpec = (id: string, x: number, y: number): DraggableTableInterface => ({

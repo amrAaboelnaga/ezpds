@@ -11,9 +11,10 @@ interface EditableTextProps {
   type?: string;
   pageNumbHelper?: number;
   order?: number;
+  marker?: string
 }
 
-export const EditableText: React.FC<EditableTextProps> = observer(({ textData, isEditing, onChange, onFocus, onBlur, type, pageNumbHelper, order }) => {
+export const EditableText: React.FC<EditableTextProps> = observer(({ textData, isEditing, onChange, onFocus, onBlur, type, pageNumbHelper, order, marker }) => {
   const editableDivRef = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(false);
 
@@ -39,6 +40,12 @@ export const EditableText: React.FC<EditableTextProps> = observer(({ textData, i
 
   return (
     <div style={styles.EditableTextCont}>
+      {marker && <i style={{
+        fontSize: textData.fontSize,
+        fontStyle: textData.fontStyle,
+        color: textData.color,
+        marginBottom: '2px'
+      }} className={marker}></i>}
       <p
         style={{
           ...styles.number,
@@ -58,7 +65,7 @@ export const EditableText: React.FC<EditableTextProps> = observer(({ textData, i
           wordBreak: textData.wordBreak,
         }}
       >
-        {order ? `${order}-` : type === "List" && !order ? "-" : ""}{" "}
+        {order && `${order}-`}{" "}
       </p>
       {type !== "PageNumber" && (
         <div

@@ -516,6 +516,26 @@ export const useWhiteBoardHandlers = () => {
         };
     };
 
+    const selectkMarkerForList = (
+        pageId: number,
+        id: string,
+        marker: string
+    ) => {
+
+        const page = whiteBoardStore.pages.find(page => page.id === pageId);
+        if (page) {
+            const updatedSpecs = {
+                ...page.jsonSpecs,
+                [id]: {
+                    ...page.jsonSpecs[id],
+                    marker: marker,
+                },
+            };
+            whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+        }
+    };
+
+
 
     const useAddList = (
         pageId: number,
@@ -1010,6 +1030,7 @@ export const useWhiteBoardHandlers = () => {
         useChangeListRowHeight,
         useUpdateListGap,
         useOrderedList,
+        selectkMarkerForList,
         useHandleListTextStyleChange,
         useHandleListMouseDown,
         useHandleCellChange,

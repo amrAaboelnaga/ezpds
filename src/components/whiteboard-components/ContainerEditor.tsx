@@ -21,6 +21,7 @@ import verSpaceAdd from "../../assets/images/svg/spacing-width-01-svgrepo-com.sv
 import verSpaceRem from "../../assets/images/svg/spacing-horizontal-svgrepo-com.svg"
 import horzSpaceAdd from "../../assets/images/svg/spacing-height-01-svgrepo-com.svg"
 import horzSpaceRem from "../../assets/images/svg/spacing-vertical-svgrepo-com.svg"
+import { BulletMarkerItems } from './BulletMarkerItems';
 
 
 interface ContainerEditorProps {
@@ -32,6 +33,7 @@ const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }
   const { whiteBoardStore } = rootStore;
   const { borderColor, backgroundColor, type } = standardSpecs;
   const { useUpdateStandards, useEditStandards } = useWhiteBoardHandlers();
+  const [showListMarkers, setShowListMarkers] = useState(false);
   const [showBackgroundColorBox, setShowBackgroundColorBox] = useState(false);
   const [showBorderColorBox, setShowBorderColorBox] = useState(false);
   const updateStandards = useUpdateStandards();
@@ -103,6 +105,7 @@ const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }
         {data.rowGapIncrease && <ContainerEditorSingleButton onClick={data.rowGapIncrease} imageSrc={horzSpaceAdd} description="Increase Horizontal Gap" />}
         {data.rowGapDecrease && <ContainerEditorSingleButton onClick={data.rowGapDecrease} imageSrc={horzSpaceRem} description="Decrease Horizontal Gap" />}
         {data.addImg && <ContainerEditorSingleButton onClick={data.addImg} iconClass="fa fa-image" description="Add Image" />}
+        {data.orderedList && <ContainerEditorSingleButton onClick={() => setShowListMarkers(!showListMarkers)} iconClass="fa fa-check" description="Bullet Marker" />}
       </div>
       {shouldRenderLine(standardSpecs.type) && (
         <div style={styles.line} />
@@ -116,6 +119,9 @@ const ContainerEditor: React.FC<ContainerEditorProps> = ({ data, standardSpecs }
         <div style={styles.colorBoxWrapper}>
           <ColorSelectorForConts color={borderColor} onChange={handleBorderColorChange} setShow={setShowBorderColorBox} />
         </div>
+      )}
+      {showListMarkers && (
+        <BulletMarkerItems onMarkerSelect={data.onMarkerSelect} />
       )}
       {showBackgroundColorBox && (
         <div style={styles.colorBoxWrapper}>
