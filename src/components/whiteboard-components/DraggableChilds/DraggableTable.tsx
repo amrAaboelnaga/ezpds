@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../../handlers/whiteBoardHandlers';
 import { CellDimensions, defaultText, DraggableTableInterface, Text } from '../../../types/whiteBoard';
 import { EditableText } from '../EditableText';
+import { rootStore } from '../../../stores/rootStore';
 
 interface DraggableTableProps {
     id: string;
@@ -33,7 +34,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggab
     const tableRef = useRef<HTMLTableElement>(null);
     const [isResizing, setIsResizing] = useState<{ rowIndex: number; colIndex: number } | null>(null);
     const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
-
+    const { whiteBoardStore } = rootStore
 
     useEffect(() => {
         try {
@@ -132,6 +133,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggab
     const handleMouseUp = () => {
         setIsResizing(null);
         setStartPos(null);
+        whiteBoardStore.saveCurrentState()
     };
 
     useEffect(() => {

@@ -155,7 +155,7 @@ export const useWhiteBoardHandlers = () => {
                 };
 
                 // Update the jsonSpecs for the specified page
-                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);                
             } else {
                 console.error(`Page with ID ${pageId} not found.`);
             }
@@ -467,6 +467,7 @@ export const useWhiteBoardHandlers = () => {
                 }, pageId);
                 document.removeEventListener('mousemove', handleMouseMoveReposition);
                 document.removeEventListener('mouseup', handleMouseUpReposition);
+                whiteBoardStore.saveCurrentState()
             };
 
             document.addEventListener('mousemove', handleMouseMoveReposition);
@@ -699,6 +700,7 @@ export const useWhiteBoardHandlers = () => {
                 const onMouseUp = () => {
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
+                    whiteBoardStore.saveCurrentState()
                 };
 
                 document.addEventListener('mousemove', onMouseMove);

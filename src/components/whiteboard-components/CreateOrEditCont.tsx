@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { observer } from "mobx-react-lite";
 import { rootStore } from "../../stores/rootStore";
 import { useWhiteBoardHandlers } from '../../handlers/whiteBoardHandlers';
@@ -18,11 +18,27 @@ import TextPageModifiers from './TextPageModifiers';
 
 const CreateOrEditCont: React.FC = observer(() => {
   const { whiteBoardStore } = rootStore;
-  const { useHandleDrop, useHandleDragOver, useToggleEditing } = useWhiteBoardHandlers();
-  const page = useRef<HTMLDivElement>(null);
-  const handleDrop = useHandleDrop();
-  const handleDragOver = useHandleDragOver();
-  const toggleEditing = useToggleEditing();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '*') {
+        console.log('Undo triggered');
+        e.preventDefault();
+        whiteBoardStore.undo();
+      } else if (e.ctrlKey && e.key === 'y') {
+        e.preventDefault();
+        whiteBoardStore.redo();
+      } else {
+        whiteBoardStore.saveCurrentState(); // Save the current state when this key is pressed
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <div style={{ ...styles.createOrEditCont }}>

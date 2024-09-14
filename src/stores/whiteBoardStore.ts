@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { action, makeAutoObservable, observable, toJS } from 'mobx';
 import { copiedDefaultPage, defaultPage, Guidelines, JsonSpecs, ProductInfo, SingleWBPageInterface } from '../types/whiteBoard';
 import { extractColorsFromPages } from '../handlers/whiteBoardHandlers';
 
@@ -8,244 +8,243 @@ class WhiteBoardStore {
   textContent: any = null;
   textOnChange: any = null;
   containerEditor: any = null;
-  pages: SingleWBPageInterface[] = [defaultPage(0)]; // Use empty array to start
-  showPageNumber: boolean = true
-  currentPage: number = 0
-  projectColors: string[] = []
 
-  updateProjectColors() {
-    runInAction(() => {
-      this.projectColors = extractColorsFromPages(this.pages);
-    });
-  }
+  @observable pages: SingleWBPageInterface[] = [defaultPage(0)];
+  previousStates: any[] = [];
+  redoStates: any[] = [];
+  isInitialStateSaved: boolean = false;
+  showPageNumber: boolean = true;
+  currentPage: number = 0;
+  projectColors: string[] = [];
 
   constructor() {
     makeAutoObservable(this);
+    this.saveInitialState();
   }
 
-  setJsonSpecs(specs: JsonSpecs, pageId?: number) {
+  saveInitialState() {
+    if (!this.isInitialStateSaved) {
+      this.previousStates.push(toJS(this.pages));
+      this.isInitialStateSaved = true;
+    }
+  }
 
-    runInAction(() => {
+  @action
+  saveCurrentState() {
+    const currentState = toJS(this.pages);
+
+    if (
+      this.previousStates.length === 0 ||
+      JSON.stringify(currentState) !== JSON.stringify(this.previousStates[this.previousStates.length - 1])
+    ) {
+      console.log('Saving current state');
+      this.previousStates.push(currentState);
+      this.redoStates = []; // Clear redo stack
+    } else {
+      console.log('State is identical, not saving');
+    }
+  }
+
+  @action
+  undo() {
+    if (this.previousStates.length > 1) {
+      const currentState = toJS(this.pages);
+      this.redoStates.push(currentState);
+
+      this.previousStates.pop();
+      this.pages = toJS(this.previousStates[this.previousStates.length - 1]);
+      console.log('Undo performed');
+    } else {
+      console.log('No more previous states available to undo');
+    }
+  }
+
+  @action
+  redo() {
+    if (this.redoStates.length > 0) {
+      const currentState = toJS(this.pages);
+      this.previousStates.push(currentState);
+
+      this.pages = toJS(this.redoStates.pop());
+      console.log('Redo performed');
+    } else {
+      console.log('No redo states available');
+    }
+  }
+
+  @action
+  updateProjectColors() {
+    this.projectColors = extractColorsFromPages(this.pages);
+  }
+
+  @action
+  setJsonSpecs(specs: JsonSpecs, pageId?: number) {
+    const page = this.pages.find(page => page.id === pageId);
+    if (page) {
+      page.jsonSpecs = {
+        ...page.jsonSpecs,
+        ...specs,
+      };
+    } else {
+      console.error(`Page with ID ${pageId} not found.`);
+    }
+  }
+
+  @action
+  setProductInfo(info: ProductInfo) {
+    this.productInfo = info;
+  }
+
+  @action
+  setTextEditor(textContent: any, textOnChange: any) {
+    this.textContent = textContent;
+    this.textOnChange = textOnChange;
+  }
+
+  @action
+  setContainerEditor(object: any) {
+    this.containerEditor = object;
+  }
+
+  @action
+  setGuidLines(object: Guidelines, pageId: number, shiftPressed?: boolean) {
+    if (shiftPressed) {
+      this.pages.forEach(page => {
+        page.guidLines = {
+          ...page.guidLines,
+          ...object,
+        };
+      });
+    } else {
       const page = this.pages.find(page => page.id === pageId);
       if (page) {
-        page.jsonSpecs = {
-          ...page.jsonSpecs,
-          ...specs,
+        page.guidLines = {
+          ...page.guidLines,
+          ...object,
         };
       } else {
         console.error(`Page with ID ${pageId} not found.`);
       }
-    });
+    }
   }
 
-  setProductInfo(info: ProductInfo) {
-    runInAction(() => {
-      this.productInfo = info;
-    });
-  }
-
-  setTextEditor(textContent: any, textOnChange: any) {
-    runInAction(() => {
-      this.textContent = textContent;
-      this.textOnChange = textOnChange;
-    });
-  }
-
-  setContainerEditor(object: any) {
-    runInAction(() => {
-      this.containerEditor = object;
-    });
-  }
-
-  setGuidLines(object: Guidelines, pageId: number, shiftPressed?: boolean) {
-    runInAction(() => {
-      if (shiftPressed) {
-        // Update guidelines for all pages
-        this.pages.forEach(page => {
-          page.guidLines = {
-            ...page.guidLines,
-            ...object,
-          };
-        });
-      } else {
-        // Update guidelines for the specific page
-        const page = this.pages.find(page => page.id === pageId);
-        if (page) {
-          page.guidLines = {
-            ...page.guidLines,
-            ...object,
-          };
-        } else {
-          console.error(`Page with ID ${pageId} not found.`);
-        }
-      }
-    });
-  }
-
+  @action
   setCurrentPage(currentPage: number) {
-    runInAction(() => {
-      this.currentPage = currentPage
-      console.log(`Looking at pageId: ${currentPage}`)
-    });
+    this.currentPage = currentPage;
+    console.log(`Looking at pageId: ${currentPage}`);
   }
 
+  @action
   addPage() {
-    runInAction(() => {
-      const newId = this.pages.length ? this.pages[this.pages.length - 1].id + 1 : 0;
-      this.pages.push(defaultPage(newId));
-    });
+    const newId = this.pages.length ? this.pages[this.pages.length - 1].id + 1 : 0;
+    this.pages.push(defaultPage(newId));
+    this.saveCurrentState();
   }
+
+  @action
   addPageAfter(currentPageId: number) {
-    runInAction(() => {
-      // Ensure the currentPageId corresponds to an existing index
-      if (currentPageId < 0 || currentPageId >= this.pages.length) {
-        console.error(`Page with ID ${currentPageId} not found.`);
-        return;
-      }
+    if (currentPageId < 0 || currentPageId >= this.pages.length) {
+      console.error(`Page with ID ${currentPageId} not found.`);
+      return;
+    }
 
-      // Insert a new page after the current page
-      this.pages.splice(currentPageId + 1, 0, defaultPage(currentPageId + 1));
-
-      // Update IDs of all pages to match their new indices
-      this.pages.forEach((page, index) => {
-        page.id = index;
-      });
-    });
+    this.pages.splice(currentPageId + 1, 0, defaultPage(currentPageId + 1));
+    this.pages.forEach((page, index) => (page.id = index));
   }
 
+  @action
   copyPageAfter(currentPageId: number) {
-    runInAction(() => {
-      // Ensure the currentPageId corresponds to an existing index
-      if (currentPageId < 0 || currentPageId >= this.pages.length) {
-        console.error(`Page with ID ${currentPageId} not found.`);
-        return;
-      }
+    if (currentPageId < 0 || currentPageId >= this.pages.length) {
+      console.error(`Page with ID ${currentPageId} not found.`);
+      return;
+    }
 
-      // Insert a new page after the current page
-      const newPageId = currentPageId + 1;
-      const copiedSpecs = this.pages[currentPageId].jsonSpecs;
-      const newPage = copiedDefaultPage(newPageId, copiedSpecs);
+    const newPageId = currentPageId + 1;
+    const copiedSpecs = this.pages[currentPageId].jsonSpecs;
+    const newPage = copiedDefaultPage(newPageId, copiedSpecs);
 
-      this.pages.splice(newPageId, 0, newPage);
-
-      // Update IDs of all pages to match their new indices
-      this.pages.forEach((page, index) => {
-        page.id = index;
-      });
-    });
+    this.pages.splice(newPageId, 0, newPage);
+    this.pages.forEach((page, index) => (page.id = index));
+    this.saveCurrentState();
   }
 
+  @action
   addPageBefore(currentPageId: number) {
-    runInAction(() => {
-      // Ensure the currentPageId corresponds to an existing index
-      if (currentPageId < 0 || currentPageId >= this.pages.length) {
-        console.error(`Page with ID ${currentPageId} not found.`);
-        return;
-      }
+    if (currentPageId < 0 || currentPageId >= this.pages.length) {
+      console.error(`Page with ID ${currentPageId} not found.`);
+      return;
+    }
 
-      // Insert a new page before the current page
-      this.pages.splice(currentPageId, 0, defaultPage(currentPageId));
-
-      // Update IDs of all pages to match their new indices
-      this.pages.forEach((page, index) => {
-        page.id = index;
-      });
-    });
+    this.pages.splice(currentPageId, 0, defaultPage(currentPageId));
+    this.pages.forEach((page, index) => (page.id = index));
+    this.saveCurrentState();
   }
 
+  @action
   copyPageBefore(currentPageId: number) {
-    runInAction(() => {
-      // Ensure the currentPageId corresponds to an existing index
-      if (currentPageId < 0 || currentPageId >= this.pages.length) {
-        console.error(`Page with ID ${currentPageId} not found.`);
-        return;
-      }
+    if (currentPageId < 0 || currentPageId >= this.pages.length) {
+      console.error(`Page with ID ${currentPageId} not found.`);
+      return;
+    }
 
-      // Insert a new page before the current page
-      const newPageId = currentPageId;
-      const copiedSpecs = this.pages[currentPageId].jsonSpecs;
-      const newPage = copiedDefaultPage(newPageId, copiedSpecs);
+    const newPageId = currentPageId;
+    const copiedSpecs = this.pages[currentPageId].jsonSpecs;
+    const newPage = copiedDefaultPage(newPageId, copiedSpecs);
 
-      this.pages.splice(newPageId, 0, newPage);
-
-      // Update IDs of all pages to match their new indices
-      this.pages.forEach((page, index) => {
-        page.id = index;
-      });
-    });
+    this.pages.splice(newPageId, 0, newPage);
+    this.pages.forEach((page, index) => (page.id = index));
+    this.saveCurrentState();
   }
 
-
+  @action
   handleOnDragEnd(result: any) {
     const { destination, source } = result;
 
-    if (!destination) {
-      // If dropped outside the list
-      return;
-    }
+    if (!destination || source.index === destination.index) return;
 
-    // Ensure the source and destination are different
-    if (source.index === destination.index) {
-      return;
-    }
+    const [removed] = this.pages.splice(source.index, 1);
+    this.pages.splice(destination.index, 0, removed);
 
-    runInAction(() => {
-      // Reorder the pages array
-      const [removed] = this.pages.splice(source.index, 1);
-      this.pages.splice(destination.index, 0, removed);
-
-      // Update IDs of all pages to match their new indices
-      this.pages.forEach((page, index) => {
-        page.id = index;
-      });
-    });
+    this.pages.forEach((page, index) => (page.id = index));
+    this.saveCurrentState();
   }
 
-
+  @action
   deletePage(id: number) {
-    runInAction(() => {
-      this.pages = this.pages.filter(page => page.id !== id);
-      this.pages = this.pages.map((page, index) => ({
-        ...page,
-        id: index
-      }));
-    });
+    this.pages = this.pages.filter(page => page.id !== id);
+    this.pages.forEach((page, index) => (page.id = index));
+    this.saveCurrentState();
   }
 
+  @action
   setShowPageNumber() {
-    runInAction(() => {
-      this.showPageNumber = !this.showPageNumber
-    });
+    this.showPageNumber = !this.showPageNumber;
+    this.saveCurrentState();
   }
 
+  @action
   addObjectToPage(pageId: number, newSpec: JsonSpecs) {
-    runInAction(() => {
-      const pageIndex = this.pages.findIndex(page => page.id === pageId);
-      if (pageIndex > -1) {
-        this.pages[pageIndex].jsonSpecs = {
-          ...this.pages[pageIndex].jsonSpecs,
-          ...newSpec,
-        };
-      }
-    });
+    const pageIndex = this.pages.findIndex(page => page.id === pageId);
+    if (pageIndex > -1) {
+      this.pages[pageIndex].jsonSpecs = {
+        ...this.pages[pageIndex].jsonSpecs,
+        ...newSpec,
+      };
+    }
+    this.saveCurrentState();
   }
 
+  @action
   resetPages() {
-    runInAction(() => {
-      this.pages = [defaultPage(0)]
-    });
+    this.pages = [defaultPage(0)];
+    this.saveCurrentState();
   }
 
+  @action
   importProject(obj: any) {
-    runInAction(() => {
-      this.pages = obj.pages
-      this.productInfo = obj.productInfo
-    });
+    this.pages = obj.pages;
+    this.productInfo = obj.productInfo;
   }
-
-
-
 }
-
 
 export const whiteBoardStore = new WhiteBoardStore();
