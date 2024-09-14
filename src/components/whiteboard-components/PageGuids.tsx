@@ -86,7 +86,7 @@ const PageGuids: React.FC<PageGuidsProps> = ({ pageId }) => {
                 ...guidLines,
                 [`${dragging.line}Visb`]: false
             }, pageId, shiftPressed);
-            whiteBoardStore.saveCurrentState()
+            
         }
         setDragging(null);
     };

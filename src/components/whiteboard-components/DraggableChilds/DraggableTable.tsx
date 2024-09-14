@@ -133,7 +133,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggab
     const handleMouseUp = () => {
         setIsResizing(null);
         setStartPos(null);
-        whiteBoardStore.saveCurrentState()
+        
     };
 
     useEffect(() => {

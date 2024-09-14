@@ -24,7 +24,6 @@ export const ColorSelectorForConts: React.FC<ColorSelectorForContsProps> = obser
 
   useEffect(() => {
     whiteBoardStore.updateProjectColors()
-    console.log(whiteBoardStore.projectColors)
   }, [color])
 
   useEffect(() => {

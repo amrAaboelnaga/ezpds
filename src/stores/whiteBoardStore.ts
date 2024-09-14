@@ -138,7 +138,7 @@ class WhiteBoardStore {
   addPage() {
     const newId = this.pages.length ? this.pages[this.pages.length - 1].id + 1 : 0;
     this.pages.push(defaultPage(newId));
-    this.saveCurrentState();
+
   }
 
   @action
@@ -165,7 +165,7 @@ class WhiteBoardStore {
 
     this.pages.splice(newPageId, 0, newPage);
     this.pages.forEach((page, index) => (page.id = index));
-    this.saveCurrentState();
+
   }
 
   @action
@@ -177,7 +177,7 @@ class WhiteBoardStore {
 
     this.pages.splice(currentPageId, 0, defaultPage(currentPageId));
     this.pages.forEach((page, index) => (page.id = index));
-    this.saveCurrentState();
+
   }
 
   @action
@@ -193,7 +193,7 @@ class WhiteBoardStore {
 
     this.pages.splice(newPageId, 0, newPage);
     this.pages.forEach((page, index) => (page.id = index));
-    this.saveCurrentState();
+
   }
 
   @action
@@ -206,20 +206,20 @@ class WhiteBoardStore {
     this.pages.splice(destination.index, 0, removed);
 
     this.pages.forEach((page, index) => (page.id = index));
-    this.saveCurrentState();
+
   }
 
   @action
   deletePage(id: number) {
     this.pages = this.pages.filter(page => page.id !== id);
     this.pages.forEach((page, index) => (page.id = index));
-    this.saveCurrentState();
+
   }
 
   @action
   setShowPageNumber() {
     this.showPageNumber = !this.showPageNumber;
-    this.saveCurrentState();
+
   }
 
   @action
@@ -230,14 +230,15 @@ class WhiteBoardStore {
         ...this.pages[pageIndex].jsonSpecs,
         ...newSpec,
       };
+      this.saveCurrentState()
     }
-    this.saveCurrentState();
+
   }
 
   @action
   resetPages() {
     this.pages = [defaultPage(0)];
-    this.saveCurrentState();
+
   }
 
   @action

@@ -467,7 +467,7 @@ export const useWhiteBoardHandlers = () => {
                 }, pageId);
                 document.removeEventListener('mousemove', handleMouseMoveReposition);
                 document.removeEventListener('mouseup', handleMouseUpReposition);
-                whiteBoardStore.saveCurrentState()
+                
             };
 
             document.addEventListener('mousemove', handleMouseMoveReposition);
@@ -700,7 +700,7 @@ export const useWhiteBoardHandlers = () => {
                 const onMouseUp = () => {
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
-                    whiteBoardStore.saveCurrentState()
+                    
                 };
 
                 document.addEventListener('mousemove', onMouseMove);
