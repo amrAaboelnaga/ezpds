@@ -22,7 +22,7 @@ interface DraggableListProps {
 
 
 export const DraggableList: React.FC<DraggableListProps> = observer(({ pageId, id, standardSpecs, listData, toggleEditing, focusedIndex, setFocusedIndex, draggableRef }) => {
-    const { useOrderedList, useHandleListMouseDown, useHandleContainerEditorBar, useAddList, useRemoveList, useHandleListItemChange, useChangeListRowHeight, useUpdateListGap, useHandleListTextStyleChange, useDeleteItem, useUpdateListSpecs, useHandleTopTextBar, useZIndexHandler } = useWhiteBoardHandlers();
+    const { selectkMarkerForList, useOrderedList, useHandleListMouseDown, useHandleContainerEditorBar, useAddList, useRemoveList, useHandleListItemChange, useChangeListRowHeight, useUpdateListGap, useHandleListTextStyleChange, useDeleteItem, useUpdateListSpecs, useHandleTopTextBar } = useWhiteBoardHandlers();
     const { orderedList, rowHeight, padding, gap, backgroundColor, isEditing, border, borderColor, borderRadius, zIndex } = standardSpecs
     const resizeRefs = useRef<(HTMLDivElement | null)[]>([]);
     const handleDeleteItem = useDeleteItem();
@@ -39,7 +39,9 @@ export const DraggableList: React.FC<DraggableListProps> = observer(({ pageId, i
     const handleListTextStyleChange = useHandleListTextStyleChange(pageId, listData, id, gap, backgroundColor, zIndex, updateListSpecs, focusedIndex);
     const handleListMouseDown = useHandleListMouseDown(pageId, id, resizeRefs, changeListRowHeight);
 
-
+    const onMarkerSelect = (marker: string) => {
+        selectkMarkerForList(pageId, id, marker);
+    };
 
     const getBorderStyle = (index: number, totalItems: number): React.CSSProperties => {
         let style: any = {};
@@ -64,7 +66,7 @@ export const DraggableList: React.FC<DraggableListProps> = observer(({ pageId, i
 
     useEffect(() => {
         handleTopTextBar(isEditing, focusedIndex !== null ? listData[focusedIndex] : listData[0], handleListTextStyleChange);
-        handleContainerEditor(isEditing, { pageId: pageId, done: () => toggleEditing(pageId, id), rowIncrease: () => addList(), rowDecrease: () => removeList(), rowGapIncrease: () => updateListGap('increase'), rowGapDecrease: () => updateListGap('decrease'), deleteItem: () => handleDeleteItem(pageId, id), id: id, orderedList: () => handeOrderedList() });
+        handleContainerEditor(isEditing, { pageId: pageId, done: () => toggleEditing(pageId, id), rowIncrease: () => addList(), rowDecrease: () => removeList(), rowGapIncrease: () => updateListGap('increase'), rowGapDecrease: () => updateListGap('decrease'), deleteItem: () => handleDeleteItem(pageId, id), id: id, orderedList: () => handeOrderedList(), onMarkerSelect: onMarkerSelect });
     }, [isEditing, standardSpecs, focusedIndex]);
 
 
@@ -95,6 +97,7 @@ export const DraggableList: React.FC<DraggableListProps> = observer(({ pageId, i
                             onChange={(newValue) => handleListItemChange(index, newValue)}
                             order={orderedList ? index + 1 : undefined}
                             type={standardSpecs.type}
+                            marker={standardSpecs.marker && standardSpecs.marker}
                         />
                         {isEditing && (
                             <div style={{ ...styles.resizeHandle, bottom: index !== (listData.length - 1) ? `calc(-16px - (${gap} * 0.5))` : "-16px" }}

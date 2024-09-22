@@ -155,7 +155,7 @@ export const useWhiteBoardHandlers = () => {
                 };
 
                 // Update the jsonSpecs for the specified page
-                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);                
             } else {
                 console.error(`Page with ID ${pageId} not found.`);
             }
@@ -467,6 +467,7 @@ export const useWhiteBoardHandlers = () => {
                 }, pageId);
                 document.removeEventListener('mousemove', handleMouseMoveReposition);
                 document.removeEventListener('mouseup', handleMouseUpReposition);
+                
             };
 
             document.addEventListener('mousemove', handleMouseMoveReposition);
@@ -515,6 +516,26 @@ export const useWhiteBoardHandlers = () => {
             updateListSpecs(pageId, listData, id, newGap, containerBackgroundColor, zIndex, newOrderedList);
         };
     };
+
+    const selectkMarkerForList = (
+        pageId: number,
+        id: string,
+        marker: string
+    ) => {
+
+        const page = whiteBoardStore.pages.find(page => page.id === pageId);
+        if (page) {
+            const updatedSpecs = {
+                ...page.jsonSpecs,
+                [id]: {
+                    ...page.jsonSpecs[id],
+                    marker: marker,
+                },
+            };
+            whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
+        }
+    };
+
 
 
     const useAddList = (
@@ -679,6 +700,7 @@ export const useWhiteBoardHandlers = () => {
                 const onMouseUp = () => {
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
+                    
                 };
 
                 document.addEventListener('mousemove', onMouseMove);
@@ -806,34 +828,64 @@ export const useWhiteBoardHandlers = () => {
             const currentWidth = parseFloat(newDimensions[currentCol]?.width || '100px');
             const nextWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
 
-            newDimensions[currentCol] = {
-                width: `${currentWidth + deltaX}px`
-            };
-            newDimensions[nextCol] = {
-                width: `${nextWidth - deltaX}px`
-            };
+            const isShiftKey = e.shiftKey; // Check if Shift key is pressed
+
+            if (isShiftKey) {
+                // Apply resizing to all columns
+                for (let i = 0; i < totalCols - 1; i++) {
+                    const col = `col-${i}`;
+                    const nextCol = `col-${i + 1}`;
+
+                    const colWidth = parseFloat(newDimensions[col]?.width || '100px');
+                    const nextColWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
+
+                    newDimensions[col] = {
+                        width: `${colWidth + deltaX}px`
+                    };
+                    newDimensions[nextCol] = {
+                        width: `${nextColWidth - deltaX}px`
+                    };
+                }
+            } else {
+                // Apply resizing to selected column
+                newDimensions[currentCol] = {
+                    width: `${currentWidth + deltaX}px`
+                };
+                newDimensions[nextCol] = {
+                    width: `${nextWidth - deltaX}px`
+                };
+            }
         }
 
         if (rowIndex >= 0 && rowIndex < totalRows) {
             const currentRow = `row-${rowIndex}`;
+
             const currentHeight = parseFloat(newDimensions[currentRow]?.height || '40px');
-            newDimensions[currentRow] = {
-                height: `${currentHeight + deltaY}px`
-            };
 
-            //if (rowIndex < totalRows - 1) {
-            //    const nextRow = `row-${rowIndex + 1}`;
-            //    const nextHeight = parseFloat(newDimensions[nextRow]?.height || '40px');
-            //    newDimensions[nextRow] = {
-            //        height: `${nextHeight - deltaY}px`
-            //    };
-            //}
+            const isShiftKey = e.shiftKey; // Check if Shift key is pressed
 
+            if (isShiftKey) {
+                // Apply resizing to all rows
+                for (let i = 0; i < totalRows; i++) {
+                    const row = `row-${i}`;
+                    const rowHeight = parseFloat(newDimensions[row]?.height || '40px');
+
+                    newDimensions[row] = {
+                        height: `${rowHeight + deltaY}px`
+                    };
+                }
+            } else {
+                // Apply resizing to selected row
+                newDimensions[currentRow] = {
+                    height: `${currentHeight + deltaY}px`
+                };
+            }
         }
 
         updateTableCellDimensions(pageId, id, newDimensions);
         setStartPos({ x: e.clientX, y: e.clientY });
     };
+
 
 
     //const handleTableMouseMove = (
@@ -1010,6 +1062,7 @@ export const useWhiteBoardHandlers = () => {
         useChangeListRowHeight,
         useUpdateListGap,
         useOrderedList,
+        selectkMarkerForList,
         useHandleListTextStyleChange,
         useHandleListMouseDown,
         useHandleCellChange,
@@ -1037,3 +1090,44 @@ export const useWhiteBoardHandlers = () => {
     };
 };
 
+export const extractColorsFromItem = (item: any, colors: Set<string>) => {
+    const isTransparent = (color: string) => {
+        const lowerColor = color.toLowerCase();
+        return lowerColor === 'transparent' ||
+            lowerColor === 'rgba(255, 255, 255, 0)' ||
+            lowerColor === 'rgba(0, 0, 0, 0)' ||
+            lowerColor === 'rgba(0, 0, 0, 0.0)' ||
+            lowerColor === 'rgba(255, 255, 255, 0.0)' ||
+            lowerColor === '#ffffff00';
+    };
+
+    if (item.backgroundColor && !isTransparent(item.backgroundColor)) {
+        colors.add(item.backgroundColor);
+    }
+    if (item.borderColor && !isTransparent(item.borderColor)) {
+        colors.add(item.borderColor);
+    }
+    if (item.data) {
+        const textData = Array.isArray(item.data) ? item.data : [item.data];
+        textData.forEach((textItem: any) => {
+            if (textItem.color && !isTransparent(textItem.color)) {
+                colors.add(textItem.color);
+            }
+            if (textItem.backgroundColor && !isTransparent(textItem.backgroundColor)) {
+                colors.add(textItem.backgroundColor);
+            }
+        });
+    }
+};
+
+export const extractColorsFromPages = (pages: any[]) => {
+    const colors: Set<string> = new Set();
+
+    pages.forEach(page => {
+        Object.values(page.jsonSpecs).forEach(item => {
+            extractColorsFromItem(item, colors);
+        });
+    });
+
+    return Array.from(colors);
+};

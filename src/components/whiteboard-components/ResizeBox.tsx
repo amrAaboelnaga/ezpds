@@ -237,6 +237,7 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef,
         console.log('Mouse up');
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
+        
     }, [handleMouseMove]);
 
     const handleMouseUpRotation = useCallback(() => {
@@ -244,6 +245,7 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef,
         console.log('Mouse up rotation');
         document.removeEventListener('mousemove', handleMouseMoveRotation);
         document.removeEventListener('mouseup', handleMouseUpRotation);
+        
     }, [handleMouseMoveRotation]);
 
 

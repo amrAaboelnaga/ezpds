@@ -1,28 +1,83 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from "mobx-react-lite";
 import { rootStore } from "../../stores/rootStore";
-import { useWhiteBoardHandlers } from '../../handlers/whiteBoardHandlers';
 import { LeftToolBar } from './LeftToolBar';
-import { DraggableItem } from './DraggableItem';
-import ExportAndImport from './ExportAndImport';
-import ProductInfoBox from './productInfoBox';
 import { TextEditorBar } from './TextEditorBar';
-import ContainerEditor from './ContainerEditor';
-import PageGuids from './PageGuids';
-import RulerComponent from './RulerComponent';
 import WBPage from './WBPage';
 import RightDrawer from './RightDrawer';
 import PageModifiers from './PageModifiers';
 import TextPageModifiers from './TextPageModifiers';
-//import ExportAndImport from './ExportAndImport/ExportAndImport';
+import { reaction } from 'mobx';
 
 const CreateOrEditCont: React.FC = observer(() => {
+  const [isMouseDown, setIsMouseDown] = useState(false)
+
   const { whiteBoardStore } = rootStore;
-  const { useHandleDrop, useHandleDragOver, useToggleEditing } = useWhiteBoardHandlers();
-  const page = useRef<HTMLDivElement>(null);
-  const handleDrop = useHandleDrop();
-  const handleDragOver = useHandleDragOver();
-  const toggleEditing = useToggleEditing();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+
+      const isCtrlPressed = e.ctrlKey || e.metaKey;
+
+      if (isCtrlPressed && e.key === 'z') {
+        console.log('Undo triggered');
+        e.preventDefault();
+        whiteBoardStore.undo();
+      } else if (isCtrlPressed && e.key === 'y') {
+        e.preventDefault();
+        whiteBoardStore.redo();
+      } else {
+        whiteBoardStore.saveCurrentState();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+
+  useEffect(() => {
+    const disposer = reaction(
+      () => whiteBoardStore.pages.slice(),
+      () => {
+        if (!isMouseDown) {
+          whiteBoardStore.saveCurrentState();
+        } else {
+          console.log('Mouse is down, don\'t save minor changes');
+        }
+      }
+    );
+
+    return () => disposer();
+  }, [isMouseDown]);
+
+
+  useEffect(() => {
+    const handleMouseDown = () => setIsMouseDown(true);
+
+    const handleMouseUp = () => {
+      setIsMouseDown(false);
+      whiteBoardStore.saveCurrentState();
+    };
+
+    const handleMouseClick = () => {
+      whiteBoardStore.saveCurrentState();
+    };
+
+  
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('click', handleMouseClick);
+
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('click', handleMouseClick);
+    };
+  }, []);
 
   return (
     <div style={{ ...styles.createOrEditCont }}>

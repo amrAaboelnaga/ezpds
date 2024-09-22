@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 import { observer } from 'mobx-react-lite';
+import { rootStore } from '../../stores/rootStore';
 
 interface ColorSelectorForContsProps {
   color: string;
@@ -18,9 +19,12 @@ const parseRgbaString = (rgbaString: string) => {
 };
 
 export const ColorSelectorForConts: React.FC<ColorSelectorForContsProps> = observer(({ color, onChange, setShow }) => {
+  const { whiteBoardStore } = rootStore
   const componentRef = useRef<HTMLDivElement>(null);
-  const [selectedColor, setSelectedColor] = useState(parseRgbaString(color));
 
+  useEffect(() => {
+    whiteBoardStore.updateProjectColors()
+  }, [color])
 
   useEffect(() => {
     try {
@@ -54,6 +58,18 @@ export const ColorSelectorForConts: React.FC<ColorSelectorForContsProps> = obser
         color={parseRgbaString(color)}
         onChange={(color) => handleColorChange(color)}
       />
+      <div style={styles.palletsCont}>
+        {whiteBoardStore.projectColors.map((color, index) => (
+          <div
+            onClick={() => onChange(color)}
+            key={index}
+            style={{
+              ...styles.pallet,
+              backgroundColor: color,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 });
@@ -62,5 +78,21 @@ const styles = {
   ColorBoxCont: {
     display: 'flex',
     position: 'relative',
+    flexDirection: 'column'
+
+  } as React.CSSProperties,
+  palletsCont: {
+    marginTop: '3px',
+    display: 'flex',
+    maxWidth: '200px',
+    gap: '3px',
+    flexWrap: 'wrap',
+    justifyContent: 'center'
+  } as React.CSSProperties,
+  pallet: {
+    width: '19px',
+    height: '19px',
+    borderRadius: '50%',
+    border: '1px solid black'
   } as React.CSSProperties,
 };
