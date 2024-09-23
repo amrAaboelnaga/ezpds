@@ -66,7 +66,6 @@ const CreateOrEditCont: React.FC = observer(() => {
     const handleMouseClick = () => {
       whiteBoardStore.saveCurrentState();
     };
-
   
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);

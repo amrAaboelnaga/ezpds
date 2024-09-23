@@ -9,7 +9,7 @@ class WhiteBoardStore {
   textOnChange: any = null;
   containerEditor: any = null;
 
-  @observable pages: SingleWBPageInterface[] = [defaultPage(0)];
+  @observable.deep pages: SingleWBPageInterface[] = [defaultPage(0)];
   previousStates: any[] = [];
   redoStates: any[] = [];
   isInitialStateSaved: boolean = false;
