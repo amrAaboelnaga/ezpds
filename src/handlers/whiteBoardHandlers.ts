@@ -1138,7 +1138,7 @@ export const extractColorsFromPages = (pages: any[]) => {
 };
 
 
-export const savePagesAsImage = async (whiteBoardStore: any) => {
+const savePagesAsImage = async (whiteBoardStore: any) => {
     if (whiteBoardStore.pageRefs.length > 0) {
         const zip = new JSZip();
         const folder = zip.folder(whiteBoardStore.productInfo.title);
@@ -1173,7 +1173,20 @@ export const savePagesAsImage = async (whiteBoardStore: any) => {
     }
 };
 
-export const handlePrint = (whiteBoardStore: any) => {
+export const handlePagesToImage = (whiteBoardStore: any, setIsExporting: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setIsExporting(true);
+    setTimeout(async () => {
+        await savePagesAsImage(whiteBoardStore);
+    }, 2000);
+    setTimeout(() => {
+        setIsExporting(false);
+    }, 4000);
+
+};
+
+
+
+const handlePrint = (whiteBoardStore: any) => {
     if (whiteBoardStore.pageRefs.length > 0) {
         const elementsToHide = document.body.children;
 
@@ -1202,4 +1215,14 @@ export const handlePrint = (whiteBoardStore: any) => {
             }
         });
     }
+};
+
+export const handlePrintSelectedDivs = async (whiteBoardStore: any, setIsExporting: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setIsExporting(true);
+    setTimeout(async () => {
+        handlePrint(whiteBoardStore)
+    }, 2000);
+    setTimeout(() => {
+        setIsExporting(false);
+    }, 4000);
 };

@@ -19,8 +19,7 @@ const CreateOrEditCont: React.FC = observer(() => {
 
   const updatePageRefs = () => {
     if (pageRefs.current.length > 0) {
-      whiteBoardStore.setPageRefs(pageRefs.current);
-      console.log(whiteBoardStore.pageRefs)
+      whiteBoardStore.setPageRefs(pageRefs.current);    
     }
   }
 
@@ -74,11 +73,6 @@ const CreateOrEditCont: React.FC = observer(() => {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [whiteBoardStore]);
-
-  useEffect(() => {
-
-  }, [whiteBoardStore.pages]);
-  // Export all pages to a single PDF
 
 
   return (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from "mobx-react-lite";
 import { rootStore } from '../../stores/rootStore';
-import { handlePrint, savePagesAsImage } from '../../handlers/whiteBoardHandlers';
+import { handlePagesToImage, handlePrintSelectedDivs } from '../../handlers/whiteBoardHandlers';
 
 
 interface ExportAndImportProps {
@@ -60,34 +60,12 @@ const ExportAndImport: React.FC<ExportAndImportProps> = ({ isExporting, setIsExp
         }
     };
 
-    // Function to convert page to image and download
-    const handlePagesToImage = () => {
-        setIsExporting(true);
-        setTimeout(async () => {
-            await savePagesAsImage(whiteBoardStore);
-        }, 2000);
-        setTimeout(() => {
-            setIsExporting(false);
-        }, 4000);
-
-    };
-
-    const handlePrintSelectedDivs = async () => {
-        setIsExporting(true);
-        setTimeout(async () => {
-            handlePrint(whiteBoardStore)
-        }, 2000);
-        setTimeout(() => {
-            setIsExporting(false);
-        }, 4000);
-    };
-
     return (
         <div style={styles.exportAndImportCont}>
             <button style={styles.extraButton} onClick={handleReset}>Reset</button>
             <button style={styles.exportButton} onClick={handleExportJson}>Export as Json</button>
-            <button style={styles.exportButton} onClick={handlePrintSelectedDivs}>Export PDF</button>
-            <button style={styles.extraButton} onClick={handlePagesToImage}>Export as Images</button>
+            <button style={styles.exportButton} onClick={() => handlePrintSelectedDivs(whiteBoardStore, setIsExporting)}>Export PDF</button>
+            <button style={styles.extraButton} onClick={() => handlePagesToImage(whiteBoardStore, setIsExporting)}>Export as Images</button>
             <label style={styles.importButton}>
                 Import
                 <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
