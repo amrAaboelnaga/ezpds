@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWhiteBoardHandlers } from '../../handlers/whiteBoardHandlers';
 import { ResizeBox } from './ResizeBox';
-import { rootStore } from '../../stores/rootStore';
 import { DraggableText } from './DraggableChilds/DraggableText';
 import { DraggableList } from './DraggableChilds/DraggableList';
 import { DraggableItemInterface, DraggableTextInterface, DraggableListInterface, DraggableImageInterface, DraggableTableInterface, DraggableCircleInterface, DraggableTriangleInterface } from '../../types/whiteBoard';
@@ -92,16 +91,16 @@ export const DraggableItem: React.FC<DraggableItemProps> = observer(({ id, itemS
         opacity: itemSpecs.opacity,
         left: `${itemSpecs.location.x}px`,
         top: `${itemSpecs.location.y}px`,
-        width: itemSpecs.width,
+        width: itemSpecs.type === 'Table' ? 'fit-content' : itemSpecs.width,
         height: itemSpecs.height,
         zIndex: itemSpecs.zIndex,
-        transform: `rotate(${itemSpecs.rotation}deg)`
+        transform: `rotate(${itemSpecs.rotation}deg)`,      
       }}
       onDoubleClick={itemSpecs.isEditing === false ? () => toggleEditing(pageId, id) : undefined}
       onMouseDown={(e) => handleMouseDownReposition(e, id, draggableRef, pageId)}
     >
       {renderContent()}
-      {itemSpecs.isEditing && <ResizeBox id={id} draggableRef={draggableRef} pageId={pageId} />}
+      {itemSpecs.isEditing && <ResizeBox id={id} draggableRef={draggableRef} pageId={pageId} type={itemSpecs.type} />}
     </div>
   );
 });

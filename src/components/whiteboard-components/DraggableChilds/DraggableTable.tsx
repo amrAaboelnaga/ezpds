@@ -88,11 +88,11 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggab
     useEffect(() => {
         if (!tableRef.current) return;
         const tableHeight = tableRef.current.getBoundingClientRect().height;
-        const intWidth = parseFloat(standardSpecs.width)
+        const tableWidth = tableRef.current.getBoundingClientRect().width;
 
-        directSizeUpdate(pageId, id, intWidth, (tableHeight));
+        directSizeUpdate(pageId, id, (tableWidth), (tableHeight));
 
-    }, [isEditing, startPos]);
+    }, [isEditing, standardSpecs.cellDimensions]);
 
 
     const getBorderRadiusStyle = (rowIndex: any, colIndex: any) => {
@@ -133,7 +133,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggab
     const handleMouseUp = () => {
         setIsResizing(null);
         setStartPos(null);
-        
+
     };
 
     useEffect(() => {
@@ -198,7 +198,7 @@ export const DraggableTable: React.FC<DraggableTableProps> = observer(({ draggab
                                         onFocus={() => handleCellFocus(rowIndex, colIndex)}
                                         onBlur={handleCellBlur}
                                     />
-                                    {isEditing && colIndex < row.length - 1 && (
+                                    {isEditing && colIndex < row.length && (
                                         <div
                                             style={{ ...styles.resizerCol, right: -10 - columnGap / 2 }}
                                             onMouseDown={(e) => handleMouseDown(e, rowIndex, colIndex)}
@@ -224,22 +224,16 @@ const styles = {
     draggableChildCont: {
         position: 'relative',
         height: 'fit-content',
-        width: '100%',
+        width: 'fit-content',
         display: 'flex',
-        alignSelf: 'start'
-    } as React.CSSProperties,
-    editTableCount: {
-        position: 'absolute',
-        top: '5px',
-        right: '-65px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '5px',
-        zIndex: '900',
-        overflow: 'visible'
+        alignSelf: 'start',
+        marginLeft: '0px',
+        left: '0px',
+        justifySelf: 'left',
     } as React.CSSProperties,
     draggableTable: {
-        width: '100%',
+        width: 'auto',
+        minWidth: '100%',
         borderCollapse: 'collapse',
         height: 'auto',
         minHeight: '100%',

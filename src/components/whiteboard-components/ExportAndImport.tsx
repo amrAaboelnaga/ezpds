@@ -1,10 +1,15 @@
 import React from 'react';
 import { observer } from "mobx-react-lite";
 import { rootStore } from '../../stores/rootStore';
-import html2canvas from 'html2canvas';
+import { handlePagesToImage, handlePrintSelectedDivs } from '../../handlers/whiteBoardHandlers';
 
 
-const ExportAndImport: React.FC = ({ }) => {
+interface ExportAndImportProps {
+    isExporting: boolean; // New prop
+    setIsExporting: React.Dispatch<React.SetStateAction<boolean>>; // Function to update exporting state
+}
+
+const ExportAndImport: React.FC<ExportAndImportProps> = ({ isExporting, setIsExporting }) => {
     const { whiteBoardStore } = rootStore;
 
     // Function to handle reset
@@ -17,7 +22,7 @@ const ExportAndImport: React.FC = ({ }) => {
     };
 
     // Function to handle export
-    const handleExport = () => {
+    const handleExportJson = () => {
         if (!whiteBoardStore.productInfo.title || !whiteBoardStore.productInfo.price) {
             alert('Make shure you add title and price')
             return
@@ -55,31 +60,17 @@ const ExportAndImport: React.FC = ({ }) => {
         }
     };
 
-    // Function to convert page to image and download
-    const handlePageToImage = () => {
-        //if (page.current) {
-        //    html2canvas(page.current, {
-        //        scale: 1, // Increase scale for higher resolution
-        //    }).then(canvas => {
-        //        const link = document.createElement('a');
-        //        link.href = canvas.toDataURL('image/png');
-        //        link.download = `${whiteBoardStore.productInfo.title}.png`;
-        //        link.click();
-        //    }).catch(error => {
-        //        console.error('Failed to capture page as image:', error);
-        //    });
-        //}
-    };
-
     return (
         <div style={styles.exportAndImportCont}>
             <button style={styles.extraButton} onClick={handleReset}>Reset</button>
-            <button style={styles.exportButton} onClick={handleExport}>Export</button>
+            <button style={styles.exportButton} onClick={handleExportJson}>Export as Json</button>
+            <button style={styles.exportButton} onClick={() => handlePrintSelectedDivs(whiteBoardStore, setIsExporting)}>Export PDF</button>
+            <button style={styles.extraButton} onClick={() => handlePagesToImage(whiteBoardStore, setIsExporting)}>Export as Images</button>
             <label style={styles.importButton}>
                 Import
                 <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
             </label>
-            <button style={styles.extraButton} onClick={handlePageToImage}>Page to Image</button>
+
         </div>
     );
 };

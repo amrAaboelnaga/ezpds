@@ -13,20 +13,54 @@ input::-webkit-inner-spin-button {
 }
 
 .testColor {
-  color: rgb(230, 230, 230);
+  color: rgba(0, 0, 0, 0.126);
 }
 
 .textEditButton:active {
-  transform: scale(0.90);
+  transform: scale(0.9);
   background-color: #d5d5d5;
 }
 
 .textEditButton {
   background-color: #fff;
-  transition: all .4s;
+  transition: all 0.4s;
 }
 
 .textEditButton:hover {
   background-color: #e0e0e0;
   transform: scale(1.05);
+}
+
+.print-container {
+  margin: 60px auto; 
+}
+
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: auto; /* Ensure full height */
+  }
+
+  .print-container {
+    margin: 0px auto;
+    padding: 0;
+    width: 100%; /* Full width */
+    height: auto; /* Ensure no height constraint */
+  }
+
+  /* Additional styling for the print container to avoid any extra space */
+  .print-container > * {
+    margin: 0; /* Ensure child elements have no margins */
+  }
+}
+
+@page {
+  size: A4;
+  margin: 0mm;
 }

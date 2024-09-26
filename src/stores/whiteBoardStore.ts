@@ -17,6 +17,8 @@ class WhiteBoardStore {
   currentPage: number = 0;
   projectColors: string[] = [];
 
+  @observable.deep pageRefs: (HTMLDivElement | null)[] = [];
+
   constructor() {
     makeAutoObservable(this);
     this.saveInitialState();
@@ -246,6 +248,12 @@ class WhiteBoardStore {
     this.pages = obj.pages;
     this.productInfo = obj.productInfo;
   }
+
+  @action
+  setPageRefs(divsArray: (HTMLDivElement | null)[]) {
+    this.pageRefs = divsArray;
+  }
+  
 }
 
 export const whiteBoardStore = new WhiteBoardStore();
