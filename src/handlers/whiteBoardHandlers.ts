@@ -1,6 +1,11 @@
 import { rootStore } from "../stores/rootStore";
 import { useCallback, useState } from "react";
 import { createDraggableCircleleSpec, createDraggableImageSpec, createDraggableListSpec, createDraggableRectangleSpec, createDraggableTableSpec, createDraggableTextSpec, createDraggableTriangleSpec, DraggableImageInterface, DraggableListInterface, DraggableTableInterface, DraggableTextInterface, JsonSpecs, Text } from "../types/whiteBoard";
+import JSZip from 'jszip';
+import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+
+
 
 export const useWhiteBoardHandlers = () => {
     const { whiteBoardStore } = rootStore;
@@ -155,7 +160,7 @@ export const useWhiteBoardHandlers = () => {
                 };
 
                 // Update the jsonSpecs for the specified page
-                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);                
+                whiteBoardStore.setJsonSpecs(updatedSpecs, pageId);
             } else {
                 console.error(`Page with ID ${pageId} not found.`);
             }
@@ -467,7 +472,7 @@ export const useWhiteBoardHandlers = () => {
                 }, pageId);
                 document.removeEventListener('mousemove', handleMouseMoveReposition);
                 document.removeEventListener('mouseup', handleMouseUpReposition);
-                
+
             };
 
             document.addEventListener('mousemove', handleMouseMoveReposition);
@@ -700,7 +705,7 @@ export const useWhiteBoardHandlers = () => {
                 const onMouseUp = () => {
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
-                    
+
                 };
 
                 document.addEventListener('mousemove', onMouseMove);
@@ -1130,4 +1135,71 @@ export const extractColorsFromPages = (pages: any[]) => {
     });
 
     return Array.from(colors);
+};
+
+
+export const savePagesAsImage = async (whiteBoardStore: any) => {
+    if (whiteBoardStore.pageRefs.length > 0) {
+        const zip = new JSZip();
+        const folder = zip.folder(whiteBoardStore.productInfo.title);
+        if (!folder) { return }
+        // Loop through each page reference
+        for (let i = 0; i < whiteBoardStore.pageRefs.length; i++) {
+            const pageElement = whiteBoardStore.pageRefs[i];
+
+            if (pageElement) {
+                // Capture the page as an image
+                const canvas = await html2canvas(pageElement);
+                const imgData = canvas.toDataURL('image/png');
+
+                // Convert the data URL to a Blob
+                const response = await fetch(imgData);
+                const blob = await response.blob();
+
+                // Add the image to the ZIP file
+                folder.file(`Page-${i + 1}.png`, blob);
+            }
+        }
+
+        // Generate the ZIP file and trigger download
+        zip.generateAsync({ type: "blob" })
+            .then((content) => {
+                // Use FileSaver to save the ZIP file
+                saveAs(content, whiteBoardStore.productInfo.title);
+            })
+            .catch((err) => {
+                console.error("Error creating ZIP file:", err);
+            });
+    }
+};
+
+export const handlePrint = (whiteBoardStore: any) => {
+    if (whiteBoardStore.pageRefs.length > 0) {
+        const elementsToHide = document.body.children;
+
+        const printContainer = document.createElement('div');
+        printContainer.classList.add('print-container');
+
+        whiteBoardStore.pageRefs.forEach((pageElement: any) => {
+            if (pageElement) {
+                const clonedPage = pageElement.cloneNode(true);
+                printContainer.appendChild(clonedPage);
+            }
+        });
+
+        Array.from(elementsToHide).forEach((el) => {
+            if (el instanceof HTMLElement) {
+                el.style.display = 'none';
+            }
+        });
+
+        document.body.appendChild(printContainer);
+        window.print();
+        document.body.removeChild(printContainer);
+        Array.from(elementsToHide).forEach((el) => {
+            if (el instanceof HTMLElement) {
+                el.style.display = '';
+            }
+        });
+    }
 };

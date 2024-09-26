@@ -5,11 +5,16 @@ import { categories } from '../../handlers/marketHandlers';
 import ExportAndImport from './ExportAndImport';
 import ProductInfoBox from './productInfoBox';
 
+interface RightDrawerProps {
+    isExporting: boolean; // New prop
+    setIsExporting: React.Dispatch<React.SetStateAction<boolean>>; // Function to update exporting state
+}
 
-const RightDrawer: React.FC = () => {
+
+const RightDrawer: React.FC<RightDrawerProps> = ({ isExporting, setIsExporting }) => {
     const { whiteBoardStore } = rootStore;
     const componentRef = useRef<HTMLDivElement>(null);
-    const [showObject, setshowObject] = useState(false)
+    const [showObject, setshowObject] = useState(true)
 
 
     useEffect(() => {
@@ -33,11 +38,11 @@ const RightDrawer: React.FC = () => {
         }
     }, []);
     return (
-        <div onMouseLeave={() => setshowObject(false)} onMouseOver={() => setshowObject(true)} ref={componentRef} style={{ ...styles.rightDrawerCont, right: showObject ? '-10px' : '-200px' }}>
+        <div onMouseLeave={() => setshowObject(true)} onMouseOver={() => setshowObject(true)} ref={componentRef} style={{ ...styles.rightDrawerCont, right: showObject ? '-10px' : '-200px' }}>
             <i style={{ ...styles.settingOpener }} className="fa fa-cog" ></i>
             <ProductInfoBox />
             <div style={{ height: '10px' }} />
-            <ExportAndImport />
+            <ExportAndImport isExporting={isExporting} setIsExporting={setIsExporting} />
         </div>
     );
 };

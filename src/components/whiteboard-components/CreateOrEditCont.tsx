@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { observer } from "mobx-react-lite";
 import { rootStore } from "../../stores/rootStore";
 import { LeftToolBar } from './LeftToolBar';
@@ -10,17 +10,24 @@ import TextPageModifiers from './TextPageModifiers';
 import { reaction } from 'mobx';
 
 const CreateOrEditCont: React.FC = observer(() => {
-  const [isMouseDown, setIsMouseDown] = useState(false)
-
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [isExporting, setIsExporting] = useState(false)
   const { whiteBoardStore } = rootStore;
+
+  // Refs for each page
+  const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const updatePageRefs = () => {
+    if (pageRefs.current.length > 0) {
+      whiteBoardStore.setPageRefs(pageRefs.current);
+      console.log(whiteBoardStore.pageRefs)
+    }
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-
       const isCtrlPressed = e.ctrlKey || e.metaKey;
-
       if (isCtrlPressed && e.key === 'z') {
-        console.log('Undo triggered');
         e.preventDefault();
         whiteBoardStore.undo();
       } else if (isCtrlPressed && e.key === 'y') {
@@ -28,16 +35,15 @@ const CreateOrEditCont: React.FC = observer(() => {
         whiteBoardStore.redo();
       } else {
         whiteBoardStore.saveCurrentState();
+        updatePageRefs()
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
-
+  }, [whiteBoardStore]);
 
   useEffect(() => {
     const disposer = reaction(
@@ -45,59 +51,83 @@ const CreateOrEditCont: React.FC = observer(() => {
       () => {
         if (!isMouseDown) {
           whiteBoardStore.saveCurrentState();
-        } else {
-          console.log('Mouse is down, don\'t save minor changes');
+          updatePageRefs()
         }
       }
     );
-
     return () => disposer();
-  }, [isMouseDown]);
-
+  }, [isMouseDown, whiteBoardStore]);
 
   useEffect(() => {
     const handleMouseDown = () => setIsMouseDown(true);
-
     const handleMouseUp = () => {
       setIsMouseDown(false);
       whiteBoardStore.saveCurrentState();
+      updatePageRefs()
     };
 
-    const handleMouseClick = () => {
-      whiteBoardStore.saveCurrentState();
-    };
-  
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('click', handleMouseClick);
 
     return () => {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('click', handleMouseClick);
     };
-  }, []);
+  }, [whiteBoardStore]);
+
+  useEffect(() => {
+
+  }, [whiteBoardStore.pages]);
+  // Export all pages to a single PDF
+
 
   return (
-    <div style={{ ...styles.createOrEditCont }}>
+    <div style={styles.createOrEditCont}>
+      {isExporting &&
+        <div style={styles.generating} >
+          <img style={{ width: '150px' }} src="https://i.gifer.com/ZKZg.gif" alt="Loading..." />
+        </div>
+      }
       <LeftToolBar />
-
       <div style={styles.editTableCount}>
-        {(whiteBoardStore.textContent && whiteBoardStore.textOnChange) && (< TextEditorBar content={whiteBoardStore.textContent} onChange={whiteBoardStore.textOnChange} />)}
+        {whiteBoardStore.textContent && whiteBoardStore.textOnChange && (
+          <TextEditorBar content={whiteBoardStore.textContent} onChange={whiteBoardStore.textOnChange} />
+        )}
       </div>
       <div style={styles.workSpaceCont}>
         <TextPageModifiers />
         <PageModifiers />
         {whiteBoardStore.pages.map((page, index) => (
-          <WBPage key={index} index={index} />
+          <div className="print-container" style={styles.workSpaceContParent} key={index} ref={(el) => pageRefs.current[index] = el}>
+            <WBPage index={index} isExporting={isExporting} setIsExporting={setIsExporting} />
+          </div>
         ))}
       </div>
-      <RightDrawer />
+      <RightDrawer isExporting={isExporting} setIsExporting={setIsExporting} />
     </div>
   );
 });
 
 const styles = {
+  generating: {
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    position: 'fixed',
+    width: '100vw',
+    height: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: '0px',
+    left: '5%',
+    zIndex: 300
+  } as React.CSSProperties,
+  workSpaceContParent: {
+    backgroundColor: 'white',
+    width: '210mm',
+    height: '297mm',
+    position: 'relative',
+    marginBottom: '150px'
+  } as React.CSSProperties,
   createOrEditCont: {
     display: 'grid',
     gridTemplateColumns: '100px auto',
@@ -107,14 +137,7 @@ const styles = {
     backgroundColor: 'rgb(214, 214, 214)',
     position: 'relative',
     height: '100%',
-    marginBottom: '50px'
-  } as React.CSSProperties,
-  workSpaceFile: {
-    width: '210mm',
-    height: '297mm',
-    backgroundColor: 'white',
-    margin: '60px auto',
-    position: 'relative',
+    marginBottom: '50px',
   } as React.CSSProperties,
   editTableCount: {
     position: 'absolute',

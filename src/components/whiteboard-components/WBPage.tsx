@@ -10,9 +10,12 @@ import { DraggableRepeate } from './DraggableRepeate';
 
 interface WBPageProps {
     index: number; // Add index prop
+    isExporting: boolean; // New prop
+    setIsExporting: React.Dispatch<React.SetStateAction<boolean>>; // Function to update exporting state
 }
 
-const WBPage: React.FC<WBPageProps> = ({ index }) => {
+
+const WBPage: React.FC<WBPageProps> = ({ index, isExporting }) => {
     const { whiteBoardStore } = rootStore;
     const { useHandleDrop, useHandleDragOver, useToggleEditing } = useWhiteBoardHandlers();
     const [showItems, setShowItems] = useState(false)
@@ -53,13 +56,19 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
         };
     }, []);
 
+    useEffect(() => {
+        if (isExporting === true) {
+            setShowItems(true)
+        }
+    }, [isExporting])
+
 
     const currentPage = whiteBoardStore.pages[index];
     const jsonSpecs = currentPage?.jsonSpecs || {};
     //console.log(jsonSpecs)
     return (
         <div id={`pageIndex${index}`} ref={pageRef} style={styles.workSpaceFile} onDrop={(e) => handleDrop(e, index)} onDragOver={handleDragOver}>
-            {(whiteBoardStore.containerEditor) && (whiteBoardStore.containerEditor.pageId === index) && (whiteBoardStore.pages[index].jsonSpecs[whiteBoardStore.containerEditor.id])?.isEditing && (
+            {isExporting === false && (whiteBoardStore.containerEditor) && (whiteBoardStore.containerEditor.pageId === index) && (whiteBoardStore.pages[index].jsonSpecs[whiteBoardStore.containerEditor.id])?.isEditing && (
                 <div
                     className='ContainerEditor'
                     id="ContainerEditor"
@@ -101,21 +110,21 @@ const WBPage: React.FC<WBPageProps> = ({ index }) => {
                     );
                 }
             })}
-            <RulerComponent />
-            <PageGuids pageId={index} />
-            <div style={styles.rulerHider} />
+            {isExporting === false && <RulerComponent />}
+            {isExporting === false && <PageGuids pageId={index} />}
+            {isExporting === false && <div style={styles.rulerHider} />}
         </div>
     );
 };
 
 const styles = {
     workSpaceFile: {
-        width: '210mm',
-        height: '297mm',
+        width: '100%',
+        height: "100%",
         backgroundColor: 'white',
-        margin: '60px auto',
-        position: 'relative',
-        marginBottom: '150px'
+        position: 'absolute',
+        top: '0px',
+        left: "0px"
     } as React.CSSProperties,
     rulerHider: {
         position: 'absolute',
@@ -124,7 +133,6 @@ const styles = {
         width: '20px',
         height: '20px',
         backgroundColor: 'rgb(214, 214, 214)',
-
     } as React.CSSProperties,
     delPageButton: {
         position: 'absolute',
