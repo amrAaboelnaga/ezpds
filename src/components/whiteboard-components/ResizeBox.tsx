@@ -6,9 +6,10 @@ interface ResizeBoxProps {
     id: string;
     draggableRef: React.RefObject<HTMLDivElement>;
     pageId: number;
+    type?: string
 }
 
-export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef, pageId }) => {
+export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef, pageId, type }) => {
     const { whiteBoardStore } = rootStore;
     const resizeStateRef = useRef<{
         direction: string;
@@ -237,7 +238,7 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef,
         console.log('Mouse up');
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
-        
+
     }, [handleMouseMove]);
 
     const handleMouseUpRotation = useCallback(() => {
@@ -245,54 +246,69 @@ export const ResizeBox: React.FC<ResizeBoxProps> = observer(({ id, draggableRef,
         console.log('Mouse up rotation');
         document.removeEventListener('mousemove', handleMouseMoveRotation);
         document.removeEventListener('mouseup', handleMouseUpRotation);
-        
+
     }, [handleMouseMoveRotation]);
 
+    if (type === 'Table') {
+        return (
+            <
 
-    return (
-        <
+                >
+                <div
+                    className='fa fa-undo'
+                    style={{ ...resizeHandleStyles.rotator }}
+                    onMouseDown={handleMouseDownRotation}
+                />               
+            </>
 
-            >
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.topLeft }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'top-left')}
-            />
-            <div
-                className='fa fa-undo'
-                style={{ ...resizeHandleStyles.rotator }}
-                onMouseDown={handleMouseDownRotation}
-            />
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.topRight }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'top-right')}
-            />
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.bottomLeft }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'bottom-left')}
-            />
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.bottomRight }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'bottom-right')}
-            />
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.top }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'top')}
-            />
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.bottom }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'bottom')}
-            />
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.left }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'left')}
-            />
-            <div
-                style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.right }}
-                onMouseDown={(e) => handleMouseDownResize(e, 'right')}
-            />
-        </>
+        );
+    } else {
+        return (
+            <
 
-    );
+                >
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.topLeft }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'top-left')}
+                />
+                <div
+                    className='fa fa-undo'
+                    style={{ ...resizeHandleStyles.rotator }}
+                    onMouseDown={handleMouseDownRotation}
+                />
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.topRight }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'top-right')}
+                />
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.bottomLeft }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'bottom-left')}
+                />
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.bottomRight }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'bottom-right')}
+                />
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.top }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'top')}
+                />
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.bottom }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'bottom')}
+                />
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.left }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'left')}
+                />
+                <div
+                    style={{ ...resizeHandleStyles.resizeHandle, ...resizeHandleStyles.right }}
+                    onMouseDown={(e) => handleMouseDownResize(e, 'right')}
+                />
+            </>
+
+        );
+    }
+
 });
 
 

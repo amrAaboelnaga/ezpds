@@ -822,49 +822,55 @@ export const useWhiteBoardHandlers = () => {
         const deltaY = e.clientY - startPos.y;
 
         const newDimensions = { ...cellDimensionsStore };
-
         const totalRows = tableData.length;
         const totalCols = tableData[0]?.length || 0;
 
-        if (colIndex >= 0 && colIndex < totalCols - 1) {
+        // Handle column resizing
+        if (colIndex >= 0 && colIndex < totalCols) {
             const currentCol = `col-${colIndex}`;
-            const nextCol = `col-${colIndex + 1}`;
-
             const currentWidth = parseFloat(newDimensions[currentCol]?.width || '100px');
-            const nextWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
+
+            // Set a minimum width for columns
+            const minColWidth = 50; // Set your desired minimum width
+
+            // Check for next column
+            let nextCol = null;
+            let nextWidth = null;
+            if (colIndex < totalCols - 1) {
+                nextCol = `col-${colIndex + 1}`;
+                nextWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
+            }
 
             const isShiftKey = e.shiftKey; // Check if Shift key is pressed
 
             if (isShiftKey) {
-                // Apply resizing to all columns
-                for (let i = 0; i < totalCols - 1; i++) {
+                // Apply resizing to all columns uniformly
+                const widthChangePerColumn = deltaX / totalCols; // Spread the change evenly
+                for (let i = 0; i < totalCols; i++) {
                     const col = `col-${i}`;
-                    const nextCol = `col-${i + 1}`;
-
-                    const colWidth = parseFloat(newDimensions[col]?.width || '100px');
-                    const nextColWidth = parseFloat(newDimensions[nextCol]?.width || '100px');
-
+                    const currentColWidth = parseFloat(newDimensions[col]?.width || '100px');
                     newDimensions[col] = {
-                        width: `${colWidth + deltaX}px`
-                    };
-                    newDimensions[nextCol] = {
-                        width: `${nextColWidth - deltaX}px`
+                        width: `${Math.max(minColWidth, currentColWidth + widthChangePerColumn)}px` // Ensure width does not go negative
                     };
                 }
             } else {
-                // Apply resizing to selected column
+                // Apply resizing to the selected column and the next column
+                const newCurrentWidth = Math.max(minColWidth, currentWidth + deltaX);
                 newDimensions[currentCol] = {
-                    width: `${currentWidth + deltaX}px`
+                    width: `${newCurrentWidth}px`
                 };
-                newDimensions[nextCol] = {
-                    width: `${nextWidth - deltaX}px`
-                };
+
+                if (nextCol && nextWidth !== undefined && nextWidth) {
+                    newDimensions[nextCol] = {
+                        width: `${Math.max(0, nextWidth - (newCurrentWidth - currentWidth))}px`
+                    };
+                }
             }
         }
 
+        // Handle row resizing
         if (rowIndex >= 0 && rowIndex < totalRows) {
             const currentRow = `row-${rowIndex}`;
-
             const currentHeight = parseFloat(newDimensions[currentRow]?.height || '40px');
 
             const isShiftKey = e.shiftKey; // Check if Shift key is pressed
@@ -874,19 +880,19 @@ export const useWhiteBoardHandlers = () => {
                 for (let i = 0; i < totalRows; i++) {
                     const row = `row-${i}`;
                     const rowHeight = parseFloat(newDimensions[row]?.height || '40px');
-
                     newDimensions[row] = {
-                        height: `${rowHeight + deltaY}px`
+                        height: `${Math.max(0, rowHeight + deltaY)}px`
                     };
                 }
             } else {
-                // Apply resizing to selected row
+                // Apply resizing to the selected row
                 newDimensions[currentRow] = {
-                    height: `${currentHeight + deltaY}px`
+                    height: `${Math.max(0, currentHeight + deltaY)}px`
                 };
             }
         }
 
+        // Update the cell dimensions with the new calculated values
         updateTableCellDimensions(pageId, id, newDimensions);
         setStartPos({ x: e.clientX, y: e.clientY });
     };

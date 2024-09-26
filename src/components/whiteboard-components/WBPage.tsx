@@ -76,6 +76,7 @@ const WBPage: React.FC<WBPageProps> = ({ index, isExporting }) => {
                         position: 'absolute',
                         top: (jsonSpecs[whiteBoardStore.containerEditor.id]?.location?.y || 0),
                         left: `calc(${jsonSpecs[whiteBoardStore.containerEditor.id]?.location?.x || 0}px + ${jsonSpecs[whiteBoardStore.containerEditor.id]?.width || 0} + 10px)`,
+                        //left: (jsonSpecs[whiteBoardStore.containerEditor.id]?.location?.x - 230 || 0),
                         height: jsonSpecs[whiteBoardStore.containerEditor.id]?.height || 0,
                     }}>
                     <ContainerEditor
